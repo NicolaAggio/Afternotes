@@ -1,5 +1,5 @@
 # Afternotes
-Afternotes of the courses of the master degree in [COMPUTER SCIENCE AND INFORMATION TECHNOLOGY](https://www.unive.it/pag/44008/), curriculum [Artificial Intelligence and Data Engineering](https://www.unive.it/data/43984/).
+Afternotes of the courses of the master degree in [Computer Science and Information Technology](https://www.unive.it/pag/44008/), curriculum [Artificial Intelligence and Data Engineering](https://www.unive.it/data/43984/).
 ## Courses
 - Applied Probability for Computer Science;
 - [Foundations of Machine Learning](https://github.com/NicolaAggio/Afternotes/tree/main/P);
