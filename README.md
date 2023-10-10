@@ -4,6 +4,6 @@ Afternotes of the courses of the master degree in [Computer Science and Informat
 - [Applied Probability for Computer Science](https://github.com/NicolaAggio/Afternotes/tree/main/AP);
 - [Advanced Data Management](https://github.com/NicolaAggio/Afternotes/tree/main/AdvancedDataManagement);
 - [Foundations of Machine Learning](https://github.com/NicolaAggio/Afternotes/tree/main/FML);
-- [Learning with Massive Data](https://github.com/NicolaAggio/Afternotes/tree/main/LMD);
+- [Learning with Massive Data](https://github.com/NicolaAggio/Afternotes/tree/main/LearningWithMassiveData);
 - [Information Retrieval and Web Search](https://github.com/NicolaAggio/Afternotes/tree/main/IR&WS);
 - [Image and Video Understanding](https://github.com/NicolaAggio/Afternotes/tree/main/IVU).

@@ -1,0 +1,72 @@
+\section{Introduction}
+
+\subsection{Course structure}
+The \textbf{exam} is composed of the following tests:
+
+\begin{itemize}
+
+    \item a \textbf{written exam}, containing about 6 questions or exercises and providing the most of the score of the final grade. It will be mainly composed of theoretical questions about notions discussed during the course, but it may also contain some exercise;
+    
+    \item \textbf{3 assignments}, mainly asking for implementing and evaluating a parallel algorithm (C++ or Python). The assignments can be delivered:
+
+    \begin{itemize}
+    
+        \item \textit{during the course}, then if the assignment is insufficient, it can be re-submitted;
+        
+        \item \textit{with the written exam}, but only if the written exam is passed, and in this case if the assignment is insufficient, it cannot be re-submitted.
+        
+    \end{itemize}
+
+    In both cases, if the assignment is positively graduated, we get +1, 0 otherwise
+    
+\end{itemize}
+
+\subsection{Main topics}
+
+The \textbf{topics} of the course are:
+
+\begin{itemize}
+
+    \item parallel programming (cache memory, thread-based and shared memory);
+    
+    \item parallel programming on multiple machines (Map-Reduce, Spark, 
+    distributed memory);
+    
+    \item visiting professor (ranking).
+    
+\end{itemize}
+
+For many years, \textbf{Moore's Law} has been considered a strong argument against the concept of \textbf{parallelism}. Basically, in 1965 Moore said that "\textit{The complexity for minimum component costs has increased at a rate of roughly a factor of two per year. (...) there is no reason to believe it will not remain nearly constant for at least 10 years.}" However, the increase in power consumption of the machines, the overall DRAM access latency and the diminishing returns of more instruction-level parallelism resulted in denying the Moore's Law as a good argument against parallel programming. For this reason, in the last years we faced an \textbf{increase of the parallelism} (see also the birth of Deep Learning etc..). The main \textbf{advantages} of parallelism, or multi-core machines, are:
+
+\begin{itemize}
+
+    \item \textit{power}: many simple cores offer higher performances per unit area for parallel codes than a comparable design employing smaller numbers of complex cores;
+
+    \item \textit{design cost}: the behavior of a smaller, simpler processing element is much easier to design and to predict;
+
+    \item \textit{defect tolerance}: smaller processing elements provide an economical way to improve defect tolerance by providing redundancy.
+    
+\end{itemize}
+
+In general, we can distinguish two types of computing:
+
+\begin{itemize}
+
+    \item \textbf{sequential computing}: in this case the problem is solved with an algorithm whose instructions are executed \textit{in sequence}, so the corresponding computational model is characterized by a \textit{single processor};
+
+    \item \textbf{parallel computing}: in this case the problem is solved with an algorithm whose instructions are executed \textit{in parallel}, so the corresponding computational model is characterized by \textit{multiple processors} with a specific \textit{cooperation mechanism}.
+\end{itemize}
+
+On the one hand, parallelism can be exploited with the goal of making the execution faster, but on the other it causes some issues, depending on the level at which it is applied:
+
+\begin{itemize}
+
+    \item in multi-cores we have the problems of memory hierarchies, false sharing and synchronization;
+
+    \item in distributed systems we have the problems of data distribution and fault tolerance;
+
+    \item in GPUs we have the problems of explicit memory management and the impossibility of executing recursive algorithms.
+    
+\end{itemize}
+
+An example of application in which parallel computing can be used is in the \textbf{PageRank} algorithm. This algorithm computes the relevance of a web page based on the link structure of the Web. Let $W$ be the adjacency matrix of the Web graph, then $W[i,j]$ is the probability of a random user of going from page $j$ to $i$, and it is define as $W[i,j] = \frac{1}{o(j)}$, where $o(j)$ is the number of outgoing links from $j$. In general, the PageRank $\pi$ is the stable state distribution of the transition probability matrix $W$, and it can be computed as: $\pi_{t+1} = W\pi_t$. After a certain number of iterations, usually 50, the importance of a page becomes steady. Assuming that the number of pages is $N = 10^{10}$, then the calculation of the PageRank requires $10^{20} * 50$ floating point operations (each iteration requires $N^2$ multiplications). Assuming that a modern processor ($10^{12}$ floating point operations per second) is used, then the total running time is $\frac{5 * 10^{21}}{10^{12}} = 5 * 10^9$ seconds, which is clearly unfeasible. Moreover, if the matrix $W$ is stored in a sparse format, we can assume that an entire web graph requires 800GB, and reading 800GB at 200MB/s takes more than 1h, just for one iteration. In this sense, PageRank is unfeasible if parallelism is not implemented both on CPU and on disk storage.
