@@ -40,16 +40,7 @@ As we can see, in order to encrypt a plaintext $x$ using a composition of two ci
     \item \textbf{Encrypt} the \textbf{result} of (1) using the \textbf{second encryption function} (using $k2$).
 \end{enumerate}
 
-\underline{Example}: consider the composition of the two shifts above. Formally we have that $E^1_k(x) = E^2_k(x) = x+k \mod 26$. Thus,
-
-\begin{equation}
-    \begin{align*}
-        E_{(k1,k2)}(x) &= E^2_{k2}(E^1_{k1}(x)) = (x + k1 \mod 26) + k2 \mod 26\\ 
-        &= x + (k1+k2 \mod 26) \mod 26 = E^1_{k1+k2 \mod 26}(x)
-    \end{align*}
-\end{equation}
-
-This proves that composing the shift cipher twice is equivalent to applying it once using as a key the sum of the two keys $k1$ and $k2$, modulo 26.
+\example{Consider the composition of the two shifts above. Formally we have that $E^1_k(x) = E^2_k(x) = x+k \mod 26$. Thus,\begin{equation}\begin{align*}E_{(k1,k2)}(x) &= E^2_{k2}(E^1_{k1}(x)) = (x + k1 \mod 26) + k2 \mod 26\\ &= x + (k1+k2 \mod 26) \mod 26 = E^1_{k1+k2 \mod 26}(x)\end{align*}\end{equation}This proves that composing the shift cipher twice is equivalent to applying it once using as a key the sum of the two keys $k1$ and $k2$, modulo 26.}
 
 \subsubsection{Idempotent ciphers}
 We have seen that the shift cipher, when repeated twice is equivalent to itself with a different key. When this happens, the cipher $S$ is said to be \textbf{idempotent}, written $S \times S = S$. In this case we know that iterating the cipher will be of no use to improve its security. Even if we repeat it $n$ times we will still get the initial cipher, i.e., $S^n = S$.
@@ -133,7 +124,7 @@ The \textbf{optimization} works as follows:
     \item We perform a XOR operation between $a$ and $p$, and we update $p$ with the result of this operation;
     \item Then, $b$ is shifted to the right and $a$ is shifted to the left meaning that we respectively divide and multiply by $x$ the two polynomials. Now we erase the least significant bit of $b$ and we add a 0 to $a$:
     \begin{itemize}
-        \item If the least significant bit was a 1, we continue performing the XOR operation between the new $a$ and $p$;
+        \item If the least significant bit is a 1, we continue performing the XOR operation between the new $a$ and $p$;
         \item Otherwise, we skip the XOR operation. 
     \end{itemize}
     \item When $a$ becomes more than $2^8$ we need to XOR to it the modulus $100011011$, i.e. $0x11b$, to keep it 8-bits long.
@@ -588,7 +579,7 @@ How can we now introduce a secret trap-door to allow us inverting the function? 
 
 \image{img/asy1}{0.5}{Solution of the subset-sum problem with super-increasing sizes}
 
-\underline{Example}: subsetSum($[1,3,5,10]$, 11) returns $[1, 0, 0, 1]$, while subsetSum($[1,3,5,10]$, 12) returns the empty list $[]$, since there's no solution in this case.
+\example{\text{subsetSum}($[1,3,5,10]$, 11) returns $[1, 0, 0, 1]$, while \text{subsetSum}($[1,3,5,10]$, 12) returns the empty list $[]$, since there's no solution in this case.}
 
 \paragraph{The cipher}
 We now proceed as follows:
@@ -624,7 +615,7 @@ $$\begin{array}{rcl}a^{-1}E_{PK}(x_1, \ldots, x_n) \mod p &=& a^{-1} a\sum_{i=1}
 
 The previous equations show that the \textbf{transformed target} $a^{-1} y \mod p$ is, in fact, the \textbf{target} for the \textbf{initial}, easy \textbf{problem}.
 
-\underline{Example}: let $(1,2,5,12)$ be a super-increasing problem. We let $p=23$ and $a=6$. We have that $a^{-1} = 4$, since $6 \cdot 4 \mod 23 = 1$. If we compute $s_i \cdot a \mod p$ we obtain $(6,12,7,3)$ which is not super-increasing. Consider now the plaintext $(1,0,0,1)$. We have that $E_{PK}(1,0,0,1) = 6 + 3 = 9$. Now to decrypt we have to compute $a^{-1} \cdot 9 \mod p = 36 \mod 23 = 13$. We finally solve $(1,2,5,12)$ with target 13, which gives the initial plaintext $(1,0,0,1)$.
+\example{Let $(1,2,5,12)$ be a super-increasing problem. We let $p=23$ and $a=6$. We have that $a^{-1} = 4$, since $6 \cdot 4 \mod 23 = 1$. If we compute $s_i \cdot a \mod p$ we obtain $(6,12,7,3)$ which is not super-increasing. Consider now the plaintext $(1,0,0,1)$. We have that $E_{PK}(1,0,0,1) = 6 + 3 = 9$. Now to decrypt we have to compute $a^{-1} \cdot 9 \mod p = 36 \mod 23 = 13$. We finally solve $(1,2,5,12)$ with target 13, which gives the initial plaintext $(1,0,0,1)$.}
 
 \subsection{The RSA cipher}
 RSA is the most famous \textbf{asymmetric-key cipher}. It is based on a few technical results from number theory that we recall below.
@@ -639,39 +630,76 @@ We immediately notice that if $n$ is prime then $\Phi(n) = n-1$. In fact, by def
 
 There is another situation where $\Phi(n)$ is easy to compute: when $n=p_1 \ldots p_k$ with $p_1 \neq p_2 \neq \ldots \neq p_k$ prime numbers, i.e. multiplication between prime numbers, we have that $\Phi(n) = \Phi(p_1) \ldots \Phi(p_k) = (p_1-1) \ldots (p_k-1)$.
 
-\underline{Example}: consider $15 = 3 \cdot 5$, then $\phi(15) = \phi(3) \cdot \phi(5) = 2 \cdot 4 = 8$. 
+\example{Consider $15 = 3 \cdot 5$, then $\phi(15) = \phi(3) \cdot \phi(5) = 2 \cdot 4 = 8$.} 
 
 We prove this result for $n = pq$ with $p\neq q$ primes (i.e. we want to prove that $\phi(n) = \phi(p) \phi(q) = (p-1)(q-1)$). The numbers less than $n$ that are not coprime to $n$ is exactly the multiples of $p$ and $q$, i.e., $p,2p,\ldots,(q-1)p,q,2q,\ldots,(p-1)q$ that are $(q-1)+(p-1)$. Now we have that $\Phi(n) = pq-1 - (q-1)-(p-1) = pq -q -p +1  = (p-1)(q-1)$.
 
-\underline{Example}: consider $14 = 2 \cdot 7$. Then, $\phi(14) = 13 - 6 - 1 = 6$, where 6 is the number of multiples of 2 up to 14, while 1 is the only multiple of 7 up to 14.
+\example{Consider $14 = 2 \cdot 7$. Then, $\phi(14) = 13 - 6 - 1 = 6$, where 6 is the number of multiples of 2 up to 14, while 1 is the only multiple of 7 up to 14.}
+
+\theoremName{Euler theorem}{Let $a$ and $n$ be coprime, i.e., $\text{gcd}(a,n)=1$. Then $a^{\Phi(n)} \mod n = 1$.}
+
+\textit{Proof.} Let $S = (s_1, \ldots, s_{\Phi(n)})$ be the $\Phi(n)$ numbers less than $n$ and coprime with $n$. We consider $R = (a s_1 \mod n, \ldots, a s_{\Phi(n)} \mod n)$ and we show that $S = R$. We need a few lemmas:
+
+\lemma{1}{Let $x,y$ be coprime to $n$. Then $xy$ is coprime to $n$.}
+
+\textit{Proof.} This can be easily proved by considering that all divisors of $xy$ are products of divisors of $x$ or $y$. Thus a common divisor of $xy$ and $n$ must also divide $x$ and/or $y$. Thus, $\text{gcd}(xy,n)>1$ would imply that $\text{gcd}(x,n)>1$ or $\text{gcd}(y,n)>1$ giving a contradiction.
+
+\example{Let $x = 7$, $y = 3$, $p = 3$ and $q = 11$. Then $n = 55$, $x$ and $y$ are coprime to 55, what about $xy = 21$? We have that $\text{gcd}(21,55) = \text{gcd}(7*3, 5*11) = 1$}.
+
+\lemma{2}{Let $x$ be coprime to $n$. Then $x \mod n$ is coprime to $n$.}
+
+\textit{Proof.} Since $x \mod n = x - kn$ we have that any common divisor $d$ of $x \mod n$ and $n$ must divide $x$. In fact, $\frac{x \mod n}{d} = t = \frac{x - kn}{d} = \frac{x}{d} - kr$ that implies $\frac{x}{d}$ is an integer value. That is, $d$ divides $x \mod n$, $n$ and $x$. However, if $x$ is coprime to $n$, then $x \mod n$ is coprime to $n$.
+
+\example{Let $x = 57$, $p = 5$, $q = 11$, then $n = 55$. We have that $x = 57$ is coprime to 55, what about $x \mod n = 2$? We have that $\text{gcd}(2,55) = 1$}.
+
+\lemma{3}{Let $ax \mod n = ay \mod n$ with $\text{gcd}(a,n)=1$. Then $x \mod n = y \mod n$.}
+
+\textit{Proof.} We have $ax - kn = ax \mod n = ay \mod n = ay - jn$. Thus $ax - ay = wn$ that implies $\frac{ax - ay}{a} = \frac{wn}{a}$ and so $x-y = \frac{wn}{a}$ . Since $\text{gcd}(a,n)=1$ we have that $a$ must divide $w$ and so $x-y = tn$, i.e., $x \mod n = y \mod n$.
+
+\example{Given $a = 3$ and $n = 6$, find $x$ and $y$ such that $ax \mod n = ay \mod n$ (here $gcd(a,n) = gcd(3,6) = 3 \neq 1$). We have that $x = 1$ and $y = 3$, since $1 \mod 6 = 1 \neq 3 \mod 6 = 3$.}
+
+\example{Find $a$ coprime to $n$, and find $x$ and $y$ s.t. $ax \mod n = ay \mod n$. Let $a = 5$, which is coprime to 6, then $5x \mod 6 = 5y \mod 6$, from which we derive $x = 1$ and $y = 7$. That is $1 \mod 5 = 1 = 7 \mod 6$.}
+
+Now, by Lemma 1 and 2 we have that all numbers in set $R$ are coprime to $n$ and smaller than $n$. Since $S$ is the set of all numbers coprime to $n$ and smaller than $n$ we obtain that $R \subseteq S$. Now, consider $a s_i \mod n$ and $a s_j \mod n$ in $R$. Since $a$ is coprime to $n$, by Lemma 3 we obtain that $a s_i \mod n = a s_j \mod n$ implies $s_i \mod n = s_j \mod n$, which give a contradiction. Thus we have that $a s_i \mod n \neq a s_j \mod n$ for all $i$ and $j$. This proves that $R = S$.
+
+To conclude the proof it is enough to observe that $$\prod_{i=1}^{\Phi(n)}{s_i} = \prod_{i=1}^{\Phi(n)}{a s_i \mod n} = a^{\Phi(n)}\prod_{i=1}^{\Phi(n)}{s_i \mod n}$$ Since all $s_i$ are coprime to $n$, by applying many times Lemma 3 we obtain $1 = a^{\Phi(n)} \mod n$, which is what we wanted to prove.
+
+\example{Let $p=2$ and $q=3$: what happens if $a=3$ is not coprime to $n = 2*3 = 6$? We have that $a^{\phi(n)} \mod n = 3^{\phi(n)} \mod 6 = 3^3 \mod 6 = 3 \neq 1$. \\ We now try to find an $a$ that satisfies the theorem. We let $a = 5$ (5 is coprime to 6), then $5^{\phi(n)} \mod 6 0 5^2 \mod 6 = 1$}
 
 \subsubsection{The cipher}
 RSA stands for Rivest-Shamir-Adleman, the authors of the cipher in 1978. 
 
 We let $n = pq$ with $p,q$ big \textbf{prime} numbers (we need a method for generating large prime numbers, we will consider an algorithm): notice that $\phi(n) = (p-1)(q-1)$. We then choose a small $a$, prime with $\phi(n)$ and smaller than $\phi(n)$. 
 
-\underline{Example}: let $n = 3 \cdot 5$, then $\phi(n) = 2 \cdot 4 = 8$. We can choose $a = 7$.
+\example{Let $n = 3 \cdot 5$, then $\phi(n) = 2 \cdot 4 = 8$. We can choose $a = 7$.}
 
 We compute the unique $b$ s.t. $ab \mod \phi(n) = 1$.
 
-\underline{Example}: considering the previous example, we have that $b = 7$, since $7 \cdot 7 \mod 8 = 1$ (not a good example in this case, since $a = b$).
+\example{Considering the previous example, we have that $b = 7$, since $7 \cdot 7 \mod 8 = 1$ (not a good example in this case, since $a = b$).}
 
 The \textbf{public key} is $(b,n)$ while the \textbf{private key} (secret trapdoor) is $(a,n)$: notice that $a$ is secret, while $b$ and $n$ are known. We let ${\cal P}={\cal C} = \mathbb{Z}_n$. 
 
 \textbf{Encryption} is defined as $$E_{PK}(x) = x^{b} \mod n$$ while \textbf{decryption} is $$D_{SK}(y) = y^{a} \mod n$$
 
-\underline{Example}: let $p = 5$ and $q = 11$, then $n = 5 \cdot 11 = 55$ and $\phi(n) = 4 \cdot 10 = 40$. We choose $a$ coprime to 40 and smaller than 40, in this case $a = 23$. Thus, $SK = (23, 55)$. We compute the unique $b$ s.t. $ab \mod \phi(n) = 1$, in this case $b = 7$ (computed with the extended Euclidean algorithm). Thus, $PK = (7, 55)$. If we consider the encryption of $x = 2$, then
+\example{Let $p = 5$ and $q = 11$, then $n = 5 \cdot 11 = 55$ and $\phi(n) = 4 \cdot 10 = 40$. We choose $a$ coprime to 40 and smaller than 40, in this case $a = 23$. Thus, $SK = (23, 55)$. We compute the unique $b$ s.t. $ab \mod \phi(n) = 1$, in this case $b = 7$ (computed with the extended Euclidean algorithm). Thus, $PK = (7, 55)$. If we consider the encryption of $x = 2$, then $$E_{PK}(2) = 2^{7} \mod 55 = 128 \mod 55 = 18$$ , while the decryption of 18 results to be $$ D_{SK}(18) = 18^{23} \mod 55 = 2 $$}
 
-$$
-E_{PK}(2) = 2^{7} \mod 55 = 128 \mod 55 = 18
-$$
+\subsubsection{Correctness of RSA}
 
-, while the decryption of 18 results to be
+We now show the correctness of the cipher, i.e., that decrypting under the private key $a$ plaintext $x$ encrypted under the public key gives $x$. Notice that, since $b = a^{-1} \mod \phi(n)$, then $ab \mod \Phi(n) = 1$ implies $ab = k\Phi(n) +1$ for some $k$. What we need to prove is that $x^{ab} \mod n = x$. In fact, if this holds we have:
 
-$$
-D_{SK}(18) = 18^{23} \mod 55 = 2
-$$
+$$D_{SK}(E_{PK}(x)) = (x^b)^a \mod n = x^{ab} \mod n = x$$
 
+Notice now that $x^{ab} \mod n = x^{k\Phi(n) + 1} \mod n = (x^{\Phi(n)})^k x \mod n$. Thus, in order to prove $x^{ab} \mod n = x$ it is enough to show that $(x^\Phi(n))^k x \mod n = x$. This proof is split into two cases:
+
+\begin{itemize}
+    \item $gcd(x,n)=1$. In this case we know that Euler theorem holds, and we directly have that $x^{\Phi(n)} \mod n = 1$ which implies $(x^{\Phi(n)})^k \mod n = 1$, giving the thesis;
+    \item $gcd(x,n)>1$. In this case, since $x<n$ we have that either $\text{gcd}(x,n)=p$ or $\text{gcd}(x,n)=q$. Without loss of generality we assume $\text{gcd}(x,n)=p$ (the proof for the other case is identical). We now have $x = jp$ for some $j$ and $\text{gdc}(x,q)=1$. Euler theorem gives $x^{\Phi(q)} \mod q = 1$, which implies $x^{\Phi(q)\Phi(p)} \mod q = x^{\Phi(n)} \mod q = 1$. This implies $(x^{\Phi(n)})^k \mod q = 1$ giving $(x^{\Phi(n)})^k = wq + 1$ for some $w$. We obtain
+\begin{array}{rcl} (x^{\Phi(n)})^k x \mod n &=& (wq + 1) x \mod n\\& =& (wq + 1) jp \mod n\\ &=& wqjp + x \mod n = x \text{ ,since $pq = n$ and $x = jp$}\end{array}. 
+\end{itemize}
+
+Thus, $D_{SK}(E_{PK}(x)) = x$ and the RSA cipher is correct.
+
+\example{We prove that $x^{ab} \mod n = x$, using $p = 3$, $q = 11$ and $x = 2$. \\ In this case we have that $\phi(n) = (p-1)(q-1) = 20$, $PK = (b,n) = (3,33)$ and $SK = (a,n) = (7,33)$. Thus: $$x^{ab} \mod n = x^{7*3} \mod 33 = x^{21} \mod 33 = 2^{21} \mod 33 = 2$$}
 
 \subsubsection{Implementation}
 As we will discuss, RSA requires a big modulus $n$ of at least 1024 bits. With these sizes, implementation becomes an issue. For example a linear complexity $O(n)$, that is typically considered very good, is prohibitive as it would require at $2^{1024}$ steps. Every operation should in fact be polynomial with respect to the bit-size $k$.
@@ -679,7 +707,17 @@ As we will discuss, RSA requires a big modulus $n$ of at least 1024 bits. With t
 We first observe that basic operations such as \textbf{sum}, \textbf{multiplication} and \textbf{division} can be performed in $O(k), O(k^2), O(k^2)$, respectively, by using simple standard algorithms (the one we use when we compute operations by hand). Reduction modulo $n$ amounts to compute a division which is, again, $O(k^2)$.
 
 \paragraph{Exponentiation}
-This operation is used both for \textbf{encryption} and \textbf{decryption}. First notice that we cannot implement exponentiation to the power of $b$ as $b$ multiplications. In fact, public and private exponents can be the same size as $n$. Performing $b$ multiplications would then require $k^2 2^k$ operation, i.e., $O(2^k)$ which is like brute-forcing the secret trapdoor and infeasible for $k \geq 1024$. We thus need to find some smarter, more efficient way to compute this operation.
+This operation is used both for \textbf{encryption} and \textbf{decryption}. First notice that we \textbf{cannot} implement \textbf{exponentiation} to the power of $b$ as $b$ \textbf{multiplications}. In fact, public and private exponents can be the same size as $n$. Performing $b$ multiplications would then require $k^2 2^k$ operation, i.e., $O(2^k)$ which is like brute-forcing the secret trapdoor and \textbf{infeasible} for $k \geq 1024$. We thus need to find some smarter, more efficient way to compute this operation.
+
+There exists a much faster algorithm, known as \textbf{Square-and-Multiply}, that is based on the following observation: when we rise a number $x$ to a power of 2 such as 8, instead of performing 7 multiplications we can simply compute $((x^2)^2)^2 = xxxxxxxx$ which is just 3 multiplications. In general, if the exponent is not a power of 2, we can exploit a similar trick by performing some additional multiplications when needed. For example $x^{10}$ can be done as $((x^2)^2 x )^2 = xx \ xx \ x \ \ xx \ xx \ x$: after squaring twice we multiply the result by $x$ so that we have $x^5$. With a final square we obtain the result. In particular $x^{10}$ can be written as $(x^{5})^2$ which is $(x^{4}x)^2$ and finally $((x^2)^2) x)^2$: intuitively, if the exponent is even we divide it by 2 and we square, if it is odd we get one $x$ out (which is an additional multiplication) and we proceed as above. Dividing the exponent by 2 amounts to follow its binary representation.
+
+For example, 10 is 1010. We start from the most significant bit. At each step we square and, only when we have a 1 we multiply by $x$. A python implementation follows:
+
+\image{img/rsa1}{0.7}{Square-and-Multiply algorithm}
+
+\example{We compute $2^{10}$, where $10 = 1010$ and $x = 2$. \\ Initially, we have that $r = 1$, so in the first round we compute $r = 1*1 = 1$, the bit is 1, so we update $r = r*x = 1*2 = 2$. In the second round, $r = 2*2 = 4$, and the bit is 0, so we do not update it. In the third round, $r = 4*4 = 16$ and the bit is 1, thus $r = 16 * 2 = 32$. Finally, in the last round $r = 32*32 = 1024$ and the bit is 0, so the result is $2^{10} = 1024$, which is correct.}
+
+The \textbf{number of steps} in the worst case is $O(k^2)$ for the two multiplications, iterated $k$ times, giving $O(k^3)$. Thus for 1024 bits we can expect about 1 billion steps, which is still efficient on modern machines.
 
 \newpage
 \subsection{Exercises}
@@ -709,6 +747,10 @@ This operation is used both for \textbf{encryption} and \textbf{decryption}. Fir
 
     \item Generate two distinct prime numbers, $p=11$ and $q=13$. 
     
-    Compute possible $PK, SK, EPK(x), DSK(y)$ with $x=2$. Solution on slide 31-32 of L12.
+    Compute possible $PK, SK, EPK(x), DSK(y)$ with $x=2$. Solution on slide 31-32 of L12;
+
+    \item Perform encryption and decryption using RSA cipher for the following: $p = 17$, $q = 2$, $b = 3$, $x = 2$. Use Euler's theorem to compute $a$. Solution on slide 14-15 of L15;
+
+    \item Try to compute $2^{13}$ where $13 = 1101$ and $x = 2$. Solution on slide 23 of L15;
 
 \end{enumerate}

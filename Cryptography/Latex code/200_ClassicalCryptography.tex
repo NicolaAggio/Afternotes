@@ -98,7 +98,7 @@ In this case:
     \item The key is 3.
 \end{enumerate}
 
-\underline{Example}: we want to decrypt BHV BRX PDGH LW, and we obtain YES YOU MADE IT.
+\example{We want to decrypt BHV BRX PDGH LW, and we obtain YES YOU MADE IT.}
 
 \begin{figure}[h!]
         \centering
@@ -274,11 +274,7 @@ $$
 
 Intuitively, the index of coincidence measures the \textbf{probability} that \textbf{two letters}, chosen at \textbf{random} from the text $x$, are the \textbf{same}. Indeed, the index is computed by multiplying the probability that the first letter is the $i$-th ($\frac{f_i}{n}$) and the probability that the second letter is the $i$-th ($\frac{f_i - 1}{n-1}$): in this case we subtract 1 since the first letter has been already fixed).
 
-\underline{Example}: we compute the index of coincidence of the text "the index of coincidence". We have that:
-
-$$
-\frac{\text{c}(3 * 2) + \text{d}(2 * 1) + \text{e}(4 * 3) + \text{f}(1 * 0) + \text{h}(1 * 1) + ...}{21 * 20} = 0.0809
-$$
+\example{We compute the index of coincidence of the text "the index of coincidence". We have that:$$\frac{\text{c}(3 * 2) + \text{d}(2 * 1) + \text{e}(4 * 3) + \text{f}(1 * 0) + \text{h}(1 * 1) + ...}{21 * 20} = 0.0809$$}
 
 If we consider the random text "bmqvszfpjtcsswgwvjlio", the index has value $0.0286$: as we can see, the index of coincidence of a random sentence is smaller that the one of a normal sentence. 
 
@@ -379,76 +375,7 @@ Formally, ${\cal P} = {\cal C} = \mathbb{Z}_{26}^m$, while ${\cal K} = \{ K \ | 
     \item $D_k (y_1, .., y_m) = (y_1, .., y_m) K^{-1} \mod 26$, i.e. we multiply the encrypted message and the inverse of the matrix, modulo 26.
 \end{itemize}
 
-\underline{Example}: let us assume $M = \text{message } = (x_1, x_2) = (5,9)$, and $
-K = \begin{bmatrix}
-5 & 11 \\
-8 & 3 
-\end{bmatrix}
-$
-
-To \textbf{encrypt} $M$, we have to:
-
-\begin{itemize}
-    \item Take $M = (x_1, .., x_m)$ and $K$ which is a \textbf{matrix};
-    \item Compute $(x_1,...,x_m) K \mod 26$.
-\end{itemize}
-
-Thus, $E_k (5,9) = (5,9) * \begin{bmatrix}
-5 & 11 \\
-8 & 3 
-\end{bmatrix} \mod 26 = (25 + 72, 55 + 27) \mod 26 = (19,4)$
-
-To \textbf{decrypt} $M$, we have to:
-
-\begin{itemize}
-    \item Compute the \textbf{inverse} of $K$, i.e., $K^{-1}$ ($K$ is invertible);
-    \item Compute $(y_1, .., y_m) K^{-1} \mod 26$.
-\end{itemize}
-
-The \textbf{inverse} of $K$ is computed as:
-
-$$
-K^{-1} = \text{det}^{-1}(K) \begin{bmatrix}
-3 & -11 \\
--8 & 5 
-\end{bmatrix} \mod 26 = \text{det}^{-1} (K) \begin{bmatrix}
-3 & 15 \\
-18 & 5 
-\end{bmatrix} \mod 26
-$$
-
-Now,
-
-$$
-\text{det}(K) = (15 - 88) \mod 26 = 5
-$$
-
-, and to compute $\text{det}^{-1} (K)$ (i.e. the inverse mod 26 of 5) we need to find a number in the interval [0,25] that multiplied by 5 mod 26 gives 1. In this case the number is 21 ($5 * 21 \mod 26 = 1$). Thus, $\text{det}^{-1} (K) = 21$. Notice that it is not always the case that the multiplicative inverse modulo exists. We will discuss this more in detail when introducing public key cryptography and RSA. We now have to solve:
-
-$$
-K^{-1} = \text{det}^{-1} (K) \begin{bmatrix}
-3 & 15 \\
-18 & 5 
-\end{bmatrix} \mod 26 = 21 \begin{bmatrix}
-3 & 15 \\
-18 & 5 
-\end{bmatrix} \mod 26 = \begin{bmatrix}
-63 & 315 \\
-378 & 105 
-\end{bmatrix} \mod 26 = \begin{bmatrix}
-11 & 3 \\
-14 & 1 
-\end{bmatrix}
-$$
-
-Thus, 
-
-$$
-D_k(19,4) = (19,4) * \begin{bmatrix}
-11 & 3 \\
-14 & 1 
-\end{bmatrix} \mod 26 = (265, 62) \mod 26 = (5,9)
-$$
+\example{Let us assume $M = \text{message } = (x_1, x_2) = (5,9)$, and $ K = \begin{bmatrix} 5 & 11 \\8 & 3  \end{bmatrix}$. \\ To \textbf{encrypt} $M$, we have to: \begin{itemize} \item Take $M = (x_1, .., x_m)$ and $K$ which is a \textbf{matrix}; \item Compute $(x_1,...,x_m) K \mod 26$. \end{itemize} Thus, $E_k (5,9) = (5,9) * \begin{bmatrix} 5 & 11 \\ 8 & 3  \end{bmatrix} \mod 26 = (25 + 72, 55 + 27) \mod 26 = (19,4)$. \\ To \textbf{decrypt} $M$, we have to: \begin{itemize} \item Compute the \textbf{inverse} of $K$, i.e., $K^{-1}$ ($K$ is invertible); \item Compute $(y_1, .., y_m) K^{-1} \mod 26$. \end{itemize} The \textbf{inverse} of $K$ is computed as: $$ K^{-1} = \text{det}^{-1}(K) \begin{bmatrix} 3 & -11 \\ -8 & 5  \end{bmatrix} \mod 26 = \text{det}^{-1} (K) \begin{bmatrix} 3 & 15 \\ 8 & 5  \end{bmatrix} \mod 26 $$ Now, $$ \text{det}(K) = (15 - 88) \mod 26 = 5 $$, and to compute $\text{det}^{-1} (K)$ (i.e. the inverse mod 26 of 5) we need to find a number in the interval [0,25] that multiplied by 5 mod 26 gives 1. In this case the number is 21 ($5 * 21 \mod 26 = 1$). Thus, $\text{det}^{-1} (K) = 21$. Notice that it is not always the case that the multiplicative inverse modulo exists. We will discuss this more in detail when introducing public key cryptography and RSA. We now have to solve: $$ K^{-1} = \text{det}^{-1} (K) \begin{bmatrix} 3 & 15 \\ 18 & 5  \end{bmatrix} \mod 26 = 21 \begin{bmatrix} 3 & 15 \\ 18 & 5  \end{bmatrix} \mod 26 = \begin{bmatrix} 63 & 315 \\ 378 & 105  \end{bmatrix} \mod 26 = \begin{bmatrix} 11 & 3 \\ 14 & 1  \end{bmatrix} $$ Thus, $$ D_k(19,4) = (19,4) * \begin{bmatrix} 11 & 3 \\ 14 & 1 \end{bmatrix} \mod 26 = (265, 62) \mod 26 = (5,9)$$}
 
 Assume, now, that the \textbf{attacker} knows (at least) $m$ \textbf{pairs} of plaintexts/ciphertexts, where $m$ is the block length, and his goal is to \textbf{find} the relative $x$ or $k$ given $y$. We know that:
 
@@ -484,35 +411,7 @@ $$
 
 The \textbf{Hill cipher} is a \textbf{linear transformation of a plaintext block} into a \textbf{cipher block}. The above attack shows that this kind of \textbf{transformation} is \textbf{easy to break} if enough \textbf{pairs} of \textbf{plaintexts} and \textbf{ciphertexts} are \textbf{known}. \textbf{Modern ciphers}, in fact, always contain a \textbf{non-linear component} to prevent this kind of attacks.
 
-\underline{Example}: assume that the attacker has the pairs $(5,9) \xrightarrow{} (19,4)$ and $(2,5) \xrightarrow{}(24,11)$, and $m = 2$. How can we find $K$? Firstly, we need to compute $X^{-1}$: if this matrix exists, we can derive $K$ from the formula above.
-
-\begin{equation*}
-    \begin{align*}
-        X^{-1} &= \text{det}(X)^{-1} \begin{bmatrix}
-5 & -9 \\ -2 & 5 
-\end{bmatrix} \mod 26 \\ &= \text{det}(X)^{-1} \begin{bmatrix}
-5 & 17 \\
-24 & 5 
-\end{bmatrix} \mod 26 \\ &= 15  \begin{bmatrix}
-5 & 17 \\
-24 & 5 
-\end{bmatrix} \mod 26 \\ &= \begin{bmatrix}
-23 & 21 \\
-22 & 23 
-\end{bmatrix}      
-    \end{align*}
-\end{equation*}
-
-Then, $K = X^{-1}Y \mod 26 = \begin{bmatrix}
-23 & 21 \\
-22 & 23 
-\end{bmatrix} \begin{bmatrix}
-19 & 4 \\
-24 & 11 
-\end{bmatrix} \mod 26 = \begin{bmatrix}
-5 & 11 \\
-8 & 3 
-\end{bmatrix}$
+\example{Assume that the attacker has the pairs $(5,9) \xrightarrow{} (19,4)$ and $(2,5) \xrightarrow{}(24,11)$, and $m = 2$. How can we find $K$? Firstly, we need to compute $X^{-1}$: if this matrix exists, we can derive $K$ from the formula above. \begin{equation*} \begin{align*} X^{-1} &= \text{det}(X)^{-1} \begin{bmatrix} 5 & -9 \\ -2 & 5  \end{bmatrix} \mod 26 \\ &= \text{det}(X)^{-1} \begin{bmatrix} 5 & 17 \\ 24 & 5  \end{bmatrix} \mod 26 \\ &= 15  \begin{bmatrix} 5 & 17 \\ 24 & 5  \end{bmatrix} \mod 26 \\ &= \begin{bmatrix} 23 & 21 \\ 22 & 23  \end{bmatrix}     \end{align*} \end{equation*} Then, $K = X^{-1}Y \mod 26 = \begin{bmatrix} 23 & 21 \\ 22 & 23  \end{bmatrix} \begin{bmatrix} 19 & 4 \\ 24 & 11 \end{bmatrix} \mod 26 = \begin{bmatrix} 5 & 11 \\ 8 & 3 \end{bmatrix}$}
 
 \subsection{Euclidean algorithm}
 We now consider an \textbf{algorithm} for computing in an \textbf{efficient} way the operation of \textit{inverse modulo $n$}. We begin by introducing the \textbf{Euclidean algorithm}, which is used to computed $\text{gcd}(c,d)$ represented in Picture \ref{eu1}.
@@ -526,7 +425,7 @@ We now consider an \textbf{algorithm} for computing in an \textbf{efficient} way
 
 In this case, the idea is that, to compute $\text{gcd}(c,d)$, when $d \neq 0$, we can compute $\text{gcd}(d,c \mod d)$, since it can be easy seen that they're the same.
 
-\underline{Example}: $\text{gcd}(5,15) = 5$
+\example{$\text{gcd}(5,15) = 5$}.
 
 This algorithm terminates in $O(k^3)$, given that the \textbf{number of iterations} is $O(k)$. This latter fact can be proved by observing that every 2 steps we at least halve the value $d$. Assume by contradiction that after one step this is not true, i.e., $c \mod d > \frac{d}{2}$. Next step will compute $d \mod (c \mod d) = d - (c \mod d) < \frac{d}{2}$ giving the thesis. We know that halving leads to a logarithmic complexity, i.e., linear with respect to the number of bits $k$.
 
@@ -544,7 +443,7 @@ $$
 
 , which represents the operation $c \mod d$.
 
-\underline{Example}: $12 \mod 5 = 2$, $q = \frac{12}{5}$ and $\text{tmp} = 12 - 2*5 = 2$.
+\example{$12 \mod 5 = 2$, $q = \frac{12}{5}$ and $\text{tmp} = 12 - 2*5 = 2$.}
 
 We add two extra variables $e$ and $f$ and we save the initial value of $d$ in $d_0$, as follows:
 
@@ -555,7 +454,7 @@ We add two extra variables $e$ and $f$ and we save the initial value of $d$ in $
         \caption{Extended euclidean algorithm}
 \end{figure}
 
-\underline{Example}: the inverse between 5 and 17 can be computed using $\text{EuclidExt}(5,17) = 7$.
+\example{The inverse between 5 and 17 can be computed using $\text{EuclidExt}(5,17) = 7$.}
 
 \subsection{Stream ciphers}
 So far, we have illustrated cryptosystems that “reuse” the same key to encrypt letters or blocks of the plaintext. This is usually referred to as \textbf{block ciphers}.
@@ -629,7 +528,7 @@ We give a simple example of a cipher of this class, called \textbf{Autokey}. We 
         \caption{Autokey cipher}
 \end{figure}
 
-\underline{Example}: consider the autokey cipher, and assume that the plaintext is the word "networksecurity", what is the encryption using $k = 5$ (recall: $E_z(x) = x+z \mod 26$)? The corresponding numbers are 13, 4, 19, 22, 14, 17, 10, 18, 4, 2, 20, 17, 8, 19, 24, so the encryption is $z_1 = 5$, $z_2 = x_1 = 13$, $z_3 = x_2 = 4$ etc.., so the result numbers are 18, 17, 23, 15, 10, 5, 1, 2, 22, 6, 22, 11, 25, 1, 17, and the corresponding ciphertext is SRXPKFBCWGWLZBR. For the encryption, we have that $D_z(y) = y-z \mod 26$, so we can use $k = 5$ to find the first letter $x_1$ of the plaintext: $x_1 = (18-5) \mod 26 = 13$. Then, we can use $x_1$ as a key to find $x_2$ : $x_2 = (17-13) \mod 26 = 4$ etc..
+\example{Consider the autokey cipher, and assume that the plaintext is the word "networksecurity", what is the encryption using $k = 5$ (recall: $E_z(x) = x+z \mod 26$)? The corresponding numbers are 13, 4, 19, 22, 14, 17, 10, 18, 4, 2, 20, 17, 8, 19, 24, so the encryption is $z_1 = 5$, $z_2 = x_1 = 13$, $z_3 = x_2 = 4$ etc.., so the result numbers are 18, 17, 23, 15, 10, 5, 1, 2, 22, 6, 22, 11, 25, 1, 17, and the corresponding ciphertext is SRXPKFBCWGWLZBR. For the encryption, we have that $D_z(y) = y-z \mod 26$, so we can use $k = 5$ to find the first letter $x_1$ of the plaintext: $x_1 = (18-5) \mod 26 = 13$. Then, we can use $x_1$ as a key to find $x_2$ : $x_2 = (17-13) \mod 26 = 4$ etc..}
 
 Notice that the \textbf{autokey} cipher is \textbf{insecure}, since there are only 26 different keys.
 
@@ -655,41 +554,16 @@ $$
 
 Given a \textbf{ciphertext} $y$ we look for \textbf{all the keys} that \textbf{can give} such a \textbf{ciphertext} from some \textbf{plaintext} $x$. We then sum the probability of all such keys times the probability of the corresponding plaintext.
 
-\underline{Example}: consider the following toy-cipher with $P = \{a,b\}$, $K = \{k_1,k_2\}$, $C = \{1,2,3\}$. The encryption is defined by the following table:
-
-\begin{table}[h!]
-    \centering
-    \begin{tabular}{c|c|c}
-        $E$ & $a$ & $b$ \\
-        \hline 
-        $k_1$ & 1 & 2 \\
-        $k_2$ & 2 & 3
-    \end{tabular}
-    \caption{Caption}
-    \label{tab:my_label}
-\end{table}
-
-We now let $p_p(a) = 3/4$, $p_p(b) = 1/4$, $p_k(k_1) = p_k(k_2) = 1/2$. Let us now compute $p_c(1)$:
-
-$$
-p_c(y) = \sum_{k \in \mathcal{K}, \exists x . E_k (x) = y} p_{k} (k) p_p(D_k(y))
-$$
-
-Thus, $p_c(1) = p_k(k_1) p_p(D_k(1)) = 1/2 * 3/4 = 3/8$.
+\example{Consider the following toy-cipher with $P = \{a,b\}$, $K = \{k_1,k_2\}$, $C = \{1,2,3\}$. The encryption is defined by the following table: \begin{table}[h!] \centering\begin{tabular}{c|c|c}$E$ & $a$ & $b$ \\\hline $k_1$ & 1 & 2 \\$k_2$ & 2 & 3\end{tabular}\caption{Caption}\label{tab:my_label}\end{table} We now let $p_p(a) = 3/4$, $p_p(b) = 1/4$, $p_k(k_1) = p_k(k_2) = 1/2$. Let us now compute $p_c(1)$: $$ p_c(y) = \sum_{k \in \mathcal{K}, \exists x . E_k (x) = y} p_{k} (k) p_p(D_k(y)) $$ Thus, $p_c(1) = p_k(k_1) p_p(D_k(1)) = 1/2 * 3/4 = 3/8$.}
 
 \subsubsection{Conditional probability}
-
 We can also compute the \textbf{conditional probability} of a \textbf{ciphertext} $y$ with respect to a \textbf{plaintext} $x$. This gives a measure of how likely is a certain ciphertext once we fix a plaintext.
 
 $$p_{\cal C}(y|x) = \displaystyle \sum_{k \in {\cal K}, E_k(x)=y} {p_{\cal K}(k) }$$
 
 It is simply the sum of the probability of all keys giving $y$ from $x$.
 
-\underline{Example}: the conditional probability of ciphertext 1 w.r.t. the two plaintexts $a$ and $b$ is:
-
-$$p_{\cal C}(1|a) = \displaystyle \sum_{k \in {\cal K}, E_k(x)=y} {p_{\cal K}(k) } = p_{\cal K}(k1) = 1/2$$
-$$p_{\cal C}(1|b) = \displaystyle \sum_{k \in {\cal K}, E_k(x)=y} {p_{\cal K}(k) } =0$$
-Notice, in particular, that 1 can never be obtained from $b$.
+\example{The conditional probability of ciphertext 1 w.r.t. the two plaintexts $a$ and $b$ is: $$p_{\cal C}(1|a) = \displaystyle \sum_{k \in {\cal K}, E_k(x)=y} {p_{\cal K}(k) } = p_{\cal K}(k1) = 1/2$$ $$p_{\cal C}(1|b) = \displaystyle \sum_{k \in {\cal K}, E_k(x)=y} {p_{\cal K}(k) } =0$$ Notice, in particular, that 1 can never be obtained from $b$.}
 
 Once we have these values, the idea is to compute the \textbf{conditional probability} of a \textbf{plaintext} with respect to a \textbf{ciphertext}. This is very related to the \textbf{security} of the cipher, since it is a measure of how likely is a plaintext once a ciphertext is observed (which is what the attacker is usually interested to know). Interestingly, this conditional probability can be computed through that \textbf{Bayes theorem}:
 
@@ -697,19 +571,12 @@ $$p_{\cal P}(x|y) =\displaystyle \frac{p_{\cal P}(x)p_{\cal C}(y|x)}{p_{\cal C}(
 
 This conditional probability is quite useful when we'll prove that a cipher is perfect if $\forall x,y$, $p_{\cal P}(x|y) = p_{\cal P}(x)$.
 
-\underline{Example}: we can now compute the probabilities of plaintexts a and b with respect to ciphertext 1. We obtain:
-
-$$p_{\cal P}(a|1) = \displaystyle \frac{p_{\cal P}(a)p_{\cal C}(1|a)}{p_{\cal C}(1)} = \displaystyle \frac{3/4 \times 1/2}{3/8} = 1$$
-
-$$p_{\cal P}(b|1) = \displaystyle \frac{1/4 \times 0}{3/8} = 0$$
-
-Thus, when observing 1 we are sure it is plaintext $a$ and that it's not plaintext $b$, meaning that this cipher is completely insecure. The same happen if we compute the probabilities of $a$ and $b$ when observing 3 (in this case we're sure that it is plaintext $b$ and not $a$, i.e. $p_{\cal P}(b|3) = 1$ and $p_{\cal P}(a|3) = 0$). For ciphertext 2 we have an interesting, less extreme, situation. We obtain, in fact, $p_{\cal P}(a|2) = 3/4$ and $p_{\cal P}(b|2) = 1/4$, thus $a$ is more likely than $b$ when 2 is observed. This might suggest that even for this ciphertext the attacker gains information (even if partial) about the plaintext. However, it is important to notice that $p_{\cal P}(a) = 3/4, p_{\cal P}(b) = 1/4$, i.e., that the probability of the two plaintexts, when 2 is observed, is exactly the one they occur in a message. In fact, observing 3 does not change anything.
+\example{We can now compute the probabilities of plaintexts $a$ and $b$ with respect to ciphertext 1. We obtain: $$p_{\cal P}(a|1) = \displaystyle \frac{p_{\cal P}(a)p_{\cal C}(1|a)}{p_{\cal C}(1)} = \displaystyle \frac{3/4 \times 1/2}{3/8} = 1$$ $$p_{\cal P}(b|1) = \displaystyle \frac{1/4 \times 0}{3/8} = 0$$ Thus, when observing 1 we are sure it is plaintext $a$ and that it's not plaintext $b$, meaning that this cipher is completely insecure. The same happen if we compute the probabilities of $a$ and $b$ when observing 3 (in this case we're sure that it is plaintext $b$ and not $a$, i.e. $p_{\cal P}(b|3) = 1$ and $p_{\cal P}(a|3) = 0$). For ciphertext 2 we have an interesting, less extreme, situation. We obtain, in fact, $p_{\cal P}(a|2) = 3/4$ and $p_{\cal P}(b|2) = 1/4$, thus $a$ is more likely than $b$ when 2 is observed. This might suggest that even for this ciphertext the attacker gains information (even if partial) about the plaintext. However, it is important to notice that $p_{\cal P}(a) = 3/4, p_{\cal P}(b) = 1/4$, i.e., that the probability of the two plaintexts, when 2 is observed, is exactly the one they occur in a message. In fact, observing 3 does not change anything.}
 
 \subsubsection{Formal definition}
-
 We now give the definition of perfect cipher:
 
-\textbf{Definition (Perfect cipher)}. A cipher is \textbf{perfect} if and only if $p_{\cal P}(x|y)=p_{\cal P}(x)$ for all $x \in {\cal P}$ and $y \in {\cal C}$.
+\definition{Perfect cipher}{A cipher is \textbf{perfect} if and only if $p_{\cal P}(x|y)=p_{\cal P}(x)$ for all $x \in {\cal P}$ and $y \in {\cal C}$.}
 
 Intuitively, a cipher is perfect if \textbf{observing} a \textbf{ciphertext} $y$ gives \textbf{no information} about any of the possible \textbf{plaintexts} $x$. 
 
@@ -763,7 +630,7 @@ which gives the thesis.
 We have seen that if we change key any time we encrypt a letter, a cipher as simple as the shift cipher becomes perfect, i.e., unbreakable. We now present two general results that, in fact, show that this strong requirement is indeed necessary and we cannot hope to develop perfect ciphers without it.
 
 \subsubsection{Important theorems}
-\textbf{Theorem 1.} Let $p_{\cal C}(y)>0$ for all $y$. A cipher is perfect \textbf{only if} $|{\cal K}| \geq |{\cal P}|$.
+\theoremNum{1}{Let $p_{\cal C}(y)>0$ for all $y$. A cipher is perfect \textbf{only if} $|{\cal K}| \geq |{\cal P}|$.}
 
 The theorem states a \textbf{necessary condition} of a cipher to be perfect: it must be that the number of keys is at least the same as the number of plaintexts. In other words:
 
@@ -779,20 +646,15 @@ $$
 
 Thus, besides the formal definition, we have a very easy way of proving that the cipher is not perfect
 
-\textbf{Proof}: we first notice that by Bayes theorem we have that a cipher is perfect if an only if $p_{\cal C}(y|x)=p_{\cal C}(y)$ for all $x \in {\cal P}$ and $y \in {\cal C}$. If we fix $x$ we obtain that for each $y$, $p_{\cal C}(y|x)=p_{\cal C}(y)>0$ meaning that there exists at least one key $k$ such that $E_k(x) = y$ (otherwise we would have $p_{\cal C}(y|x)=0$). Notice also that all such keys are different since $E_k$ is a function and we have fixed $x$. In fact, $x$ cannot be mapped to two different ciphertexts by the same key (otherwise $E_k$ would not be a function). Thus we have at least one key for each ciphertext meaning that $|{\cal K}| \geq |{\cal C}|$. Since, for any cipher, $E_k$ injects the set of plaintexts into the set of ciphertext, we also have $|{\cal C}| \geq |{\cal P}|$, which gives the thesis $|{\cal K}| \geq |{\cal P}|$.
+\textit{Proof}: we first notice that by Bayes theorem we have that a cipher is perfect if an only if $p_{\cal C}(y|x)=p_{\cal C}(y)$ for all $x \in {\cal P}$ and $y \in {\cal C}$. If we fix $x$ we obtain that for each $y$, $p_{\cal C}(y|x)=p_{\cal C}(y)>0$ meaning that there exists at least one key $k$ such that $E_k(x) = y$ (otherwise we would have $p_{\cal C}(y|x)=0$). Notice also that all such keys are different since $E_k$ is a function and we have fixed $x$. In fact, $x$ cannot be mapped to two different ciphertexts by the same key (otherwise $E_k$ would not be a function). Thus we have at least one key for each ciphertext meaning that $|{\cal K}| \geq |{\cal C}|$. Since, for any cipher, $E_k$ injects the set of plaintexts into the set of ciphertext, we also have $|{\cal C}| \geq |{\cal P}|$, which gives the thesis $|{\cal K}| \geq |{\cal P}|$.
 
-\textbf{Theorem 2.} Let $|{\cal P}| = |{\cal C}| = |{\cal K}|$. A cipher is perfect \textbf{if and only if}:
-
-\begin{enumerate}
-    \item $p_{\cal K}(k) = \frac{1}{|{\cal K}|} \quad \forall k \in {\cal K}$;
-    \item For each $x \in {\cal P}$ and $y \in {\cal C}$ there exists exactly one key $k$ such that $E_k(x)=y$.
-\end{enumerate}
+\theoremNum{2}{Let $|{\cal P}| = |{\cal C}| = |{\cal K}|$. A cipher is perfect \textbf{if and only if}: \begin{enumerate}\item $p_{\cal K}(k) = \frac{1}{|{\cal K}|} \quad \forall k \in {\cal K}$;\item For each $x \in {\cal P}$ and $y \in {\cal C}$ there exists exactly one key $k$ such that $E_k(x)=y$.\end{enumerate}}
 
 Intuitively, the theorem states that for a cipher to be \textbf{perfect} (under the hypothesis that the size of the set of plaintexts, ciphertexts and key is the same) \textbf{keys} should be \textbf{picked at random} for any \textbf{encryption} and each plaintext is mapped into each ciphertext through a unique key.
 
 Conversely, in order to show that a cipher is not perfect, we need to show that either condition (1) or (2) does not hold.
 
-\textbf{Proof}: we prove that a perfect cipher implies the two above conditions. We leave the other side of the implication as an exercise. In Theorem 1 we have seen that, for perfect ciphers, if we fix $x$ we obtain that for each $y$ that $p_{\cal C}(y|x)=p_{\cal C}(y)>0$ meaning that there exists at least one key $k$ such that $E_k(x) = y$ and all of these keys are different. Thus we have $|{\cal K}| \geq |{\cal C}|$. In this theorem we have assumed $|{\cal K}| = |{\cal C}|$, meaning that all of these keys k are unique (otherwise we would have $|{\cal K}| > |{\cal C}|$). Since this holds for each $x$ and $y$ we have proved condition 2. To prove condition 1, it is enough to notice that $p_{\cal C}(y|x)=p_{\cal K}(k)$, i.e., the probability of $y$ given $x$ is equal to the probability of the unique key $k$ that encrypts $x$ into $y$. Thus, $p_{\cal K}(k) = p_{\cal C}(y|x)=p_{\cal C}(y)$ (only one key $k$ maps $x$ into $y$). If we fix $y$ and we consider all possible plaintexts $x$ we obtain all possible keys $k$ and for all of them it holds $p_{\cal K}(k) =p_{\cal C}(y)$, with $p_{\cal C}(y)$ constant. Given that the sum of the probability of all keys must be 1, we obtain $p_{\cal K}(k) = \frac{1}{|{\cal K}|}$ which proves condition 1.
+\textit{Proof}: we prove that a perfect cipher implies the two above conditions. We leave the other side of the implication as an exercise. In Theorem 1 we have seen that, for perfect ciphers, if we fix $x$ we obtain that for each $y$ that $p_{\cal C}(y|x)=p_{\cal C}(y)>0$ meaning that there exists at least one key $k$ such that $E_k(x) = y$ and all of these keys are different. Thus we have $|{\cal K}| \geq |{\cal C}|$. In this theorem we have assumed $|{\cal K}| = |{\cal C}|$, meaning that all of these keys k are unique (otherwise we would have $|{\cal K}| > |{\cal C}|$). Since this holds for each $x$ and $y$ we have proved condition 2. To prove condition 1, it is enough to notice that $p_{\cal C}(y|x)=p_{\cal K}(k)$, i.e., the probability of $y$ given $x$ is equal to the probability of the unique key $k$ that encrypts $x$ into $y$. Thus, $p_{\cal K}(k) = p_{\cal C}(y|x)=p_{\cal C}(y)$ (only one key $k$ maps $x$ into $y$). If we fix $y$ and we consider all possible plaintexts $x$ we obtain all possible keys $k$ and for all of them it holds $p_{\cal K}(k) =p_{\cal C}(y)$, with $p_{\cal C}(y)$ constant. Given that the sum of the probability of all keys must be 1, we obtain $p_{\cal K}(k) = \frac{1}{|{\cal K}|}$ which proves condition 1.
 
 \subsubsection{The one-time-pad}
 We conclude giving a famous \textbf{example of a perfect cipher} that has been used in practice. This cipher has been used for the telegraph and is a binary variant of Vigenére with keys picked at random. More precisely we have ${\cal P} = {\cal C}= {\cal K} = \mathbb{Z}_2^d$ (i.e. plaintext, ciphertext and keys can be either 0 or 1, i.e. binary) with $p_{\cal K}(k) = \frac{1}{|{\cal K}|} = \frac{1}{2^d}$ for all $k \in {\cal K}$. Encryption is defined as $E_{(k_1, \ldots, k_d)}(x_1,\ldots,x_d) = (x_1 \oplus k_1, \ldots, x_d \oplus k_d)$ where $\oplus$ is the bitwise XOR operation. We recall that the XOR operation is defined as follows: 

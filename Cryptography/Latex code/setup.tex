@@ -36,6 +36,30 @@
 
 \newcommand{\Z}{\mathbb{Z}}
 
+\newcommand{\definition}[2]{
+\vspace{3mm} \textbf{Definition (#1).} \textit{#2} \vspace{3mm}
+}
+
+\newcommand{\example}[1]{
+\vspace{3mm} \textbf{Example.} \textit{#1} \vspace{3mm}
+}
+
+\newcommand{\theorem}[1]{
+\vspace{3mm} \textbf{Theorem.} \textit{#1} \vspace{1mm}
+}
+
+\newcommand{\theoremNum}[2]{
+\vspace{3mm} \textbf{Theorem #1.} \textit{#2} \vspace{1mm}
+}
+
+\newcommand{\theoremName}[2]{
+\vspace{3mm} \textbf{Theorem (#1).} \textit{#2} \vspace{1mm}
+}
+
+\newcommand{\lemma}[2]{
+\vspace{3mm} \textbf{Lemma #1.} \textit{#2} \vspace{1mm}
+}
+
 \pagenumbering{Alph}
 \begin{titlepage}
 	\begin{center}
@@ -105,8 +129,6 @@
 
 \rfoot{\thepage\ of \pageref{LastPage}}
 
-
-
 \definecolor{mygreen}{rgb}{0,0.6,0}
 \definecolor{mygray}{rgb}{0.5,0.5,0.5}
 \definecolor{mymauve}{rgb}{0.58,0,0.82}
@@ -139,9 +161,6 @@
 	title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
 }
 
-
-
-
 %Theorem definitions
 \theoremstyle{plain}
 \newtheorem{thm}{Theorem}[section] % reset theorem numbering for each chapter
@@ -162,7 +181,6 @@
 	\subsection{Warnings}
 	\begin{defn}Here is a new definition.\end{defn}
 }
-
 
 \NewDocumentCommand{\ceil}{s O{} m}{%
 	\IfBooleanTF{#1} % starred
