@@ -617,6 +617,7 @@ The previous equations show that the \textbf{transformed target} $a^{-1} y \mod 
 
 \example{Let $(1,2,5,12)$ be a super-increasing problem. We let $p=23$ and $a=6$. We have that $a^{-1} = 4$, since $6 \cdot 4 \mod 23 = 1$. If we compute $s_i \cdot a \mod p$ we obtain $(6,12,7,3)$ which is not super-increasing. Consider now the plaintext $(1,0,0,1)$. We have that $E_{PK}(1,0,0,1) = 6 + 3 = 9$. Now to decrypt we have to compute $a^{-1} \cdot 9 \mod p = 36 \mod 23 = 13$. We finally solve $(1,2,5,12)$ with target 13, which gives the initial plaintext $(1,0,0,1)$.}
 
+\newpage
 \subsection{The RSA cipher}
 RSA is the most famous \textbf{asymmetric-key cipher}. It is based on a few technical results from number theory that we recall below.
 
@@ -636,7 +637,7 @@ We prove this result for $n = pq$ with $p\neq q$ primes (i.e. we want to prove t
 
 \example{Consider $14 = 2 \cdot 7$. Then, $\phi(14) = 13 - 6 - 1 = 6$, where 6 is the number of multiples of 2 up to 14, while 1 is the only multiple of 7 up to 14.}
 
-\theoremName{Euler theorem}{Let $a$ and $n$ be coprime, i.e., $\text{gcd}(a,n)=1$. Then $a^{\Phi(n)} \mod n = 1$.}
+\theoremName{Euler theorem}{Let $a$ and $n$ be coprime, i.e., $\text{gcd}(a,n)=1$. Then $$a^{\Phi(n)} \mod n = 1$$}
 
 \textit{Proof.} Let $S = (s_1, \ldots, s_{\Phi(n)})$ be the $\Phi(n)$ numbers less than $n$ and coprime with $n$. We consider $R = (a s_1 \mod n, \ldots, a s_{\Phi(n)} \mod n)$ and we show that $S = R$. We need a few lemmas:
 
@@ -644,7 +645,7 @@ We prove this result for $n = pq$ with $p\neq q$ primes (i.e. we want to prove t
 
 \textit{Proof.} This can be easily proved by considering that all divisors of $xy$ are products of divisors of $x$ or $y$. Thus a common divisor of $xy$ and $n$ must also divide $x$ and/or $y$. Thus, $\text{gcd}(xy,n)>1$ would imply that $\text{gcd}(x,n)>1$ or $\text{gcd}(y,n)>1$ giving a contradiction.
 
-\example{Let $x = 7$, $y = 3$, $p = 3$ and $q = 11$. Then $n = 55$, $x$ and $y$ are coprime to 55, what about $xy = 21$? We have that $\text{gcd}(21,55) = \text{gcd}(7*3, 5*11) = 1$}.
+\example{Let $x = 7$, $y = 3$, $p = 5$ and $q = 11$. Then $n = 55$, $x$ and $y$ are coprime to 55, what about $xy = 21$? We have that $\text{gcd}(21,55) = \text{gcd}(7*3, 5*11) = 1$}.
 
 \lemma{2}{Let $x$ be coprime to $n$. Then $x \mod n$ is coprime to $n$.}
 
@@ -660,7 +661,7 @@ We prove this result for $n = pq$ with $p\neq q$ primes (i.e. we want to prove t
 
 \example{Find $a$ coprime to $n$, and find $x$ and $y$ s.t. $ax \mod n = ay \mod n$. Let $a = 5$, which is coprime to 6, then $5x \mod 6 = 5y \mod 6$, from which we derive $x = 1$ and $y = 7$. That is $1 \mod 5 = 1 = 7 \mod 6$.}
 
-Now, by Lemma 1 and 2 we have that all numbers in set $R$ are coprime to $n$ and smaller than $n$. Since $S$ is the set of all numbers coprime to $n$ and smaller than $n$ we obtain that $R \subseteq S$. Now, consider $a s_i \mod n$ and $a s_j \mod n$ in $R$. Since $a$ is coprime to $n$, by Lemma 3 we obtain that $a s_i \mod n = a s_j \mod n$ implies $s_i \mod n = s_j \mod n$, which give a contradiction. Thus we have that $a s_i \mod n \neq a s_j \mod n$ for all $i$ and $j$. This proves that $R = S$.
+Now, by Lemma 1 and 2 we have that all numbers in set $R$ are coprime to $n$ and smaller than $n$. Since $S$ is the set of all numbers coprime to $n$ and smaller than $n$ we obtain that $R \subseteq S$. Now, consider $a s_i \mod n$ and $a s_j \mod n$ in $R$. Since $a$ is coprime to $n$, by Lemma 3 we obtain that $a s_i \mod n = a s_j \mod n$ implies $s_i \mod n = s_j \mod n$, which gives a contradiction. Thus we have that $a s_i \mod n \neq a s_j \mod n$ for all $i$ and $j$. This proves that $R = S$.
 
 To conclude the proof it is enough to observe that $$\prod_{i=1}^{\Phi(n)}{s_i} = \prod_{i=1}^{\Phi(n)}{a s_i \mod n} = a^{\Phi(n)}\prod_{i=1}^{\Phi(n)}{s_i \mod n}$$ Since all $s_i$ are coprime to $n$, by applying many times Lemma 3 we obtain $1 = a^{\Phi(n)} \mod n$, which is what we wanted to prove.
 
@@ -685,16 +686,15 @@ The \textbf{public key} is $(b,n)$ while the \textbf{private key} (secret trapdo
 
 \subsubsection{Correctness of RSA}
 
-We now show the correctness of the cipher, i.e., that decrypting under the private key $a$ plaintext $x$ encrypted under the public key gives $x$. Notice that, since $b = a^{-1} \mod \phi(n)$, then $ab \mod \Phi(n) = 1$ implies $ab = k\Phi(n) +1$ for some $k$. What we need to prove is that $x^{ab} \mod n = x$. In fact, if this holds we have:
+We now show the correctness of the cipher, i.e., that decrypting under the private key a plaintext $x$ encrypted under the public key gives $x$. Notice that, since $b = a^{-1} \mod \phi(n)$, then $ab \mod \Phi(n) = 1$ implies $ab = k\Phi(n) +1$ for some $k$. What we need to prove is that $x^{ab} \mod n = x$. In fact, if this holds we have:
 
 $$D_{SK}(E_{PK}(x)) = (x^b)^a \mod n = x^{ab} \mod n = x$$
 
-Notice now that $x^{ab} \mod n = x^{k\Phi(n) + 1} \mod n = (x^{\Phi(n)})^k x \mod n$. Thus, in order to prove $x^{ab} \mod n = x$ it is enough to show that $(x^\Phi(n))^k x \mod n = x$. This proof is split into two cases:
+Notice now that $x^{ab} \mod n = x^{k\Phi(n) + 1} \mod n = (x^{\Phi(n)})^k x \mod n$. Thus, in order to prove $x^{ab} \mod n = x$ it is enough to show that $(x^{\Phi(n)})^k x \mod n = x$. This proof is split into two cases:
 
 \begin{itemize}
     \item $gcd(x,n)=1$. In this case we know that Euler theorem holds, and we directly have that $x^{\Phi(n)} \mod n = 1$ which implies $(x^{\Phi(n)})^k \mod n = 1$, giving the thesis;
-    \item $gcd(x,n)>1$. In this case, since $x<n$ we have that either $\text{gcd}(x,n)=p$ or $\text{gcd}(x,n)=q$. Without loss of generality we assume $\text{gcd}(x,n)=p$ (the proof for the other case is identical). We now have $x = jp$ for some $j$ and $\text{gdc}(x,q)=1$. Euler theorem gives $x^{\Phi(q)} \mod q = 1$, which implies $x^{\Phi(q)\Phi(p)} \mod q = x^{\Phi(n)} \mod q = 1$. This implies $(x^{\Phi(n)})^k \mod q = 1$ giving $(x^{\Phi(n)})^k = wq + 1$ for some $w$. We obtain
-\begin{array}{rcl} (x^{\Phi(n)})^k x \mod n &=& (wq + 1) x \mod n\\& =& (wq + 1) jp \mod n\\ &=& wqjp + x \mod n = x \text{ ,since $pq = n$ and $x = jp$}\end{array}. 
+    \item $gcd(x,n)>1$. In this case, since $x<n$ we have that either $\text{gcd}(x,n)=p$ or $\text{gcd}(x,n)=q$. Without loss of generality we assume $\text{gcd}(x,n)=p$ (the proof for the other case is identical). We now have $x = jp$ for some $j$ and $\text{gdc}(x,q)=1$. Euler theorem gives $x^{\Phi(q)} \mod q = 1$, which implies $x^{\Phi(q)\Phi(p)} \mod q = x^{\Phi(n)} \mod q = 1$. This implies $(x^{\Phi(n)})^k \mod q = 1$ giving $(x^{\Phi(n)})^k = wq + 1$ for some $w$. We obtain \begin{array}{rcl} (x^{\Phi(n)})^k x \mod n &=& (wq + 1) x \mod n\\& =& (wq + 1) jp \mod n\\ &=& wqjp + x \mod n = x \text{ ,since $pq = n$ and $x = jp$}\end{array}. 
 \end{itemize}
 
 Thus, $D_{SK}(E_{PK}(x)) = x$ and the RSA cipher is correct.
@@ -713,11 +713,385 @@ There exists a much faster algorithm, known as \textbf{Square-and-Multiply}, tha
 
 For example, 10 is 1010. We start from the most significant bit. At each step we square and, only when we have a 1 we multiply by $x$. A python implementation follows:
 
-\image{img/rsa1}{0.7}{Square-and-Multiply algorithm}
+\image{img/rsa1}{0.75}{Square-and-Multiply algorithm}
 
 \example{We compute $2^{10}$, where $10 = 1010$ and $x = 2$. \\ Initially, we have that $r = 1$, so in the first round we compute $r = 1*1 = 1$, the bit is 1, so we update $r = r*x = 1*2 = 2$. In the second round, $r = 2*2 = 4$, and the bit is 0, so we do not update it. In the third round, $r = 4*4 = 16$ and the bit is 1, thus $r = 16 * 2 = 32$. Finally, in the last round $r = 32*32 = 1024$ and the bit is 0, so the result is $2^{10} = 1024$, which is correct.}
 
 The \textbf{number of steps} in the worst case is $O(k^2)$ for the two multiplications, iterated $k$ times, giving $O(k^3)$. Thus for 1024 bits we can expect about 1 billion steps, which is still efficient on modern machines.
+
+\paragraph{Inverse modulo $\phi(n)$}
+This operation is necessary to compute the private exponent from the public one. Recall that RSA requires $ab \mod \Phi(n) = 1$. To find these two numbers, one technique is to choose $b$ and to compute its multiplicative inverse modulo $\Phi(n)$. This is guaranteed to exist, by the Euler theorem, when $\text{gcd}(b,\Phi(n))=1$. In this particular case, there is also an efficient algorithm to compute the inverse based on the Euclidean algorithm for computing gcd (see the exercises).
+
+\subsubsection{Generating RSA exponents}
+We can thus pick a random \textbf{public exponent} $b$ and compute its \textbf{inverse} modulo $\Phi(n)$. This works if we are lucky and $b$ is coprime to $\Phi(n)$. This happens quite frequently. It can be proved that two random numbers are coprime with probability $\approx 0.6$. Thus iterating this 2-3 times should give a suitable pair of public, private exponents.
+
+In practice, however, it is often the case that the \textbf{public exponent} is a \textbf{fixed constant}, typically the prime number $2^{16} +1 = 65537$. Using a low exponent improves the performance of encryption (recall that each 1 in the exponent requires an extra multiplication). In this case, of course, we have to choose $n$ so that $\Phi(n) = (p-1)(q-1)$ is not a multiple of 65537.
+
+\paragraph{RSA and factorization}
+Notice that knowing $\Phi(n)$ makes it very simple to compute the private exponent. Factoring $n$ into $pq$ allows for computing $\Phi(n) = (p-1)(q-1)$. Thus we now understand that RSA security is based on the \textbf{infeasibility} of \textbf{factoring} the modulus $n$. For this reason we require $n$ to be at least 1024 bits: numbers of this size are still considered impossible to factor in a reasonable time. A size of 2048 is however already suggested for critical applications. Moreover, if we compute $\Phi(n)$ we can easily factor $n$ since we have a system of 2 equations with two variables $p,q$:
+
+$$
+\begin{cases}
+    n = pq \\
+    \phi(n) = (p-1)(q-1)
+\end{cases}
+$$
+
+By solving it we can find $p$ and $q$. We thus have that finding $\Phi(n)$ is at least as difficult as factoring. This gives \textbf{high confidence} of the \textbf{difficulty} of breaking the private exponent by simply computing the inverse modulo $\Phi(n)$. However, there could be other ways to break the cipher. We will discuss this more in detail in the next lessons.
+
+\subsubsection{Primality test}
+We finally see how to \textbf{generate two big prime numbers}. The oldest algorithm for finding prime numbers is due to Eratosthenes and is known as the \textbf{“Sieve of Eratosthenes”}. In order to discover all prime numbers less than or equal $N$ we write all numbers from 2 to $N$. We then start from the smallest (2, initially) that we call $p$ and we remove from the list all of its multiples $2p, 3p, .. $. We iterate the procedure by picking the smallest $p$ survived from previous steps.
+
+\example{Let $N = 10$, and we pick all the numbers from 2 to 10, i.e. $\{2,3,4,5,6,7,8,9,10\}$. Then, starting from 2, we remove 2,4,6,8,10, and we get $\{3,5,7,9\}$. Then, we take 3 and we remove 3 and 9, and we get $\{5,7\}$. Then, we take 5 and we remove 5, and we get $\{7\}$. Finally, we take 7 and we remove 7. Thus, the prime numbers between 2 and 10 are $\{2,3,5,7\}$.}
+
+At the end, the \textbf{remaining numbers} are guaranteed to be \textbf{prime} since they are \textbf{not multiples of any smaller number}. The algorithm can be \textbf{optimized} by \textbf{removing} \textbf{multiples} starting from $p^2$. In fact, any smaller $np$ with $n < p$ would have been removed at a previous step when checking the multiples of $n$. This also implies that we can stop when $p$ is the square root of $N$. A simple python implementation follows.
+
+\image{img/rs2}{0.75}{\textit{Sieve of Eratosthenes} for primality test}
+
+Unfortunately this algorithm takes at least $N$ steps meaning $2^{1024}$ for the smallest RSA modulus.
+
+Instead of generating all the primes we pick them at \textbf{random} and \textbf{test their primality}. There are many \textbf{probabilistic efficient algorithms} for primality test. In 2002, Agrawal, Kayal and Saxena proposed the first deterministic algorithm for primality test in the paper \textit{“PRIMES is in P”}\footnote{https://www.cse.iitk.ac.in/users/manindra/algebra/primality_v6.pdf} published on Annals of Mathematics. This is a very important result but the proposed algorithm is much slower with respect to existing probabilistic ones, as it costs $O(k^6)$ which makes it rather slow for $k > 1024$.
+
+\paragraph{Miller-Rabin test}
+Here we illustrate one of the most famous probabilistic \textbf{primality tests} due to Miller and Rabin. The algorithm is a \textbf{NO-biased Montecarlo}, meaning that it is always \textbf{correct} for the \textbf{NO} answer (the number is not prime) but can be wrong for the YES case (the number is prime). The probability of being wrong, however, is less than a constant $\epsilon = \frac{1}{4}$. This allows for \textbf{iterating} the test until the \textbf{error is small enough}: by running the test $r$ times, the probability that it says YES and the number is not prime is less than $\epsilon^r = \frac{1}{4^r}$, i.e., it \textbf{decreases} \textbf{exponentially} with respect to the \textbf{number of iterations}. For example if we pick $r = 128$ we have an error with probability less than $\frac{1}{4^{128}}$ which is less than brute-forcing a typical symmetric key, and so small to be negligible.
+
+The idea is to exploit this test in order to assess if the random number chosen for RSA is prime or not.
+
+Let us now illustrate the algorithm:
+
+\image{img/rsa3}{0.75}{\textit{Miller-Rabin} test}
+
+\example{If $n = 7$, then we have \begin{itemize} \item $n-1 = 6 = 2^1 * 3$; \item $a = 2$; \item $b = 1$.  \end{itemize} Since $b = 1$, we stop, so we return TRUE.}
+
+\theorem{The Miller-Rabin algorithm is always correct on False answers, i.e. it is NO-biased.}
+
+\textit{Proof.} Assume, by contradiction, that the algorithm returns False but the number $n$ is prime. False is only returned at the last step which means the algorithm ‘survived’ all the if branches. In particular we have that $a^m \mod n \neq 1$. Moreover $a^{2^i m} \mod n \neq n-1$, for $i=0\ldots k-1$. By the assumption that $n$ is prime and by Euler theorem we know that $a^{\Phi(n)} \mod n = a^{n-1} \mod n = a^{2^k m} \mod n = 1$ (notice that $1 < a < n$ and by assumption $n$ is prime, so $a$ and $n$ are coprime). In summary we have:
+
+$$\begin{array}{c@{~~~~~}c@{~~~~~}c@{~~~~~}c@{~~~~~}c@{~~~~~}c}a^m \mod n & a^{2^1m} \mod n & a^{2^2m} \mod n & \ldots & a^{2^{k-1}m} \mod n & a^{2^k m} \mod n \\ \not\,\parallel &\not\,\parallel &\not\,\parallel & & \not\,\parallel &\parallel \\ 1,n-1 & n-1 & n-1 & & n-1 & 1\end{array}$$
+
+It is easy to show that, if $n$ is prime then the only square roots of 1 modulo $n$ are $n-1$ and 1. In fact, $r$ is a square root of 1 if and only if $r^2 \mod n = 1$, i.e., $r^2 = 1 + zn$ for some $z$, meaning that $r^2 - 1 = (r-1)(r+1) = zn$ which implies $\frac{(r-1)(r+1)}{n} = z$. Since $n$ is prime we have that $n$ must divide either $r-1$ or $r+1$ and so $r = -1,1 \mod n$ (in this case $(r-1) = k_1 n$, so $r = k_1 n +1$, or $(r+1) = k_2 n $ etc..). Notice that if $n$ is not prime there might be square roots of 1 different from 1 and $n-1$. For example for $n=8$ we have that $5^2 \mod 8 = 1$ meaning that 5 is a square root of 1 modulo 8.
+
+It is now sufficient to notice that each of the above values is the square of the preceding one. Since the last one $(a^{2^{k}m})$ is equal to 1 we have the the previous $(a^{2^{k-1}m})$ is a square root of 1 modulo $n$, i.e., it is 1 or $n-1$. Now we know that it is different from $n-1$ which implies it is 1. We iterate (backward) this on all the values until we get $a^m \mod n = 1$ which gives a contradiction. This proves that the algorithm can never return False if $n$ is prime.
+
+A working python implementation follows. Notice the use of \textit{squareAndMultiply} for exponentiation (this is necessary if we want to test large primes).
+
+\image{img/rsa4}{0.75}{\textit{Miller-Rabin} test - second version}
+
+\example{If $n = 5$, then we have that $m = 4$ and $k = 0$. We repeat two times the iteration of the \textit{while}, resulting in $m = 1$ and $k = 2$, having $4 = 2^2 * 1$. We then choose $a = 2$, then $b = 2$: in the \textit{for} loop we modify $b = 2*2 \mod 5 = 4$, so we return FALSE.}
+
+\subsubsection{Generating RSA primes}
+How can we finally generate big primes? We simply \textbf{generate} them at \textbf{random} and we \textbf{test} their \textbf{primality}. This takes about $\ln n$ steps, where $n$ is the upper bound of the interval we choose from. It can be proved, in fact, that about 1 out of $\ln n$ numbers less than n are prime. For example, if we want 512 bits of size (for a modulus of 1024) we have that $\ln n = \log_2 n \times \ln 2 \approx 512 \times 0.7 \approx 358$. Thus, on average, after 358 attempt we should find a prime number of size 512 bits.
+
+Notice that the \textbf{Miller-Rabin} algorithm should be \textbf{iterated} to lower as needed the probability of error in case of successful answer. Even if the original paper proved that such a probability is bounded by $\frac{1}{4}$, in a subsequent paper\footnote{I. Damgard, P. Landrock, and C. Pomerance, C. “Average Case Error Estimates for the Strong Probable Prime Test” Mathematics of Computation, v. 61, No, 203, pp. 177-194, 1993.} it has been shown that the algorithm is much more precise than that. In practice this is the suggested number of iterations from NIST (Appendix C.3): 7,4 and 3 for 512, 1024 and 1536 bits, with an error probability of $2^{-100}$, meaning that the test requires very few iterations to give a prime with high probability.
+
+\subsubsection{Case study: openSSL}
+OpenSSL is a software library for applications that need to secure communications over the Internet widely used:
+
+\begin{itemize}
+    \item Against eavesdropping;
+    \item To be sure of the identity of the party at the other end.
+\end{itemize}
+
+It contains an open source implementation of the SSL and TLS protocols, and it supports a number of different cryptographic algorithms, such as AES, Blowfish, RSA, DSA etc..
+
+\subsection{Security of RSA}
+We now discuss the main results about \textbf{security} of RSA cipher.
+
+\subsubsection{Computing $\phi(n)$}
+As already discussed, security of RSA is based on the \textbf{secrecy} of $\phi(n)=(p-1)(q-1)$. It is however \textbf{trivial} to see that \textbf{computing} $\phi(n)$ is at least as \textbf{difficult} as \textbf{factoring} $n$. Given an algorithm that computes $\phi(n)$ it is enough to solve the system of equations:
+
+$$
+\begin{cases}
+    n = pq \\
+    \phi(n) = (p-1)(q-1)
+\end{cases}
+$$
+
+to compute $p$ and $q$.
+
+\subsubsection{Computing the private exponent}
+It could be possible, in principle, to compute the \textbf{private exponent} without necessarily computing $\phi(n)$. It can be proved that this would allow to factor $n$:
+
+\theorem{Given an algorithm that computes exponent a we can write a probabilistic “Las Vegas” algorithm that factorises $n$ with probability at least $\frac{1}{2}$.}
+
+As for Monte Carlo algorithms, we can \textbf{iterate} a Las Vegas algorithm as needed. This proves that if an exponent is leaked then $n$ is compromised, thus breaking a private key is as difficult as factoring. Notice also that once we leak a private key the modulus is no more secure. This implies that $n$ should \textbf{never} be \textbf{reused} for different key pairs: any time we generate a key pair we need to generate a new modulus $n$.
+
+\subsubsection{Small encypryption exponent}
+We have already observed that implementations of RSA use small encryption exponents (typically $2^{16}+1 = 65537$) to improve the performance of encryption function. We discuss some attacks that are possible if we choose an excessively small exponent such as 3.
+
+\theoremName{Chinese Remainder Theorem}{Let $n_1, .., n_k$ be integers > 1, and $N = n_1 * .. * n_k$. If the $n_i$ are pairwise coprime, and if $a_1, .., a_k$ are integers s.t. $0 \leq a_i < n_i$ for every $i$, then there is one and only one integer $x$, s.t. $0 \leq x < N$ and $x \mod n_i = a_i$ for every $i$.}
+
+\paragraph{Attack 1: Same message encrypted using different moduli}
+Suppose the same message $m$ is sent \textbf{encrypted} under at least \textbf{three different public keys} $(3,n_1), (3,n_2), (3,n_3)$ giving the three ciphertexts $c_1,c_2,c_3$ such that $c_i = m^3 \mod n_i$ (e.g. $c_1 = m^3 \mod n_1$, $c_2 = m^3 \mod n_2$ and $c_3 = m^3 \mod n_3$). Notice that \textbf{moduli} $n_1,n_2,n_3$ are very likely to be \textbf{coprime} as they will not share their prime factors. The Chinese Reminder Theorem applies and proves that there exists a unique $x < n_1n_2n_3$ such that $x \mod n_i = c_i$, with an efficient way to compute it (\textit{Why do the assumptions of the Theorem hold?} Notice that in this case we have that $a_i = c_i$ and $x = m^3$). Notice now that $m < n_i$ which implies $m^3 < n_1n_2n_3$. By definition of $c_i$ we also have $m^3 \mod n_i = c_i$. Thus the unique $x$ given by the Chinese Reminder Theorem must be equal to $m^3$. It is now enough to compute $\sqrt[3]{x}$ to get $m$.
+
+\example{Let $m = 2$, $n_1 = 3$, $n_2 = 5$ and $n_3 = 7$. Then, $n_1$, $n_2$ and $n_3$ are pairwise coprime (notice also that $PK_1 = (3,3)$, $PK_2 = (3,5)$ and $PK_3 = (3,7)$). We have that $m^3 = 8 < n_1 * n_2 * n_3 = 105$ and $$c_1 = m^3 \mod n_1 = 8 \mod 3 = 2$$ $$c_2 = m^3 \mod n_2 = 8 \mod 5 = 3$$ and $$c_3 = m^3 \mod n_3 = 8 \mod 7 = 1$$ Thus, it holds that $0 \leq 2 < 3$, $0 \leq 3 < 5$ and $0 \leq 1 < 7$, so there is one and only one integer $x$ s.t. $0 \leq x < 105$ and $x \mod 3 = 2$, $x \mod 5 = 3$ and $x \mod 7 = 1$, which is $x = 8$. This implies that $m^3 = 8$, from which we derive that $m = 2$.}
+
+In general, $b$ encryptions of the same message $m$ under different keys are enough to recover $m$. Picking $b = 65537$ makes this attack quite unlikely. 
+
+Moreover the attack can be prevented by a \textbf{randomized} \textbf{padding} scheme such as \textit{PKCS1} which transforms message $m$ into a $k$-bits long message $EM = 0x00 || 0x02 || PS || 0x00 || m$, where $PS$ is a sequence of random bytes different from 0. In this way any time we encrypt $m$ we in fact encrypt a different plaintext. Notice that \textit{PKCS1} enables padding-oracle attacks and is superseded by the more secure \textit{Optimal Asymmetric Encryption Padding} (\textit{OAEP}).
+
+\paragraph{Attack 2: Small messages}
+Padding is also needed because of the following trivial attack on \textbf{small messages} encrypted under \textbf{small exponents}. Consider a small $m$ encrypted with exponent $b = 3$ (we recall that the exponent $b$ is known by the attacker). We have $y = m^3 \mod n$. Now it might be the case that $m^3 \leq n$ meaning that $y = m^3 \mod n = m^3$. To decrypt is then enough to compute $\sqrt[3]{y}$. \textbf{Padding} \textbf{prevents} this \textbf{attack} by making the size of $m$ close to the size of the modulus $n$.
+
+It could be possible that an attacker is able to \textbf{partially recover the plaintext}. Let $y = E_{PK}(x)$. Some examples of partial information follow:
+
+$$
+\mathit{parity}(y) = \begin{cases}
+    0 \quad \text{if $x$ is even} \\
+    1 \quad \text{otherwise}
+\end{cases}
+$$
+
+$$
+\mathit{half}(y) = \begin{cases}
+    0 \quad \text{if $0 \leq x < n/2$} \\
+    1 \quad \text{otherwise}
+\end{cases}
+$$
+
+Function $\mathit{parity}(y)$ returns the parity of the plaintext, while $\mathit{half}(y)$ tells if the plaintext is less then half of the modulus. 
+
+First we show that the latter can be defined based on the former. This result exploits the following fundamental property of RSA.
+
+\theoremName{RSA multiplicative property}{RSA cipher is such that $E_{PK}(x_1)E_{PK}(x_2) \mod n = E_{PK}(x_1x_2 \mod n)$. Intuitively, the multiplication of the encryption is equal to the encryption of the multiplication.}
+
+\textit{Proof.} It is enough to apply the definition of encryption:
+
+$$\begin{array}{ll}E_{PK}(x_1)E_{PK}(x_2) \mod n & = x_1^bx_2^b \mod n \\&= (x_1x_2)^b \mod n =\\& (x_1x_2 \mod n)^b \mod n \\&= E_{PK}(x_1x_2 \mod n)\end{array}$$
+
+We can now prove that $\mathit{half}(y) = \mathit{parity}( E_{PK}(2) \ y \mod n)$. Notice that $\mathit{parity}(E_{PK}(2) \ y \mod n) = \mathit{parity}(E_{PK}(2x \mod n))$. Consider now the case $\mathit{half}(y) = 0$. By definition we have $0\leq x<n/2$ which implies $0 \leq 2x < n$, thus $2x \mod n = 2x$ which is certainly even, i.e., $\mathit{parity}(E_{PK}(2) \ y\mod n) = 0$. If, instead, $\mathit{half}(y) = 1$ then $n/2<x<n$ which implies $n <  2x < 2n$ thus $2x \mod n = 2x - n$ which is certainly odd since $2x$ is even and $n$ is odd (it cannot be a multiple of 2). As a consequence $\mathit{parity}( E_{PK}(2) \ y \mod n) = 1$.
+
+The following holds:
+
+\theorem{Given an algorithm that computes $\mathit{half}(y)$ or $\mathit{parity}(y)$ it is possible to compute the whole plaintext x.}
+
+\textit{Proof.} Since $\mathit{half}(y)$ can be defined in terms of $\mathit{parity}(y)$ (see above), it is sufficient to prove that having $\mathit{half}(y)$ we can compute $x$. It is enough to do a binary search, each time multiplying by $E_{PK}(2)$ the ciphertext, and getting the left/right interval depending on the value of \textit{half}. It is obvious that this works for the first step (definition of half exactly tells us whether $x$ belongs to the first half or the second half of the interval). Then, think of $\mathit{half}(y \ E_{PK}(2))$. It is 0 when $2x \mod n \leq n/2$ which happens when $0 \leq x < n/4$ or $n/2 \leq x < 3n/4$ since we respectively obtain $0 \leq 2x < n/2$ and $n \leq x < 3n/2$, the latter implying $0 \leq x \mod n < n/2$. This reasoning can be applied, similarly, to next steps until a single solution survives. Since each time the interval in split in two, the number of steps is $\lceil\log_2(n)\rceil$.
+
+\paragraph{Chosen ciphertext attack}
+We conclude this section about security of RSA by illustrating a simple attack under the very powerful \textbf{attacker} that can \textbf{choose ciphertexts} to decrypt. The challenge is to decrypt a ciphertext $\tilde{y}$ by asking for decryptions of different ciphertexts ${y_1} \ldots {y_n}$. 
+
+The attack proceeds as follows: we pick a random $r$ such that $1 < r < n$ and is invertible modulo $n$ (recall that the attacker sees $(b,n)$). The inverse can be computed using the extended Euclidean Algorithm (if it fails we pick another random $r$). We ask for decryption of $y_1 = \tilde{y} E_{PK}(r) \mod n$. We obtain $x_1 = \tilde{x} r \mod n$ where $\tilde{x}$ is the decryption of $\tilde{y}$ (exploiting the RSA multiplicative property). It is now sufficient to multiply this number by $r^{-1} \mod n$ to get $\tilde{x}$.
+
+\example{Let $n = pq = 3*7 = 21$, then the public key is $(17,21)$, $y_1 = 1$ and $x_1 = 1$. Let us see if we find $\tilde{x} = 2$. We have that $ab \mod 12 = 1$, so $a * 17 \mod 12 = 1$, from which we derive that $a = 5$. Thus, the secret key is $(5,21)$.\\We then have to choose an $r$ s.t. $1 < r < 21$, in this case $r = 11$; thus: $$E_{PK}(11) = 11^{17} \mod 21 = 2$$ and $$r * r^{-1} \mod 21 = 1$$, so $$11 * r^{-1} \mod 21 = 1$$, from which we derive that $r^{-1} = 2$. Let use assume we want to find $\tilde{x} = 2$, thus $\tilde{y} = 2^{17} \mod 21 = 11$. Then, $y_1 = \tilde{y} E_{PK}(r) \mod n = 11 * 2 \mod 21 = 1$, the attacker gets $x_1 = 1^5 \mod 21 = 1$, so $\tilde{x} = x_1 * r^{-1} \mod 21 = 1*2 = \mod 21 = 2$.}
+
+\subsection{Signatures, hashes and MACs}
+Asymmetric key cryptography is also employed to develop \textit{digital signature schemes}, i.e., a digital counterpart of classic signature on paper. There are some important \textbf{features} of \textbf{classic signature} that deserve to be discussed in order to understand which are the basic expected properties of any good signature scheme.
+
+\begin{enumerate}
+    \item Classic signature is \textbf{physically part} of the \textbf{signed document}. In a digital world this requires a mechanism the avoid that a signature can be just cut-and-pasted to any different document. To achieve this, we let the \textbf{signature} \textbf{depend} on the \textbf{signed document}: two different documents signed by the same entity will have different signatures;
+    \item Classic signature is \textbf{verified} by \textbf{comparing} it with an \textbf{official reference signature}. This is not possible in the digital world since we have just required (item above) that the signature of different documents should always be different. We thus need a \textbf{mechanism} to verify a signed document with respect to an entity (the signer);
+    \item Documents signed on paper \textbf{cannot be easily copied}. In the \textbf{digital world} we can trivially \textbf{cut-and-paste} bytes so any signed document can be replicated as many times as we need. In certain applications (e.g. e-commerce) signature needs to be integrated with mechanisms to avoid uncontrolled replicas.
+\end{enumerate}
+
+The hypothesis are that:
+
+\begin{itemize}
+    \item Everyone knows the \textit{public key} of Bob;
+    \item Only Bob knows his \textit{private key},
+\end{itemize}
+
+while the idea is that Bob sends a message signed using the digital signature. We want that:
+
+\begin{enumerate}
+    \item To \textbf{sign}, you need to know the \textbf{private key};
+    \item To \textbf{verify}, you need the \textbf{public key}.
+\end{enumerate}
+
+\subsubsection{Definition}
+A digital signature scheme consists of two \textbf{functions}:
+
+\begin{itemize}
+    \item $\mathit{Sig}_{SK}(x)$ \textbf{generates} the \textbf{signature} of $x$ using a private key $SK$;
+    \item $\mathit{Ver}_{PK}(x,y)$ \textbf{checks} the \textbf{validity} of \textbf{signature} $y$ on message $x$ using a public key $PK$. Returns true if the signature is valid and false otherwise.
+\end{itemize}
+
+Similarly to asymmetric cryptography, we require that these \textbf{two functions} are \textbf{easy} to \textbf{compute} knowing the keys. Moreover, it must hold $\mathit{Ver}_{PK}(x,\mathit{Sig}_{SK}(x))$.
+
+For what concerns \textbf{security}, we require that \textbf{without} knowing the \textbf{private key} it is \textbf{computationally infeasible} to find a \textbf{message} $x$ and a \textbf{signature} $y$ such that $\mathit{Ver}_{PK}(x,y)$ holds, i.e., such that $y$ is a valid signature for $x$.
+
+\subsubsection{RSA-based digital signature (flawed first attempt)}
+We now discuss how the \textbf{RSA} cipher can be used to implement a \textbf{digital signature} scheme. We let
+
+$$\begin{array}{rcl}\mathit{Sig}_{SK}(x) &= &D_{SK}(x)\\[.3cm] \mathit{Ver}_{PK}(x,y) &=& \left\{ \begin{array}{ll}true ~~~~~ & \mbox{if } E_{PK}(y) = x\\false & \mbox{otherwise}\end{array}\right.\end{array}$$
+
+Notice that encryption and decryption of RSA are the same function. To sign we rise $x$ to the private exponent, modulo $n$, i.e. 
+
+$$
+D_{SK}(x) = x^a \mod n
+$$ 
+
+, and to check the signature we rise the signature to the public exponent modulo $n$, and we check that the result is the same as the original message $x$.
+
+$$
+E_{PK}(y) = y^b \mod n = x
+$$
+
+Notice that is impossible to copy the key without knowing $SK$, while it is possible to check the signature knowing $PK$.
+
+\example{Let $p = 7$ and $q = 13$. Then the public key is given by $(5,91)$, while the private key is given by $(29,91)$, with $x = 2$. In this case $$\mathit{Sig}_{SK}(2) = D_{SK}(2) = 2^{29} \mod 91 = 32$$, and $$\mathit{Ver}_{PK}(2,32) = \text{true if } E_{PK}(32) = 32^5 \mod 91 = 2$$}
+
+\paragraph{Problems and attacks} 
+This scheme is \textbf{not} yet \textbf{satisfactory} as it does not satisfy the above security property. We show different ways to find $x$ and $y$ such that $\mathit{Ver}_{PK}(x,y)$.
+
+\begin{itemize}
+    \item \textbf{Forging a “random” signed message}. We pick an arbitrary signature $y$ and we compute the corresponding signed message as $E_{PK}(y)$ since $Ver_{PK}(E_{PK}(y),y) = \text{true}$, by definition. Of course the signed message will be meaningless but still it is a valid forged signature and depending on the application it could be accepted as valid (e.g., when the expected message only contains a number);
+    \item \textbf{Multiplying signed messages}. If we have two signed messages $x_1$, $x_2$ with signatures $y_1$ and $y_2$, then $y_1 y_2 \mod n$ is the signature of a message $x_1 x_2 \mod n$. Again, if the expected message is just a number with no particular format or padding, this attack might be very effective.
+\end{itemize}
+
+In addition to the discussed forging attacks, the above defined signature has different \textbf{drawbacks}:
+
+\begin{itemize}
+    \item The \textbf{size} of the \textbf{signature} is at \textbf{least} the same as the size of the \textbf{message} meaning that we have to send at least double the size of signed data;
+    \item If a \textbf{message} is \textbf{bigger} than the \textbf{RSA modulus} we would need to \textbf{split} the message into \textbf{blocks} and use some encryption mode to encrypt the different blocks. Recall, however, that none of the encryption modes we have discussed for symmetric ciphers provide a satisfactory level of integrity. This would imply possible attacks in which both the message and the signature are manipulated, making the system not able to ensure \textit{integrity} (i.e. that the information can be modified only by an authorized user);
+    \item \textbf{Asymmetric} cryptography is much \textbf{slower} than \textbf{symmetric} one. Even adopting variants of encryption modes with strong integrity properties we would need to perform many encryptions to sign a message, and this could become unaffordable for long files.
+\end{itemize}
+
+The \textbf{solution} to all of these issues, including the problem of forging, is the adoption of \textbf{cryptographic hash functions}. A hash function $h: X \rightarrow Z$ is a function taking an arbitrarily long message $x$ and giving a digest $z$ of fixed length. When used in cryptography, these functions are required to satisfy \textbf{specific properties} that we discuss below through our running-example.
+
+\subsubsection{RSA-based digital signature (hash-based)}
+We modify our proposed signature scheme based on RSA so to prevent all of the discussed problems. Let $h$ be a hash function.
+
+$$\begin{array}{rcl}\mathit{Sig}^h_{SK}(x) &= &D_{SK}(h(x))\\[.3cm] \mathit{Ver}^h_{PK}(x,y) &=& \left\{ \begin{array}{ll}true ~~~~~ & \mbox{if } E_{PK}(y) = h(x)\\false & \mbox{otherwise}\end{array}\right.\end{array}$$
+
+Thus, to \textbf{sign} $x$ we \textbf{decrypt} its hash under the \textbf{private key}. To \textbf{check} the signature we \textbf{encrypt} the signature under the \textbf{public key}, we recompute the hash on $x$ and we compare the two results.
+
+Since the \textbf{hash} is of fixed length, it is enough to take it \textbf{smaller} than the \textbf{RSA modulus} to solve all the issues related to the size of the signature and the necessity of encryption modes: a signature would always be as long as the RSA modulus and will always need just one RSA encryption (plus the hash computation).
+
+\textbf{Forgery} is more delicate. Consider the simplest attack (in the scheme with no hash) where, given an arbitrary signature $y$ we compute the corresponding signed message as $E_{PK}(y)$ since $Ver_{PK}(E_{PK}(y),y) = \text{true}$, by definition. In the hash-based scheme, $E_{PK}(y)$ would provide the hash of the signed message, so if we are able to find $x$ such that $h(x) = E_{PK}(y)$ we will have that $Ver^h_{PK}(x,y) = \text{true}$. This leads to our \textbf{first property} for cryptographic hash functions.
+
+\definition{Preimage resistance}{A hash function $h$ is \textbf{preimage resistant} (or \textbf{one-way}) if given $z$ it is infeasible to compute $x$ such that $h(x) = z$.}
+
+\example{We consider a simple hash function $h(x)$ that splits message $x$ into blocks $x_1,x_2,\ldots,x_n$ of a fixed size $k$ and computes $h(x) = x_1 \oplus x_2 \oplus \ldots \oplus x_n$, i.e., the bit-wise xor of all blocks. This hash function is clearly not preimage resistant: given a digest $z$ we can easily find preimages. For example, $z$, $z||0$, $z||x||x$, $z||x||y||x\oplus y, \ldots$ where 0 notes the block of $k$ zeros and $||$ notes the concatenation of blocks, are all correct preimages of $z$.}
+
+Notice that \textbf{preimage resistance} also \textbf{prevents} \textbf{forging} based on RSA \textbf{multiplicative property}. If we have two signed messages $x_1$, $x_2$ with signatures $y_1$ and $y_2$, we have that $y_1 y_2 \mod n$ is the signature of a message whose hash is the same as $z = h(x_1) h(x_2) \mod n$. Finding such a message $x$ means that we can compute a preimage $x$ of $h$ such that $h(x) = z$, but this is ruled out by preimage resistance.
+
+Thus, it appears that adopting a \textbf{hash-based RSA} signature scheme in which the hash function is \textbf{preimage} \textbf{resistant} solves all the issues. Unfortunately, we also have to consider \textbf{potential problems} deriving from the adoption of \textbf{hashes}: since a hash summarises messages as fixed-length digests, it can of course occur that \textbf{different messages have the same hash} (this phenomenon is addressed as \textbf{collision}). For example we might have different $x_1$ and $x_2$ such that $h(x_1) = h(x_2)$. Then, $\mathit{Sig}^h_{SK}(x_1) = \mathit{Sig}^h_{SK}(x_2)$, i.e., the two messages have the same signature.
+
+Consider the following attack scenario: given a message $x_1$ and its signature $y_1$, the attacker computes a $x_2$ such that $h(x_1) = h(x_2)$. Then, $y_1$ is a valid signature for $x_2$ meaning that the attacker has forged a signature for a message of his choice. To prevent this problem we require the following property.
+
+\definition{Second-preimage resistance}{A hash function is \textbf{second-preimage resistant} if given $x_1$ it is infeasible to compute $x_2$ such that $h(x_1) = h(x_2)$.}
+
+If we assume the attacker is allowed to ask for signatures (similarly to what happens in a chosen-plaintext attack) it might still happen that he chooses \textbf{two different messages} $x_1$ and $x_2$ with the \textbf{same hash} and asks for a \textbf{signature} on $x_1$. In this way he obtains a valid signature for $x_2$. To exemplify, suppose he manage to generate two messages that look the same but one ($x_2$) gives more advantage than the other ($x_1$), such as in two contracts with different prices. The attacker convinces the other party to sign $x_1$ which looks reasonable but obtains a signature on $x_2$ that has an outrageous price in it. For this reason, the ultimate ideal property for hash function is as follows.
+
+\definition{Collision resistance}{A hash function is \textbf{collision resistant} if it is infeasible to compute different $x_1$ and $x_2$ such that $h(x_1) = h(x_2)$.}
+
+Differently from \textit{second-preimage resistance}, here the attacker can \textbf{choose} both $x_1$ and $x_2$ and he is not given a $x_1$ that he has to find a second-preimage of. Thus this \textbf{latter} property \textbf{implies} the \textbf{previous} one, i.e., if a \textbf{hash} is \textbf{collision resistant} it is also \textbf{second-preimage resistant}.
+
+It is possible to prove that \textbf{collision resistance} also \textbf{implies} \textbf{preimage resistance}. Thus, if a hash function is collision resistant it has all of the above mentioned properties. This result holds under the assumption that the number of messages we can hash is at least twice as the number of digests.
+
+\theorem{Let $h:X \rightarrow Z$ be a \textbf{collision resistant} hash function such that $|X| \geq 2|Z|$. Then $h$ is also \textbf{preimage resistant}.}
+
+\textbf{Proof.} We prove the following equivalent fact: if $h$ is not preimage resistant then $h$ is not collision resistant. To do so, we show that given an algorithm $Invert(z)$ for inverting $h$ (that breaks preimage resistance) we can write a Las Vegas probabilistic algorithm that finds a collision. The algorithm is, in fact, rather simple: we pick a random message, we compute its hash and we invert it using the given algorithm $Invert(z)$. If we find a different message we are done otherwise, if we are unlucky and get the initial message, we FAIL (i.e. the function will not be collision resistant).
+
+The \textbf{algorithm} is shown below. 
+
+\imageB{img/coll1.png}{0.85}
+
+Notice that the \textbf{correctness} of the solution is obvious since $x_1$ and $x_2$ have the \textbf{same hash} meaning that they are a \textbf{collision}. We now prove that failure happens with probability at most $1/2$. Since we have $|Z|$ possible digests, we have that $Invert(z)$ returns exactly $|Z|$ preimages, one for each digest, and these are the ‘unlucky’ cases, i.e., the messages that once hashed will be mapped back to themselves. Thus the good cases are exactly $|X|-|Z|$ and the probability of success is $\frac{|X|-|Z|}{|X|}  \geq \frac{|X| - \frac{1}{2}|X|}{|X|} = \frac{\frac{1}{2}|X|}{|X|} = \frac{1}{2}$ (since $|X| \geq 2|Z|$, then $|Z| \leq \frac{1}{2}|X|$). As a consequence we fail with probability $\leq \frac{1}{2}$. As any Las Vegas algorithm, this can be iterated as needed. For $r$ iterations we have that the probability of failure is $\leq \frac{1}{2^r}$.
+
+\example{Hash $h(x)$ of previous example is clearly not collision and second preimage resistant. Given $x = x_1,x_2,\ldots,x_n$ we have, for example, that $x_2,x_1,\ldots,x_n$ has the same digest. We can swap blocks (xor is commutative). We can add zero blocks. We can add whatever block twice or add it once and then add it xored with the original message, and so on.}
+
+\example{We consider another simple hash function $g(x) = E_{h(x)}(0)$, i.e., we use the previous hash to obtain a key for a cipher and we encrypt the constant 0 under that key. This hash function is preimage resistant if the adopted cipher is resistant to known plaintext attacks. In fact, finding $h(x)$ from $g(x)$ corresponds to breaking the cipher knowing the plaintext 0 and the ciphertext $g(x)$. However, it is neither collision resistant nor second preimage resistant, as collisions on $h$ are collisions on $g$ and we have shown above that $h$ is not collision resistant.}
+
+\paragraph{Birthday attack}
+We have discussed important properties of hash functions that are needed, for example, when developing a hash based signature scheme. Collision resistance is the strongest of such properties: it is important that hash functions are carefully designed so to make the computation of collisions infeasible. As for cryptography, however, the \textbf{attacker} can try to \textbf{break} a \textbf{function} by \textbf{brute force}. For the case of hash function, brute forcing is much simpler than expected thanks to the so called \textit{Birthday Attack}.
+
+This funny name comes from an analogy to the famous birthday paradox: given a group of only 23 people with probability 1/2 there are at least two with the same birthday (day and month, not year). With a group of 41 the probability is already around 90\%. This true fact is so counter-intuitive to be called paradox.
+
+The analogy with cryptographic hash functions is immediate: birthday can be seen as a hash function from any person to a fixed-size set of 365 days of the year. Two people having the same birthday represent a collision on the hash function. The fact collisions are so likely means that brute-forcing a hash function might be much easier than expected, and we will give a precise estimate of this.
+
+Let us now show where the \textit{‘paradox’} comes from. We assume \textbf{people} being \textbf{mapped} to birthdays in a \textbf{uniform} way. This assumption fits very well with cryptographic hashes as they usually behaves that way to make finding a collision or a preimage as much hard as possible. We now compute the \textbf{probability} that in a group of $k$ people \textbf{none} share the \textbf{birthday}. For the first person any birthday is fine. Thus we have probability 1 of success. The second person should not share the birthday with the first one, meaning that we have probability $364/365$ of success, and so on. We require that these events all occur together giving a probability of $\prod_{i=0}^{k-1} \frac{365-i}{365}$. Consequently, the probability of a collision is $1- \prod_{i=0}^{k-1} \frac{365-i}{365}$. The following code computes this probability.
+
+\imageB{img/birth.png}{0.85}
+
+Plotting over all values from 1 to 365 shows how fast the probability grows.
+
+\imageB{img/birth2.png}{0.85}
+
+It is now useful to find a \textbf{relation} between the \textbf{number giving probability 1/2} (in this case 23) and the \textbf{number of digests}, as this will allow us to \textbf{estimate} the \textbf{cost} of a \textbf{brute force attack}. We let $n$ be the number of digests (365 for the birthday paradox). We reason as follows: the probability that we do \textbf{NOT} find a collision is  $$\prod_{i=0}^{k-1} \frac{n-i}{n} = \prod_{i=0}^{k-1} \left(1 - \frac{i}{n}\right)$$ Now, from analysis we know that, for small $x$, $1+x \approx e^x$ (from Taylor series $e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} +\ldots$). Thus, the probability of finding a collision is $$\epsilon \approx 1 - \prod_{i=0}^{k-1} e^{-\frac{i}{n}} = 1 - e^{-\frac{(k-1)k}{2 \cdot n}}$$ Thus $1- \epsilon \approx e^{-\frac{(k-1)k}{2 n}}$. We thus get $ln(1-\epsilon) \approx -\frac{(k-1)k}{2 n}$ . Thus $2 n \cdot ln(1/(1-\epsilon)) \approx k^2 - k$. By a further approximation (disregarding $k$) we get $$k \approx \sqrt{2 n  \cdot ln(1/(1-\epsilon))}$$
+
+For $\epsilon = 1/2$ this gives $k \approx 1.17 \sqrt{n}$. Thus, a brute-force attack on a hash functions with $n$ digests finds a collision with probability 1/2 after about $\sqrt{n}$ attempts. For example, if a hash function returns digests of 128 bits it takes about $\sqrt{2^{128}} = 2^{64}$ trials to break it. So to have the same security we have with a 128 bit cipher we need double the length, i.e., 256 bits of hash.
+
+\subsubsection{Commonly used hash functions}
+One of the most famous cryptographic hash function is \textbf{MD5} (Message Digest 5), by Ron Rivest (the ‘R’ of RSA). It is a 128-bit hash used in many applications. Recently it has been shown to be \textbf{not collision resistant}. Moreover the relatively small size allows for a birthday attack in ‘only’ $2^{64}$ steps.
+
+The most common alternative to MD5 is \textbf{SHA} (Secure Hash Algorithm). The second generation SHA (\textbf{SHA-2}) has a variable digest size from 224 to 512 bits. It is not vulnerable to the collision attacks of RSA and the length makes birthday attack infeasible.
+
+The National Institute of Technology (NIST) has just concluded the selection of SHA-3, with a process similar to the one for selection AES. The winner is Keccak.
+
+\subsubsection{Message Authentication Codes (MACs)}
+We conclude by illustrating cryptographic \textbf{mechanisms} to achieve \textbf{authentication} using \textbf{symmetric keys}. Message Authentication Codes (\textbf{MACs}) are hash functions with a symmetric key. They produce a \textbf{fixed-size digest} of a message, whose value depends on the given key. The property we require is similar to what we asked for signatures: \textbf{without knowing the key} $k$ it should be computationally \textbf{infeasible} to find a \textbf{message} $x$ and a MAC $y$ such that $\mathit{MAC}_k(x) = y$, i.e., such that $y$ is the MAC for $x$ under key $k$.
+
+The MAC is checked by recomputing it and comparing with the received one. For example consider:
+
+$$A \xrightarrow{\normalsize x,MAC_k(x)} B$$
+
+After receiving the message, Bob recomputes $MAC_k(x)$ and \textbf{compares} the result with the received MAC. If they matches, he can conclude the message comes from Alice.
+
+Now the questions are:
+
+\begin{enumerate}
+    \item How can we \textbf{implement} a MAC?
+    \item How can we \textbf{create} the digest?
+\end{enumerate}
+
+We start by answering to the first question.
+
+\paragraph{CBC-based MAC}
+
+We recall the encryption and decryption schemes of CBC to be the following:
+
+\image{img/bcm3.png}{0.80}{CBC: Encryption}
+
+\image{img/bcm4.png}{0.80}{CBC: Decryption}
+
+A simple example of how to implement a MAC is by using CBC encryption mode (with a zero IV).
+
+\image{img/mac1.png}{0.90}{CBC-based MAC: Encryption}
+
+We then define $\mathit{MAC}_k(x) = y_n$, i.e., we take the \textbf{last encrypted block as digest}. Intuitively, since this block \textbf{depends} to all the \textbf{previous ones} (thanks to the chaining) the last block summarizes all the content of message $x$ and it clearly depends on the key $k$. The fact we use a cipher should also make it \textbf{hard} to \textbf{forge} a MAC without knowing the key. Finally, notice how from a message of $n$ blocks $(x_1, x_2, .., x_n)$, the result is a single block $y_n$.
+
+However, in practice, the proposed MAC is \textbf{not satisfactory} as illustrated by the following simple \textbf{chosen-text forgery}: suppose to have a 1-block message $x$ and the relative $\mathit{MAC}_k(x)$. We have that $\mathit{MAC}_k(\mathit{MAC}_k(x)) = E_k(E_k(x)) = \mathit{MAC}_k(x || 0)$ (notice that $\mathit{MAC}_k(x) = E_k(x)$ holds since $x$ is composed by only 1 block). Thus, if the attacker asks (chosen-text attack) for $\mathit{MAC}(\mathit{MAC}_k(x))$ he obtains a MAC for the two-blocks message $x || 0$.
+
+\imageB{img/mac2.png}{0.30}
+
+The following less-trivial forgery allows for more control on the attacked message. Consider two 1-block messages with their MACs $x_1$, $\mathit{MAC}_k(x_1)$ and $x_2$, $\mathit{MAC}_k(x_2)$. Let $H_1 =\mathit{MAC}_k(x_1)$  and $H_2 = \mathit{MAC}_k(x_1)$. Then
+$$\begin{array}{rcl} \mathit{MAC}_k(x_1 || z) & = & E_k(H_1 \oplus z) \\ &= & E_k(H_1 \oplus H_2 \oplus z \oplus H_2) \\ &= &\mathit{MAC}_k(x_2 || H_1 \oplus H_2 \oplus z)\end{array}$$
+
+Some notes:
+
+\begin{itemize}
+    \item $\mathit{MAC}_k(x_1 || z) = E_k(H_1 \oplus z)$ comes from the scheme below;
+
+    \imageB{img/mac3.png}{1.30}
+
+    \item $E_k(H_1 \oplus z) = E_k(H_1 \oplus H_2 \oplus z \oplus H_2)$ comes from the fact that if we XOR twice the same quantity, we obtain the same result;
+    \item Finally, the last equivalence can be obtained with a scheme similar to the previous ones.
+\end{itemize}
+
+Thus, if the attacker wants to extend message $x_1$ with an arbitrary second block $z$, he can ask for $\mathit{MAC}(x_2||H_1 \oplus H_2 \oplus z)$. The obtained MAC will be valid for message $x_1 || z$.
+
+To \textbf{prevent} these \textbf{forgeries}, the ISO/IEC 9797-1 standard adds \textbf{additional transformations} to the \textbf{final encrypted CBC block}. For example, given an additional key $k'$ we define $\mathit{MAC}_k(x) = E_k(D_{k'}(y_n))$. Changing the last step is a way to \textbf{avoid} that \textbf{MACs} can be \textbf{forged} from \textbf{MACs of shorter messages}, as done above. As an exercise, you can check that the above attacks do not work under this variation.
+
+\paragraph{Hash-based MACs} Another way to implement MACs is to base them on cryptographic hash functions. The most famous is called HMAC, by Mihir Bellare, Ran Canetti, and Hugo Krawczyk (see also RFC 2104).
+
+The idea is to iterate a given hash function $h$ over blocks of $B$ bytes. We typically take $B$ as 64 bytes, i.e., 512 bits. We let:
+
+\begin{itemize}
+    \item \textit{ipad} = the byte 0x36 repeated $B$ times;
+    \item \textit{opad} = the byte 0x5C repeated $B$ times
+\end{itemize}
+
+
+$$\mathit{HMAC}_k(x) = h(k_p \oplus opad, h(k_p \oplus ipad, x))$$
+
+,where $k_p$ is obtained from $k$ by appending 0 up to the byte length $B$. Notice that in this case we have \textbf{authentication} and \textbf{integrity}, but we do \textbf{not} have \textbf{non-repudiation}, since we both have the same key.
+
+Interestingly, the authors show that if an attacker is able to forge HMAC that he is also able to find collisions on the underlying hash function (even when fed with a random secret as done here). Thus, if the hash function is collision resistant than HMAC is unforgeable.
+
+\paragraph{MACs vs. signatures} What is the \textbf{difference} between \textbf{MACs} and \textbf{signatures} given that they seem to provide very similar guarantees? To understand this crucial issue think of Alice sending to Bob a contract $x$. To prove \textbf{authenticity} (the message comes from Alice) she can decide to either sign it as $\mathit{Sig}_{SK}(x)$ with her private key SK or compute a MAC as $\mathit{MAC}_k(x)$ under a key $k$ shared with Bob. After receiving the message, Bob checks the signature or recomputes the MAC to verify its authenticity. What now if Alice denies to have ever sent $x$ to Bob? In other words, has Bob a way to show to to a third party (a judge) that the contract is from Alice? Here it becomes crucial the \textbf{symmetry} of the key: Alice is the only one knowing her private key $SK$ while both Alice and Bob know the shared key $k$. It is clear that, while signature can only be generated by Alice, a MAC can be easily ‘forged’ by Bob. 
+
+This important difference can be summarized by stating that \textbf{MACs} \textbf{never} provide \textbf{non-repudiability} and, more specifically, they do \textbf{not allow} to prove \textbf{authenticity} to a third party.
 
 \newpage
 \subsection{Exercises}
@@ -752,5 +1126,33 @@ The \textbf{number of steps} in the worst case is $O(k^2)$ for the two multiplic
     \item Perform encryption and decryption using RSA cipher for the following: $p = 17$, $q = 2$, $b = 3$, $x = 2$. Use Euler's theorem to compute $a$. Solution on slide 14-15 of L15;
 
     \item Try to compute $2^{13}$ where $13 = 1101$ and $x = 2$. Solution on slide 23 of L15;
+
+    \item Try to efficiently compute $3^7$. Solution on slide 25 of L16;
+
+    \item Apply the "Sieve of Eratosthenes" algorithm for $N = 15$. Solution on slide 19 of L16;
+
+    \item Apply the "Sieve of Eratosthenes" algorithm for $N = 22$. Solution on slide 21 of L16;
+
+    \item Apply the "Sieve of Eratosthenes" algorithm for $N = 32$;
+
+    \item Apply the "Sieve of Eratosthenes" algorithm for $N = 18$. Solution on slide 27 of L16;
+
+    \item Apply the "Sieve of Eratosthenes" algorithm for $N = 17$. Solution on slide 3 of L17;
+
+    \item Apply the "Sieve of Eratosthenes" algorithm for $N = 21$;
+
+    \item Run the \textit{Miller-Rabin} algorithm for $n = 10$;
+
+    \item Run the \textit{Miller-Rabin} algorithm for $n = 9$. Solution on slide 11 of L17;
+
+    \item Run the \textit{Miller-Rabin} algorithm for $n = 5$. Solution on slide 18 of L17;
+
+    \item Run the \textit{Miller-Rabin} algorithm for $n = 15$. Solution on slide 29 of L17;
+
+    \item Run the \textit{Miller-Rabin} algorithm for $n = 21$;
+
+    \item Perform encryption and decryption using RSA cipher for the following: $p = 13$, $q = 2$, $a = 5$, $x = 2$. Use Euler's theorem to compute $b$. Solution on slide 33-34 of L17; 
+
+    \item Prove that $\mathit{parity}(y) = \mathit{half}(E_{PK}(2^{-1}) y \mod n)$.
 
 \end{enumerate}

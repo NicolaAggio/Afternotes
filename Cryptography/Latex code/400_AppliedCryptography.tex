@@ -1,1 +1,328 @@
 \section{Applied cryptography}
+\subsection{Strong authentication based on symmetric-key cryptography}
+We have seen that \textbf{passwords} and \textbf{PINs} suffer from \textbf{interception} and \textbf{replay}: an attacker sniffing a password can reuse it arbitrarily to authenticate. This can be improved using \textbf{OTPs}, i.e., passwords that are never reused. But even in this case, if the attacker is in the middle, he can sniff the password in transit and use it to authenticate once.
+
+The problem with passwords and PIN is that we prove their knowledge by exhibiting the secret value. \textbf{Strong authentication} techniques, instead, allow for \textbf{proving} the \textbf{knowledge} of a secret \textbf{without showing it}. This can be achieved by showing a value that depends on the secret but does not allow to compute it.
+
+\subsubsection{Symmetric key authentication protocols}
+We discuss \textbf{strong authentication} protocols based on \textbf{symmetric-key cryptography}. The \textbf{secret} shared among the claimant and the verifier is a \textbf{symmetric cryptographic key}. In order to prove the knowledge of the key $K$, and thus her identity, the claimant sends to the verifier a message encrypted under $K$. Since generating an encrypted message without knowing the key is assumed to be infeasible, this proves its knowledge.
+
+The general \textbf{idea} is to have a \textbf{challenge} and a \textbf{response}:
+
+\begin{itemize}
+    \item \textbf{Challenge}: the verifier challenges the claimant to send a particular message encrypted under $K$;
+    \item \textbf{Response}: the claimant sends the required message.
+\end{itemize}
+
+For example, a challenge might be “send me your name encrypted under $K$”. The response from Alice would then be $E_K(A)$. The verifier will decrypt the message and will check that it matches name A. However, even if this does not reveal $K$, if the challenge is always the same an attacker can simple intercept $E_K(A)$ and replay it to authenticate as Alice. We thus have that the \textbf{challenge} should \textbf{never be the same}. A way to achieve this is to add a \textbf{time-variant parameter}.
+
+\paragraph{Sequence numbers}
+The challenge becomes “send me your name and your sequence number encrypted under $K$” with response $E_K(A, seq_A)$. We note the protocol as:
+
+$$A \rightarrow B: E_K(A, seq_A)$$
+
+, i.e. "A sending to B the encryption, under the key $K$, of A and $seq_A$.
+
+The sequence number of Alice is initialized to 0, and then increased by 1 every time so that it never repeats. In a sense, we are following the \textbf{same idea} behind \textbf{OTPs}: we \textbf{never} send the \textbf{same response} twice so that it cannot be replayed. The verifier has to store the last sequence number from Alice so that he can decrypt the message and check that both A and the sequence number (increased by 1) match. In this case he accepts Alice identity and increments the sequence number so that it is ready for next authentication.
+
+Sequence numbers have the \textbf{drawback} of requiring the verifier to store the last sequence number of each possible claimant. Moreover it is \textbf{unclear} what to do if for any reason (system or network failure) the \textbf{sequence numbers go out of sync}: restarting from 0 is unacceptable since any old authentication would become reusable by an attacker. An authenticated protocol to resync is necessary but it cannot be based on sequence numbers, of course.
+
+\paragraph{Timestamps}
+The challenge is “send me your name and a recent timestamp encrypted under K”. So the protocol is:
+
+$$A \rightarrow B: E_K(A, t_A) $$
+
+, where the timestamp $t_A$ is the time (integer number) at the local clock of Alice when sending the message. The verifier decrypts the message and check that Alice name matches. Then he extracts a local timestamp $t_B$ and verifies that $t_B-t_A < W$ where $W$ is the acceptance-window, i.e., the maximum allowed delay for the received message. For example, if $W$ is 1 minute the timestamp of A have to be at most 1 minute behind the timestamp of B.
+
+In order to \textbf{prevent replays} we should now pick $W$ so that it is \textbf{big enough} to receive honest messages but so small that no replay will ever be accepted. This is very \textbf{hard} in practice since delays on networks can vary a lot. For this reason, $W$ is typically taken \textbf{much bigger} than the \textbf{average delivery time}. To avoid replays, all the received timestamps are buffered so that double-reception of a valid timestamp can be easily checked. Periodically, the expired timestamps (out of $W$) in the buffer are deleted.
+
+For example consider the following message, intercepted by the attacker:
+
+$$A \rightarrow B: E_K(A, t_A)$$ 
+
+Bob accepts Alice identity and stores $t_A$ in the buffer. The attacker $E$ tries a replay still inside $W$ (we write $E(A)$ to note the attacker pretending to be Alice):
+
+$$E(A) \rightarrow B: E_K(A, t_A)$$
+
+The timestamp is still valid but Bob finds it in the buffer and refuses authentication. Later on, when $t_A$ expires it is deleted from the buffer. Any further attempt of replay from the attacker will be refused since $t_A$ is out of $W$.
+
+Timestamps do not require to store any per-user information (such as sequence numbers). It is enough to termporarily buffer the received-and-still-valid timestamps. Moreover, in case synchrony is lost it is enough to synchronize local clocks. It is however important to notice that this \textbf{synchronization} should be \textbf{authenticated} as \textbf{malicious} changes in clocks might easily allow the attacker to make \textbf{old timestamps valid} or to prevent any honest message to be accepted. As for sequence numbers, this authenticated synchronization cannot be implemented based on timestamps.
+
+\paragraph{Nonces}
+We have seen that sequence numbers and timestamps are based on some form of authenticated synchronization. We thus need at least one time variant parameter that do not assume any form of synchronization and can be used, if needed, to synchronize sequence numbers and clocks. 
+
+Nonces are “Numbers used only once”, and here the challenge implies an \textbf{additional} \textbf{message} from the \textbf{verifier} to the claimant containing the nonce (notice that in this case we have a 2-steps protocol, while the previous ones were 1-step protocols). The challenge is “send me your name and nonce $N_B$ encrypted under key $K$”.
+
+$$\begin{array}{l} B \rightarrow A: N_B\\A \rightarrow B: E_K(A, N_B) \end{array}$$
+
+Bob generates a random nonce $N_B$ and sends it to Alice. He then decrypts the received message and checks that both A and $N_B$ match. In this case he accepts Alice identity. The nonce is discarded as it is supposed to be used only once.
+
+If nonces are \textbf{big enough} (e.g. 128 bits), picking them at \textbf{random} implies that the \textbf{probability} of \textbf{reusing} the same nonce is \textbf{negligible}. Thus any replay will be prevented since the nonce will mismatch with overwhelming probability. An example follows:
+$$\begin{array}{l} B \rightarrow E(A): N'_B\\E(A) \rightarrow B: E_K(A, N_B) \end{array}$$
+
+Bob refuses since $N_B \neq N'_B$.
+
+\paragraph{ISO/IEC 9798-2 protocols}
+Protocols from the standard ISO/IEC 9798-2 are exactly as the ones discussed above apart that they enclose the identifier of the verifier B (to prevent reflection) instead of A.
+
+\textbf{One-pass unilateral authentication}, i.e. A wants to authenticate with B
+
+$$A \rightarrow B: E_K(ts_A,B)$$
+,where $ts_A$ is a timestamp or a sequence number (then B will check is $ts_B - ts_A < W$).
+
+\textbf{Two-pass unilateral authentication}
+$$\begin{array}{l} B \rightarrow A: N_B\\A \rightarrow B: E_K(N_B, B) \end{array}$$
+
+\textbf{Two-pass mutual authentication}: here Alice and Bob authenticate each other.
+$$\begin{array}{l} A \rightarrow B: E_K(ts_A,B)\\B \rightarrow A: E_K(ts_B,A) \end{array}$$
+where $ts_A$, $ts_B$ are either timestamps or sequence numbers. Notice that this is just the composition of two independent unilateral authentication protocols.
+
+\textbf{Three-pass mutual authentication}
+$$\begin{array}{l} B \rightarrow A: N_B\\A \rightarrow B: E_K(N_A,N_B,B)\\ B \rightarrow A: E_K(N_B,N_A)\end{array}$$
+
+This protocol can be understood starting from the composition of two unilateral authentications based on nonces:
+$$\begin{array}{l} B \rightarrow A: N_B\\A \rightarrow B: N_A,E_K(N_B,B)\\ B \rightarrow A: E_K(N_A,A)\end{array}$$
+
+Now, including the nonce $N_A$ in the encryption of the second message is harmless and makes the two unilateral authentications tied in a unique mutual authentication session. The same holds for adding $N_B$ in the third message. Moreover, the fact that intended receiver (Bob) is specified in the second message together with challenge $N_A$ (that is now encrypted) makes it possible to remove A from the last message, as it is enough to prevent reflections.
+
+\subsubsection{Attacks on cryptography}
+Since challenge-response protocols provide cryptographic material to the attacker it is important to avoid as much as possible scenarios that facilitate cryptanalysis. For example, the protocol:
+
+$$A \rightarrow B: E_K(A, t_A) $$
+
+is likely to provide a \textbf{known-plaintext scenario}, since it is not hard to guess the value of Alice time-stamp, with some approximation. 
+
+More critically, the protocol:
+
+$$\begin{array}{l} B \rightarrow A: N_B\\A \rightarrow B: E_K(A, N_B) \end{array}$$
+
+provides a \textbf{(partial) chosen-plaintext scenario} where the attacker can ask for encryption of any plaintext $A,z$ with arbitrary $z$. In fact it in enough for the attacker to impersonate Bob, noted $E(B)$, and send $z$ as nonce:
+
+$$\begin{array}{l} E(B) \rightarrow A: z\\A \rightarrow E(B): E_K(A, z) \end{array}$$
+
+Alice becomes a sort of “encryption oracle”.
+
+To \textbf{avoid} these \textbf{problems} a typical \textbf{countermeasure} is to \textbf{randomize cryptography}. This can be done in different way. For example, by adding a \textbf{random padding} to the plaintext. At a logical level, we can think of appending a random number $R_A$ that we call “confounder”, as follows:
+$$A \rightarrow B: E_K(A, t_A,R_A) $$
+and
+$$\begin{array}{l} B \rightarrow A: N_B\\A \rightarrow B: E_K(A, N_B, R_A) \end{array}$$
+In this way, the known and chosen-plaintext scenario are prevented. When decrypting, the random confounder will be ignored by Bob. We will always assume this form of randomization at the cryptographic level, with no need of making it explicit at the protocol level.
+
+\paragraph{Redundancy}
+Consider the following protocol based on sequence numbers (but it also works with timestamps):
+$$A \rightarrow B: A,E_K(seq_A) $$
+The \textbf{identifier} A is sent in the \textbf{clear} while the \textbf{sequence number} in \textbf{encrypted}. Assume that Bob only checks monotonicity of $seq_A$ (i.e. checks if $seq_A > \text{last sequence}$) so to deal more flexibly with network delays (even if some message is lost the next will be accepted as the sequence number will be bigger than the stored one). In this case, if the attacker sends an arbitrary message:
+$$E(A) \rightarrow B: A,z $$
+the probability that the decryption of $z$ is a valid number bigger than the stored one is probably very high (especially if we start from small sequence numbers). 
+
+Encrypting arbitrary numbers with no format or message redundancy makes it impossible to check the integrity of the decryption: a random $z$ can always be decrypted in a meaningful arbitrary number. The presence of the identifier mitigates this problem since $z$, once decrypted, should at least match A. If A is $n$ bits long the probability that this happen is $1/2^n$.
+
+As for randomization, there are \textbf{standard techniques} to \textbf{add redundancy}: a simple one is to enclose a \textbf{one-way hash} of the encrypted message, called \textbf{witness}, as in $h(seq_A),E_K(seq_A)$. The hash is a \textbf{proof} that the \textbf{sender} \textbf{knows} the \textbf{content} of the \textbf{message}. When Bob decrypts he checks that the hash of the decrypted message matches the received one. The attacker might send arbitrary $w,z$, but with a hash of 128 bits the probability of passing the test would be $1/2^{128}$, thus negligible. The fact the hash is one-way makes this technique applicable even when it is important to preserve the secrecy of the sent message.
+
+\paragraph{Reflection}
+We now discuss another reason why it is \textbf{important} to have the \textbf{identifier} encrypted together with a \textbf{time variant parameter}. Consider the protocol
+$$A \rightarrow B: A,E_K(t_A) $$
+Suppose that Bob is allowed to run the same protocol to authenticate with Alice using the same shared key $K$:
+$$B \rightarrow A: B,E_K(t_B)$$ 
+The attacker can pretend to be Bob, written E(B), as follows:
+$$\begin{array}{l} A \rightarrow E(B): A,E_K(t_A)\\ E(B) \rightarrow A: B,E_K(t_A) \end{array} $$
+The message from Alice trying to authenticate with Bob is sent back (reflection) to Alice in a second session where the attacker pretends to be Bob. If this is fast enough to be in the acceptance window Alice accepts the identity of Bob (who is instead the attacker). Notice that this is not a replay: Alice has never received timestamp $t_A$ before. She has generated but never received it, in fact.
+
+This attack shows that the \textbf{symmetry} of the key is \textbf{dangerous} if there is \textbf{no information in the ciphertext} about who are the intender \textbf{sender} and \textbf{receiver}. As a matter of fact, it is enough to specify A or B, as far as Alice and Bob agree on what they expect to see in the message (even one bit would suffice, to indicate the first in alphabetical order, for example).
+
+\subsubsection{Key exchange}
+\textbf{Authentication} is always \textbf{preliminary} to some other task that requires \textbf{identification}. However, it is useless to adopt a strong-authentication protocol and then start an unprotected remote session:
+
+$$\begin{array}{l} A \rightarrow B: E_K(ts_A,B)\\A \rightarrow B: M_A \end{array}$$
+
+The attacker can intercept message $M_A$ and substitute it with a different one. If used in this way, strong-authentication becomes the same as OTPs: the attacker, if in the middle, can impersonate the claimant once.
+
+This can be easily solved by \textbf{exchanging} a \textbf{new (session) key} while \textbf{identifying}. Since strong authentication is based on encrypted responses, one simple technique is to \textbf{enclose} the \textbf{new key} \textbf{inside} the \textbf{ciphertext}. Notice that this is \textbf{not possible} with \textbf{password-based authentication}, unless we use passwords to derive cryptographic keys. We obtain the following.
+
+\paragraph{ISO/IEC 11770-2 protocols}
+
+\textbf{One-pass unilateral key-establishment}
+$$A \rightarrow B: E_K(ts_A,B,k_s)$$
+,where $ts_A$ is a timestamp or a sequence number (then B will check is $ts_B - ts_A < W$).
+
+\textbf{Two-pass unilateral key-establishment}
+$$\begin{array}{l} B \rightarrow A: N_B\\A \rightarrow B: E_K(N_B, B,k_s) \end{array}$$
+
+\textbf{Two-pass mutual key-establishment}, here Alice and Bob authenticate each other.
+$$\begin{array}{l} A \rightarrow B: E_K(ts_A,B,k_s^A)\\B \rightarrow A: E_K(ts_B,A,k_s^B) \end{array}$$
+,where $ts_A$, $ts_B$ are either timestamps or sequence numbers. The session key is then computed as a function (for example a bitwise XOR) of the two subkeys $k_s = f(k_s^A,k_s^B)$.
+
+\textbf{Three-pass mutual key-establishment}
+$$\begin{array}{l} B \rightarrow A: N_B\\A \rightarrow B: E_K(N_A,N_B,B,k_s^A)\\ B \rightarrow A: E_K(N_B,N_A,k_s^B)\end{array}$$
+
+Notice that we have the same protocol, but now we're adding the session keys. As above, the session key is computed as $k_s = f(k_s^A,k_s^B)$.
+
+\subsubsection{Server-based protocols}
+The point-to-point protocols we have studied so far assume a \textbf{pre-shared key} $K$ between Alice and Bob. This \textbf{does not scale} if we have many users as we should share different keys for any possible pairs (meaning a squared number of keys with respect to the number of users, and specifically $n(n-1)/2$). Moreover, it is \textbf{unclear} \textbf{how} a \textbf{new user} might \textbf{establish} a \textbf{new key} for each different existing user.
+
+Determining a shared-key for symmetric key cryptography, and securely obtaining the public key for public key cryptography, can be solved using \textbf{trusted intermediary}. For symmetric key cryptography, the trusted intermediary is called a \textbf{Key Distribution Center} (KDC), while for public key cryptography, it is called \textbf{Certification Authority} (CA).
+
+The \textbf{Key Distribution Center} (KDC) is a service for distributing new session keys to any pair of user asking for them. The KDC shares one key with each user U, noted $K_U$, and users do not directly share keys among them. When a new user Alice is added she just needs to register to the KDC and get her key $K_A$.
+
+\paragraph{Communication between A and B}
+Suppose that A and B want to communicate using symmetric key cryptography and a trusted KDC. They only know their individual keys, $K_{A-KDC}$ and $K_{B-KDC}$, respectively, for communicating securely with the KDC. One of the most famous key-establishment protocol based on symmetric-key cryptography and on a KDC is the Needham-Schroeder shared-key protocol:
+
+$$\begin{array}{lrcl} 1. & A \rightarrow KDC & : & A,B,N_A\\ 2. & KDC \rightarrow A & : & E_{K_A}(k_s,B,N_A,E_{K_B}(k_s,A)) \\ 3. & A \rightarrow B & : & E_{K_B}(k_s,A) \\4. & B \rightarrow A & : &E_{k_s}(N_B)\\ 5. & A \rightarrow B & : & E_{k_s}(N_B-1)\\\end{array}$$
+We describe the protocol in detail:
+
+\begin{enumerate}
+    \item Alice sends a request to KDC for communicating with B. The request contains a nonce $N_A$;
+    \item KDC sends a message encrypted under Alice’s key containing a new session key $k_s$, the name of Bob and the nonce (which are both checked by Alice), plus a message encrypted for Bob;
+    \item Alice forwards the message encrypted for Bob to Bob;
+    \item Bob decrypts the message and obtains the pair $(k_s , A)$ representing a new session key $k_s$ to be used with user A. He sends a nonce $N_B$ encrypted under the new session key to check that Alice knows the key (this is called the key confirmation step);
+    \item Alice decrypts the nonce sent by Bob, decrements it by 1 and sends it back encrypted. In this way she proves the knowledge of the session key.
+\end{enumerate}
+
+To understand what security guarantees are provided by the protocol we reason on the various entities involved:
+
+\begin{itemize}
+    \item KDC: it generates two messages encrypted under Alice and Bob keys. In this way the KDC is guaranteed that the new session key will only be accessed by Alice and Bob and each of them will know who is the expected counterpart, since the relative identifiers are encrypted together with the session key. For example, when Alice decrypts her message she knows that the intended party is Bob, since B is included in the encryption;
+    \item Alice: she challenges the KDC with a nonce to avoid an attacker in the middle can replay old messages from the KDC. In this way she is guaranteed that the key is a new one and that the KDC is in fact answering her request. The first two messages are similar to the two-pass unilateral key-establishment we already discussed;
+    \item Bob: he receives a message (from Alice) encrypted by the KDC. This message does not contain any time-variant parameter so it might be a replay of an old message. To mitigate this, Bob challenges Alice to prove she knows the session key by sending a nonce encrypted under the key. Only knowing $k_s$ it is possible to decrypt the nonce and send back its value, decremented by 1.
+\end{itemize}
+
+This approach makes sense in a \textbf{local}, controlled \textbf{environment} (such as computer science department or a private company), but it \textbf{does not scale} to a \textbf{wide area network} such as the Internet, where the entities cannot be all registered under a centralized server.
+
+\subsection{Diffie-Hellman key agreement protocol}
+We have seen that sharing secret keys is fundamental for authenticating and running secure sessions. The \textbf{Diffie-Hellman key agreement protocol} allows for ‘magically’ \textbf{establishing} a \textbf{fresh secret key} between Alice and Bob with \textbf{no need of pre-shared keys} or \textbf{secrets} (using an insecure channel). The key can then be used in a symmetric key cipher.
+
+The scheme is based on \textbf{discrete logarithms}. We choose a prime number $p$ and a generator $a$ of $\{1, \ldots ,p-1\}$. A generator $a$ is a number such that $\{ a^1 \mod p, \ldots a^{p-1} \mod p\} = \{ 1, \ldots, p-1 \}$. In other words, if we rise $a$ to all the powers $1, \ldots ,p-1 \mod n$, we obtain all such numbers. In this sense, $a$ can be used to generate the group. 
+
+\example{If $a = 5$ and $p = 23$, we have that $5^1 \mod 23 = 5$, $5^2 \mod 23 = 2$, .., $5^{22} \mod 23 = 1$}
+
+When this happens, we can define the discrete logarithm modulo $p$ of any number $1 \leq b \leq p-1$ as follows: $log_a b$ is the power $i$ such that $a^i \mod p = b$. It is possible to prove that for any prime $p$ there always exists at least one generator $a$ $[1, \text{fact} 2.132]$.
+
+\example{If $b = 2$, then $5^2 \mod 23 = 2$.}
+
+\textbf{Computing} the discrete logarithm modulo $p$ is \textbf{infeasible} for a big prime $p$ such that $p-1$ has at least a big prime factor (this is to prevent the use of the Pohlig–Hellman algorithm which works well only when prime factors of $p-1$ are small). Diffie-Hellman protocol for key agreement picks one of such big primes $p$ and a generator $a$ of $\{1, \ldots, p-1 \}$. The prime $p$ and the generator $a$ are public. Alice and Bob generate two secrets $S_A$, $S_B$ and run the following protocol:
+
+$$\begin{array}{l} A \rightarrow B: a^{S_A} \mod p \\ B \rightarrow A: a^{S_B} \mod p \end{array} $$
+
+Alice and Bob compute the new key respectively as $(a^{S_B})^{S_A} \mod p$ and $(a^{S_A})^{S_B} \mod p$, that clearly give the same value. Computing the secrets $S_A$, $S_B$ from the exchanged messages amounts to compute the discrete logarithm, that we have assumed to be infeasible. Thus, an attacker eavesdropping the exchanged traffic will never be able to compute the new exchanged key.
+
+\image{img/diffie1.png}{0.6}{Diffie-Hellman protocol: scheme}
+
+\example{The prime $p = 23$ and the generator $a = 5$ are public. Alice chooses $S_A = 6$, and Bob chooses $S_B = 15$. What is the new secret key?\\We have $$A \rightarrow B: a^{S_A} \mod p = 5^6 \mod 23 = 8$$ and $$B \rightarrow A: a^{S_B} \mod p = 5^{15} \mod 23 = 19$$ Now, Alice and Bob compute the new key respectively as $$(a^{S_B})^{S_A} \mod p = 19^6 \mod 23 = 2$$ and $$(a^{S_A})^{S_B} \mod p = 8^{15} \mod 23 = 2$$ Alice and Bob now share the secret key $k = 2$.}
+
+\subsubsection{Man-in-the-middle}
+Even if Diffie-Hellman protocol has the nice above property about \textbf{key confidentiality}, the fact it is not based on any pre-shared secret makes it completely \textbf{vulnerable} to \textbf{active attackers} that are able to \textbf{intercept} and \textbf{introduce} \textbf{messages} on the network. In particular, an attacker can mount a \textbf{man-in-the-middle attack} where he is able to \textbf{impersonate} Alice with Bob and Bob with Alice. This is easily achieved by establishing two different keys with them, so that he can be in the middle in the subsequent session. The attack works as follows:
+
+$$\begin{array}{cccccl} A  & \rightarrow &  E(B) & & &: a^{S_A} \mod p \\ A & \leftarrow & E(B) & & &: a^{S_E} \mod p \\ & & E(A)  & \rightarrow &  B &: a^{S_E} \mod p \\ & & E(A) & \leftarrow & B &: a^{S_B} \mod p \end{array}$$
+
+Now Alice and Bob respectively share with the attacker keys $k_s^1 = a^{S_AS_E} \mod p$ and $k_s^2 = a^{S_BS_E} \mod p$. Next messages, encrypted under such keys, will all ‘pass through’ the attacker as follows:
+
+$$\begin{array}{cccccl} A  & \rightarrow &  E(B) & & &: E_{k_s^1}(M_A)  \\ & & E(A)  & \rightarrow &  B &: E_{k_s^2}(M_A)   \\ & & E(A) & \leftarrow & B &: E_{k_s^2}(M_B)  \\ A & \leftarrow & E(B) & & &: E_{k_s^1}(M_B)  \end{array}$$
+
+, where we recall that $E(B)$ represents the attacker who pretends to be B.
+
+Alice and Bob believe to communicate in a secure, encrypted way, but the attacker is in fact decrypting and re-encrypting any message they exchange.
+
+\subsubsection{Summary}
+\textbf{Diffie-Hellman protocol} is \textbf{secure} only \textbf{against passive attackers}. The absence of any pre-shared secret makes it impossible to authenticate parties. An attacker can easily pretend to be one party and mount man-in-the-middle attacks, as shown above. This protocol can be made secure using digital signatures (so to provide authentication).
+
+\subsection{Strong authentication based on asymmetric-key cryptography}
+We have seen that one technique to authenticate and perform session key establishment is to have a \textbf{centralized KDC service} that shares a symmetric key with any registered users. While this solution makes sense in a \textbf{local}, controlled \textbf{environment} (such as a computer science department or a private company), it \textbf{cannot scale} to a wide area network such as the Internet, where entities cannot be all registered under a centralized server.
+
+\textbf{Asymmetric-key protocols} are more \textbf{suitable} in this setting, as they \textbf{allow} for \textbf{authentication} and \textbf{key-establishment} \textbf{without} the \textbf{presence} of \textbf{on-line servers}. We discuss how the previous techniques need to be modified when asymmetric-key cryptography is employed.
+
+\subsubsection{Asymmetric key authentication protocols}
+Let us start from a basic, flawed, unilateral authentication protocol based on timestamps inspired to the one we proposed for symmetric-key encryption:
+$$A \rightarrow B: E_{PK_B}(A, t_A) $$
+Alice sends her name and a valid timestamp to Bob, both encrypted under Bob’s public key $PK_B$. This protocol is far from being correct, since any user can send the very same message to Bob, given that $PK_B$ is public. So, for example, the attacker can easily pretend to be Alice as follows:
+$$E \rightarrow B: E_{PK_B}(A, t_E)$$ 
+Asymmetric-key encryption never proves the knowledge of a secret as it only requires the knowledge of $PK_B$. Decryption, instead, can be done only when the private key is known. Thus, a correct unilateral authentication protocol can be obtained by challenging Alice to decrypt something. 
+
+The more natural way to achieve this is to adopt a Nonce-based authentication scheme:
+$$\begin{array}{l} B\rightarrow A: E_{PK_A}(N_B,B) \\ A\rightarrow B: N_B \end{array}$$
+Bob sends a nonce $N_B$ encrypted together with his identifier under the public key of Alice. Only knowing Alice’s private key, it is possible to decrypt the nonce and send back its value in the clear. This proves the knowledge of a secret that only Alice is assumed to possess and provides authentication. The presence of the time-variant nonce prevents possible replays. The reason why it is important to specify the identifier in the first message is to prevent man-in-the-middle attacks. We illustrate this subtle issue on the following mutual-authentication protocol.
+
+The unilateral authentication protocol above can be extended using the Needham-Schroeder public-key protocol (omitted in these notes, for details refere to these notes\footnote{https://secgroup.dais.unive.it/teaching/cryptography/asym-key-authentication/}) in order to provide mutual authentication.
+
+\subsubsection{Signature-based authentication protocols}
+Another way to provide \textbf{authentication} and \textbf{key-establishment} using \textbf{asymmetric-key} is combining asymmetric-key \textbf{encryption} and \textbf{digital signatures}. Encryption is needed to protect key confidentiality while signature gives authentication. 
+
+We start from the the basic, flawed unilateral protocol:
+
+$$A \rightarrow B: E_{PK_B}(A, t_A, k_s)$$
+
+However, in this case everybody knows the $PK_B$, so we add a signature from Alice to prove Alice identity: this, in fact, replaces Alice identifier. The timestamp can be sent in the clear. We include Bob’s identifier in the signature since, as we have discussed, it is important to specify the intended receiver of the authenticated exchange. We obtain the following protocol:
+
+$$A \rightarrow B: t_A, E_{PK_B}( k_s,  sign_{A}( B, t_A, k_s )) $$
+
+The problem with this solution is that the message to encrypt will be typically bigger than the size of one block (for RSA, bigger than the modulus since the signature is already, by itself, as big as the modulus). Implementing this protocol would amount to adopt some encryption mode such as CBC, with strong integrity guarantees.
+
+A \textbf{solution} might be to \textbf{separate} \textbf{encryption} and \textbf{signature} as follows:
+
+$$A \rightarrow B: t_A, E_{PK_B}(k_s), sign_{A}( B, t_A, k_s ) $$
+
+A \textbf{symmetric key} is typically much \textbf{smaller} than \textbf{one encryption block} for asymmetric key cryptography (for example, we might have a 1024 bits RSA modulus and a 128 or 256 bits AES symmetric key). The problem with this solution is that signatures sometimes allow for computing the signed message. For example, a “raw” signature implemented as RSA encryption under the private key (with no hash) can be decrypted using the public key, giving the message in the clear and thus the value of the session key. This protocol can be adopted only when the signature scheme prevents the computation of the signed message.
+
+A general solution is thus to \textbf{first encrypt} and then \textbf{sign}.
+
+$$A \rightarrow B: t_A, E_{PK_B}(k_s,A), sign_{A}( B, t_A, E_{PK_B}(k_s,A))$$ 
+
+Since signature can be implemented using hashes we do \textbf{not have length issues} with this protocol. Notice that Alice identifier has been included in the encrypted message since, as usual, we want messages to be explicit about the parties involved in the protocol. More specifically, this \textbf{prevents} that an \textbf{attacker} \textbf{intercepts} the message and signs the (encrypted) key himself. This could be exploited in settings where the protocol gives credit (such as recharging a prepaid card, or getting an award for submitting the solution to a problem). By signing the session key the attacker will get credit for whatever is sent by Alice encrypted under $k_s$. \textbf{Adding} the \textbf{identifier} clearly \textbf{prevents} this \textbf{attack} since Bob will check that the identifier of the signature is the same as the one included in the encrypted message.
+
+\paragraph{Remark} We have seen in numerous examples that when developing an authentication protocols it is important to specify the identifier which is not already implicit in the key. For example if we encrypt under Bob’s public key it is good to specify A. If Alice is signing it is good to include B in the signature.
+
+\paragraph{X.509 strong authentication protocol} If we run the above unilateral authentication protocol twice we basically obtain the X.509 \textbf{strong two-way authentication protocol}:
+
+$$\begin{array}{l} A \rightarrow B: t_A, E_{PK_B}(k^A_s,A), sign_{A}( B, t_A, E_{PK_B}(k^A_s,A)) \\ B \rightarrow A: t_B, E_{PK_A}(k^B_s,B), sign_{B}( A, t_B, E_{PK_A}(k^B_s,B))\end{array} $$
+
+Alice and Bob compute a session key as $k_s = f(k^A_s,k^B_s)$.
+
+\textbf{Mutual authentication} can also be achieved based on nonces as follows:
+
+$$\begin{array}{l} B \rightarrow A: N_B \\ A \rightarrow B: N_A, E_{PK_B}(k^A_s,A), sign_{A}( B, N_A, N_B, E_{PK_B}(k^A_s,A)) \\ B \rightarrow A: E_{PK_A}(k^B_s,B), sign_{B}( A, N_B, N_A, E_{PK_A}(k^B_s,B))\end{array}$$ 
+
+,which is very close to the X.509 strong three-way authentication protocol described here\footnote{https://www.itu.int/rec/T-REC-X.509}.
+
+\subsection{Key management}
+We now discuss how keys are managed, stored and checked by parties and KDC servers.
+
+\subsubsection{Symmetric key management}
+We have seen that practical authentication protocols based on symmetric keys require the presence of a centralised trusted party that shares one long-term key with each possible user. It is important to have a \textbf{way} to securely \textbf{deal} with these \textbf{keys} so that an attack to the KDC system would not necessarily compromise the keys of all users.
+
+An interesting solution to this problem is provided by \textbf{symmetric key certificates}. The \textbf{trusted party} possesses a \textbf{master key} $K_M$ that it only knows. When a new user $U$ is registered, the respective \textbf{long-term key} $k_U$ is \textbf{generated} and is \textbf{encrypted} under the \textbf{master key} together with the \textbf{identifier} and additional information such as the key lifetime, type, etc. For example, $SCert_U = E_{K_M}(U,k_U,L)$ certifies that user $U$ has key $k_U$ with lifetime $L$.
+
+These \textbf{certificates} can be distributed to users together with their keys and users can freely distribute their certificates to other users, since the encryption under the master key protects the confidentiality of the enclosed keys. The trusted party can completely forget about the keys and ask for certificates when needed. 
+
+\subsubsection{Asymmetric key management}
+The idea of certificates is even more important for protocols based on \textbf{asymmetric keys}. In this case, in fact, it is crucial that \textbf{key management} is completely \textbf{decentralised} since we do not want any on-line centralised servers available at each protocol execution.
+
+First notice that the relevant property here is \textbf{authenticity} of \textbf{public keys}. If Alice and Bob want to communicate they need a way to check that public key is the one truly associated with the opposite party. Suppose Alice wants to send Bob a secret message M. It is insecure for Bob to simply send his public key to Alice:
+
+$$\begin{array}{l} B \rightarrow A: PK_B \\ A\rightarrow B: E_{PK_B}(M) \end{array}$$
+
+In fact, an attacker can replace $PK_B$ with his own key:
+
+$$\begin{array}{cccl} E(B) & \rightarrow & A &: PK_E \\ A & \rightarrow & E(B) & : E_{PK_E}(M) \end{array}$$
+
+The attacker can then decrypt the secret message encrypted under his public key.
+
+We need a \textbf{mechanism} that allows Alice to \textbf{check} that the \textbf{received key} is the one belonging to Bob. Public key certificates contains the same informations as the symmetric key ones but, instead of being encrypted under a symmetric master key, they are signed by a Certification Authority (CA), a trusted entity that certifies the authenticity of user’s public keys. For example, $Cert_B = B$, $PK_B$, $L$, $sign_{CA}(B, PK_B, L)$. 
+
+If Alice knows the public key of the CA and Bob sends this certificate, then Alice can check the validity of the key and its association with Bob (B). The protocol becomes:
+
+$$\begin{array}{l} B \rightarrow A: Cert_B \\ A\rightarrow B: E_{PK_B}(M) \end{array}$$
+
+The attacker cannot change the public key as he is not able to forge a signature from the CA.
+
+\paragraph{Certificate chains}
+Having just \textbf{root CA’s} signing any certificate in the world \textbf{does not scale} well. It is useful in practice to have different \textbf{levels} of \textbf{certifications} (maybe associated with countries, states, cities, etc.) so that the end user can go the ‘local’ CA. To deal with this \textbf{hierarchical organisation of CA’s} we need to be able to check certificate chains: the root CA certifies the next CA in the hierarchy and so on all the way to the end user. Once we provide the whole \textbf{chain}, it is enough to \textbf{trust} the \textbf{root public key} in order to check all the certificates in the path to the end user.
+
+\image{img/certchain1.png}{0.80}{Certificate chain: example}
+
+Above we illustrate two end users Carol and Dave certified by two different CAs under the same root CA. If Carol wants to communicate with Dave, she needs to send Dave the certificate chain from the root CA to herself: $\mathrm{CA}_1$ certificate signed by $\mathrm{CA}_{root}, \mathrm{CA}_3$ certificate signed by $\mathrm{CA}_1$ and Carol’s certificate signed by $\mathrm{CA}_3$.
+
+\paragraph{Further extensions}
+The basic \textbf{hierarchal tree organisation} illustrated above can be extended to multi-trees, where many root CAs are present (as typically happens in browsers): if any users know many root CAs it is enough a chain from one of the roots to a leaf to certify the corresponding user. To avoid storing all the root certificates, root CAs might certify each other so that any root CA is ‘reachable’ by any other.
+
+Interestingly, there are solutions where no centralised authorities are required. In \textbf{Pretty Good Privacy} (PGP) it is proposed a \textbf{web-of-trust}: any \textbf{user} can \textbf{trust} other \textbf{users}. The level of trust might be such that if Alice trusts Bob, any other user certified by Bob is trusted by Alice. In a sense, each user can ‘elect’ other users as CA’s that can be trusted when signing certificates for other users. This can be depicted as a \textbf{general graph} with \textbf{no roots}: a \textbf{path} in the graph represents a \textbf{chain of certificates} from oner user to the other. If we trust the starting user, we can successfully verify the identity and public key of the final user in the path.
+
+\image{img/pgp1.png}{1.0}{PGP: web of trust}
