@@ -1,0 +1,481 @@
+\section{Approximation algorithms}\label{ch3}
+Following our encounter with NP-completeness and the idea of computational intractability in general, we’ve been dealing with a fundamental question: How should we design algorithms for problems where polynomial time is probably an unattainable goal? In this chapter, we focus on a new theme related to this question: approximation algorithms, which run in polynomial time and find solutions that are guaranteed to be close to optimal. 
+
+There are two key words to notice in this definition: close and guaranteed. We will not be seeking the optimal solution, and as a result, it becomes feasible to aim for a polynomial running time. At the same time, we will be interested in proving that our algorithms find solutions that are guaranteed to be close to the optimum (more specifically, a $\rho$-approximation of the optimal solution). There is something inherently tricky in trying to do this: in order to prove an approximation guarantee, we need to compare our solution with (and hence reason about) an optimal solution that is computationally very hard to find. This difficulty will be a recurring issue in the analysis of the algorithms in this chapter.
+
+\definition{$\rho$-approximated algorithm}{Assume we search for the \textbf{minimum} or \textbf{maximum} of a cost function. Assume $C^*$ is the \textbf{cost} of an \textbf{optimal solution} and $C$ is the \textbf{cost} of the \textbf{approximation algorithm}, we have a $\rho$-approximated algorithm if and only if $max(C/C^* , C^*/C) \leq \rho$ (depending whether we're considering a min/max problem). An approximation algorithm has as input a problem instance and a value $r$. We are looking for polynomial time approximation algorithms.}
+
+Consider two problems, $P_1$ and $P_2$, both of which are NP-complete (decisional version). If I find an approximation algorithm for the optimization version of one, can I apply it to the other? In general, a good approximation algorithm for one problem does not provide a good approximation to the other unless the reduction is approximation-preserving.
+
+\definition{Approximation-preserving reduction}{An approximation-preserving reduction is an \textbf{algorithm} for transforming one optimization problem into another problem, such that the \textbf{distance} of solutions from optimal is \textbf{preserved} to some degree.}
+
+\subsection{Vertex cover}
+\definition{Vertex cover problem}{Given a graph $G = (V, E)$ and an integer $k$, is there a subset of vertices $V' \subseteq V$ such that $|V'| \leq k$, and for each edge, at least one of its endpoints is in $V'$?} 
+
+This basically reduces to the problem of \textbf{finding} a \textbf{subset of vertices} that \textbf{covers all the edges} of the graph.
+
+\example{Is there a vertex cover of size $\leq 4?$ Yes. Is there a vertex cover of size $\leq 3$? No. \imageB{approx1.png}{1.0}}
+
+Obviously, we can have:
+
+\begin{itemize}
+    \item \textit{Optimization version}: In this case the input is a graph $G$, and the output is the vertex cover $V'$ of minimum-size;
+    \item \textit{Decision version}: In this case the input is a graph $G$, and an integer $k$, and we want to answer the following question: does $G$ have vertex cover of size $\leq k$ ?
+\end{itemize}
+
+The decision version of the problem is NP-complete ($3SAT \leq_p VC$), and the optimization version is at least as hard. 
+
+Here is a trivial \textbf{2-approximation algorithm}, that is, the solution contains at most twice the number of vertices of the optimal solution.
+
+\begin{algorithm} \caption{Approximated algorithm for finding the vertex cover of a graph}
+  \KwIn{Graph $G = (V,E)$}
+  \KwOut{..}
+
+  $V' \xleftarrow{} \emptyset$;
+
+  $E' \xleftarrow{} E$;
+
+  \While{$E' \neq \emptyset$}{
+  Let $(u,v)$ be an arbitrary edge of $E'$;
+
+  Remove from $E'$ all the edges incident on either $u$ or $v$;
+
+  $V' = V' \cup \{u,v\}$
+  }
+  \Return $V'$;
+  
+\end{algorithm}
+
+We now discuss the proposed algorithm.
+
+\subsubsection{Correctness} 
+
+\theoremBox{The algorithm is a poly-time 2-approximation algorithm.}
+
+\textit{Proof.} 
+The running time is trivially bounded by $O(V * E)$ (at most $|E|$ iterations, each of complexity at most $O(V)$. Notice that if $E = n^2$, then we have a complexity of $O(V * E) = O(n^3)$).
+
+Correctness: $V'$ clearly is a vertex cover and the algorithm terminates since at each step at least one edge is removed.
+
+Let's now consider the size of the resulting cover: let $A$ denote set of edges that are picked.
+\begin{enumerate}
+    \item In order to cover edges in $A$, any vertex cover, in particular an optimal cover $VC^*$, must include at least one endpoint of each edge in $A$. By construction of the algorithm, no two edges in $A$ share an endpoint (once edge is picked, all edges incident on either endpoint are removed). Therefore, no two edges in $A$ are covered by the same vertex in $VC^*$, and $|VC^*| \geq |A|$;
+    \item When an edge is picked, neither endpoint is already in $VC$, thus $|VC| = 2|A|$.
+\end{enumerate}
+
+Combining (1) and (2) yields $|VC| = 2|A| \leq 2|VC^*|$, from which we get $\frac{VC}{VC^*} \leq 2$, so the algorithm is 2-approximated. $\blacksquare$
+
+\subsection{Load balancing}
+Now we consider the Load Balancing problem. We have in input $m$ identical machines and $n$ jobs:
+\begin{itemize}
+    \item Job $j$ has processing time $t_j$;
+    \item Job $j$ must run contiguously on one machine;
+    \item A machine can process at most one job at a time.
+\end{itemize}
+
+\imageB{approx5.png}{1.0}
+
+\definition{Load}{Let $J(i)$ be the subset of jobs assigned to machine $i$. The \textbf{load} of machine $i$ is $L_i = \sum_{j \in J(i)} t_j$.}
+
+\definition{Makespan}{The \textbf{makespan} is the \textbf{maximum load} on any machine $L = \max_i L_i$.}
+
+The goal of the Load Balancing problem is to assign each job to a machine to minimize makespan. This problem in \textbf{NP-hard}.
+
+\subsubsection{List scheduling algorithm}
+In this case the approach is the following:
+
+\begin{enumerate}
+    \item Consider $n$ jobs in some fixed order;
+    \item Assign job $j$ to machine whose load is smallest so far.
+\end{enumerate}
+
+An example of execution of the algorithm is showed in the following image.
+
+\imageB{approx6.png}{1.0}
+
+Formally, the algorithm is the following:
+
+\imageB{approx7.png}{1.3}
+
+The \textbf{complexity} is $O(n \log m)$ if we exploit a priority queue.
+
+\lemma{1}{The \textbf{optimal makespan} is $L^* \geq \max_j t_j$}
+
+\textit{Proof.} Some machine must process the most time-consuming job. 
+
+\lemma{2}{The \textbf{optimal makespan} is $L^* \geq \frac{1}{m} \sum_j t_j$}
+
+\textit{Proof.} The total processing time is  $\sum_j t_j$, and one of the $m$ machines must do at least a $1/m$ fraction of total work.
+
+\theoremBox{The greedy algorithm is a 2-approximation (i.e. the makespan is at most twice as the optimal one).}
+
+\textit{Proof.} Consider load $L_i$ of bottleneck machine $i$, and let $j$ be last job scheduled on machine $i$. When job $j$ is assigned to machine $i$, $i$ had smallest load. Its load before assignment is $L_i - t_j \implies L_i - t_j \leq L_k$ for all $1 \leq k \leq m$.
+
+\imageB{approx8.png}{1.3}
+
+We sum all the inequalities over all $k$ and we divide by $m$:
+
+$$
+\sum_k L_k \geq m(L_i - t_j)
+$$
+
+from which we get that
+
+$$
+L_i - t_j \leq \frac{1}{m} \sum_k L_k
+$$
+
+, but the total load is equal to the total time ($\sum_k L_k = \sum_k t_k$), so
+
+$$
+L_i - t_j \leq \frac{1}{m} \sum_k t_k
+$$
+
+From Lemma 2 we know that $L_i - t_j \leq L^*$, so
+
+$$
+L_i = (L_i - t_j) + t_j
+$$
+, but:
+
+\begin{itemize}
+    \item $(L_i - t_j) \leq L^*$;
+    \item $t_j \leq L^*$ from Lemma 1, since $L^* \geq \max_j t_j$,
+\end{itemize}
+
+so we conclude that 
+
+$$
+L_i \leq 2L^*
+$$
+
+, that is, the greedy algorithm is a 2-approximation. $\blacksquare$
+
+\subsubsection{LPT Rule}
+
+Can we do better than this? Consider the following case where we have:
+
+\begin{itemize}
+    \item $m$ machines;
+    \item $m(m-1)$ jobs of length 1;
+    \item one job of length $m$.
+\end{itemize}
+
+In this case, the makespan of the list scheduling algorithm is clearly worse than the optimal one, as we can see in the following image.
+
+\imageB{approx9.png}{1.3}
+\imageB{approx10.png}{1.3}
+
+The idea of this second approach is the following: \textbf{sort} the $n$ jobs in \textbf{descending} order of processing time, and then run list scheduling algorithm (LPT, Long Processing Time).
+
+The new algorithm is the following.
+
+\imageB{approx11.png}{1.3}
+
+As we can see, the complexity does not change, so it is again $O(n \log m)$. Moreover, we can notice that if we have at most $m$ jobs, then list-scheduling is optimal, since each job put on its own machine. A more complex discussion arises if we have more than $m$ jobs.
+
+\lemma{3}{If there are more than $m$ jobs, $L^*\geq 2t_{m+1}$.} 
+
+\textit{Proof.} Consider the first $m+1$ jobs $t_1,.., t_{m+1}$. Since the $t_i$'s are in descending order, each takes at least $t_{m+1}$ time.
+There are $m+1$ jobs and $m$ machines, so by pigeonhole principle, at least one machine gets two jobs.
+
+\theoremBox{LPT rule is a 3/2-approximation algorithm.}
+
+\textit{Proof.} We follow the same basic approach as for list scheduling:
+
+$$
+L_i = (L_i - t_j) + t_j
+$$
+
+but:
+
+\begin{itemize}
+    \item $(L_i - t_j) \leq L^*$;
+    \item $t_j \leq 1/2L^*$ from Lemma 3 (by observation, we can assume that the number of jobs $> m$)
+\end{itemize}
+
+so we conclude that:
+
+$$
+L_i \leq \frac{3}{2} L^* \hspace{10mm} \blacksquare
+$$
+
+An even better approximation was discovered in 1969, when Graham proved that LPT rule is a $4/3$-approximation (lower-bound).
+
+\subsection{Center selection}
+Like the problem in the previous section, the Center Selection Problem, which we consider here, also relates to the general task of allocating work across multiple servers. The \textbf{issue} at the heart of Center Selection is \textbf{where best to place the servers}; in order to keep the formulation clean and simple, we will not incorporate the notion of load balancing into the problem. The Center Selection Problem also provides an example of a case in which the most natural greedy algorithm can result in an arbitrarily bad solution, but a slightly different greedy method is guaranteed to always result in a near-optimal solution.
+
+\subsubsection{The problem}
+Consider the following scenario. We have a set $S$ of $n$ sites: we want to select $k>0$ centers so that the \textbf{maximum distance} from a site to the nearest center is \textbf{minimized}. 
+
+\imageB{approx12.png}{1.0}
+
+Let us start by defining the input to our problem more formally. We are given:
+\begin{itemize}
+    \item An integer $k$;
+    \item A set $S$ of $n$ sites;
+    \item A distance function.
+\end{itemize}  
+
+When we consider instances where the sites are points in the plane, the distance function will be the standard \textbf{Euclidean distance} between points, and any point in the plane is an option for placing a center. The algorithm we develop, however, can be applied to more \textbf{general notions of distance}: we will allow any distance function that satisfies the following natural properties.
+\begin{itemize}
+    \item \textbf{Identity}: $dist(s, s) = 0$ for all $s \in S$;
+    \item \textbf{Symmetry}: $dist(s, z) = dist(z, s)$ for all sites $s, z \in S$;
+    \item \textbf{Triangle inequality}: $dist(s, z) + dist(z, h) \geq dist(s, h)$.
+\end{itemize}
+
+The \textbf{first} and \textbf{third} of these properties tend to be satisfied by essentially all natural notions of distance. Although there are applications with asymmetric distances, most cases of interest also satisfy the \textbf{second} property. Our greedy algorithm will apply to any distance function that satisfies these three properties, and it will depend on all three.
+
+Next we have to clarify what we mean by the goal of wanting the centers to be \textbf{"central"}. Let $C$ be a set of centers, then:
+
+\begin{itemize}
+    \item The distance of a site $s$ to the centers is defined as $dist(s, C) = \min_{c \in C} dist(s, c)$, i.e. the distance between $s$ and the closest center;
+    \item We say that $C$ forms an $r$-cover if each site is within distance at most $r$ from one of the centers, that is, if $dist(s, C) \leq r$ for all sites $s \in S$. The minimum $r$ for which $C$ is an $r$-cover will be called the covering radius of $C$ and will be denoted by $r(C)$. More formally, $r(C) = \max_{i} dist(s_i,C)$, i.e. the smallest covering radius.
+\end{itemize}
+
+In other words, the \textbf{covering radius} of a set of centers $C$ is the \textbf{farthest} that anyone needs to travel to get to his or her \textbf{nearest center}. Our goal will be to select a set $C$ of $k$ centers for which $r(C)$ is as \textbf{small} as possible.
+
+\subsubsection{Greedy algorithm}
+We now discuss greedy algorithms for this problem. As before, the meaning of “greedy” here is necessarily a little fuzzy; essentially, we consider algorithms that select sites one by one in a myopic fashion (that is, choosing each without explicitly considering where the remaining sites will go). 
+
+Probably the simplest greedy algorithm would work as follows. It would put the \textbf{first center} at the \textbf{best possible location} for a single center, then keep \textbf{adding} \textbf{centers} so as to reduce the covering radius, each time, by as much as possible. It turns out that this approach is a bit \textbf{too simplistic} to be effective: there are cases where it can lead to very bad solutions. 
+
+To see that this simple greedy approach can be really bad, consider an example with only two sites $s$ and $z$, and $k = 2$. Assume that $s$ and $z$ are located in the plane, with distance equal to the standard Euclidean distance in the plane, and that any point in the plane is an option for placing a center. Let $d$ be the distance between $s$ and $z$. Then the best location for a single center $c_1$ is halfway between $s$ and $z$, and the covering radius of this one center is $r(\{c_1\}) = d/2$. The greedy algorithm would start with $c_1$ as the first center. No matter where we add a second center, at least one of $s$ or $z$ will have the center $c_1$ as closest, and so the covering radius of the set of two centers will still be $d/2$. Note that the optimum solution with $k = 2$ is to select $s$ and $z$ themselves as the centers. This will lead to a covering radius of 0. 
+
+A more complex example illustrating the same problem can be obtained by having two dense “clusters” of sites, one around $s$ and one around $z$. Here our proposed greedy algorithm would start by opening a center halfway between the clusters, while the optimum solution would open a separate center for each cluster.
+
+\imageB{approx13.png}{0.8}
+
+For implementing this algorithm, we can simply select the site $s$ that is farthest away from all previously selected centers: If there is any site at least $2r$ away from all previously chosen centers, then this farthest site $s$ must be one of them. Here is the resulting algorithm.
+
+\imageB{approx14.png}{1.0}
+
+\textbf{Note:} upon termination, all centers in $C$ are pairwise at least $r(C)$ apart, by construction of the algorithm.
+
+\example{Apply the greedy algorithm on a grid with 4 sites and $k = 2$ centers. \imageB{approx15.png}{0.4} \imageB{approx16.png}{0.4}}
+
+\theoremBox{Greedy algorithm is a 2-approximation for center selection problem.}
+
+\textit{Proof.} Let $C^*$ be an optimal set of centers, then we want to prove that $r(C) \leq 2r(C^*)$. Let $r(C^*)$ denote the minimum possible radius of a set of $k$ centers. For the proof, we assume that we obtain a set of $k$ centers $C$ with $r(C^*) < \frac{1}{2}r(C)$, and from this we derive a contradiction.
+
+\begin{itemize}
+    \item For each site $c_i \in C$, consider the ball of radius $\frac{1}{2}r(C)$ around it;
+    \item We have exactly one $c_i^*$ (i.e. center of the optimal solution), and let $c_i$ be the site paired with $c_i^*$; \imageB{approx18.png}{0.8}
+    \item Consider any site $s$ and its closest center $c_i^*$ in $C^*$:
+    $$
+    dist(s,C) \leq dist(s, c_i) \leq dist(s,c_i^*) + dist(c_i^*, c_i) \leq 2r(C^*)
+    $$
+    The first inequality comes from the fact that $C$ is the set of all centers, the second from the triangular inequality, while the last one comes from the fact that both $dist(s,c_i^*)$ and $dist(c_i^*, c_i)$ are $\leq r(C^*)$ since $c_i^*$ is the closest center. $\blacksquare$
+\end{itemize}
+
+Notice that the greedy algorithm always places centers at sites, but is still within a \textbf{factor of 2} of best solution that is allowed to place centers anywhere. Is there a hope of a $3/2$-approximation, or a $4/3$?
+
+\theoremBox{Unless $P = NP$, there is no $\rho$-approximation for center-selection problem for $\rho < 2$.}
+
+\subsection{Metric Traveling Salesman Problem (Metric TSP)}
+In the traveling-salesman problem we are given a complete undirected graph $G = (V,E)$ that has a non-negative integer cost $c(u,v)$ associated with each edge $u,v \in E$, and we must find a \textbf{hamiltonian cycle} (a tour) of $G$ with \textbf{minimum cost}.
+
+\theoremBox{There is no constant factor approximation algorithm for TSP, unless $P = NP$.}
+
+In many practical situations, the least costly way to go from a place $u$ to a place $w$ is to go directly, with no intermediate steps. Put another way, cutting out an intermediate stop never increases the cost. We formalize this notion by saying that the cost function $c$ satisfies the \textbf{triangle inequality} if, for all vertices $u,v,w \in V$:
+
+$$
+c(u,w) \leq c(u,v) + c(v,w)
+$$
+
+The triangle inequality seems as though it should naturally hold, and it is \textbf{automatically satisfied in several applications}. For example, if the vertices of the graph are points in the plane and the cost of traveling between two vertices is the ordinary euclidean distance between them, then the triangle inequality is satisfied. Furthermore, many cost functions other than euclidean distance satisfy the triangle inequality.
+
+\definition{Metric TSP problem}{Given a complete graph with edge costs satisfying triangle inequalities, find a \textbf{minimum cost cycle} visiting \textbf{every vertex} exactly once.} 
+
+This problem is a special case of the standard TSP problem, is \textbf{NP-hard}, and it is characterized by a $2$-approximation and a $3/2$-approximation. In the next section we will discuss such approximations.
+
+\subsubsection{Approximation algorithms for metric TSP}
+\paragraph{2-approximation}
+
+The algorithm is the following:
+
+\begin{enumerate}
+    \item \textbf{Find} the minimum spanning tree of $G$: $MST(G)$; 
+
+    \imageB{approx19.png}{0.8}
+    
+    We recall that a MST is defined as follows.
+
+    \definition{Spanning tree}{Given a connected, undirected graph, a \textbf{spanning tree} of that graph is a \textbf{subgraph} that is a \textbf{tree} and \textbf{connects all the vertices} together.}
+    
+    \definition{Minimum spanning tree}{A minimum spanning tree (\textbf{MST}) or minimum weight spanning tree is then a \textbf{spanning tree} with \textbf{minimum} \textbf{weight}.}
+    
+    In order to find an MST of a graph, we can use the Prim's algorithm, whose complexity is $O(m \log n)$ or $O(m + n \log n)$, depending on the data structure;
+    
+    \item Take $MST(G)$ and \textbf{double} the edges: $T=2*MST(G)$;
+
+    \imageB{approx20.png}{1.0}
+    
+    \item The graph $T$ is \textbf{Eulerian} (we have an even degree for each node, and the graph is connected), so we can traverse it, visiting each edge exactly once;
+    \item Create \textbf{shortcuts} in the Eulerian tour, to create a tour.
+
+    Start at an arbitrary point and follow the tour, but mark vertices when you visit them as already visited. Later, when encountering a vertex previously visited, just skip over it and go directly to the next vertex on the tour. If that vertex has also already been seen, go on to the next, etc. Keep going until encountering the start vertex again, i.e., create shortcuts in the Euler tour, to create a tour.
+
+    \imageB{approx21.png}{1.0}
+
+    Note: the initial graph is complete: by triangular inequalities, the shortcut tour is not longer than the Eulerian tour.
+    
+\end{enumerate}
+
+\theoremBox{The above algorithm gives a 2-approximation for the TSP problem (in a metric graph with the triangle inequality).}
+
+\textit{Proof.} Let us define:
+
+\begin{itemize}
+    \item $OPT$ as the optimal solution (i.e. set of edges) for TSP;
+    \item $A$ as the set of edges chosen by the algorithm;
+    \item $EC$ as the set of edges in the Eulerian cycle.
+\end{itemize}
+
+We have that:
+
+$$cost(T) \leq cost(OPT)$$ since $OPT$ is a cycle, remove any edge and obtain a spanning tree, MST is a lower bound of TSP. 
+
+Then,
+
+$$cost(EC) = 2cost(T)$$ because every edge appears twice. 
+
+Thus, $$cost(EC) = 2cost(T) \leq 2cost(OPT)$$
+
+Since $cost(A) \leq cost(EC)$ (because of triangle inequalities, shortcutting) we finally state that
+
+$$cost(A) \leq 2cost(OPT) \hspace{10mm} \blacksquare$$
+
+\paragraph{3/2-approximation}
+
+Before analyzing the algorithm, let us define some concepts.
+
+\definition{Graph matching}{A \textbf{matching} $M$ in a graph $G(V,E)$ is a \textbf{subset of the edges} of $G$ such that \textbf{no two edges} in $M$ are \textbf{incident} to a common vertex. The weight of $M$ is the sum of its edge weights.}
+
+\definition{Perfect matching}{A \textbf{perfect matching} is a matching in which \textbf{every vertex is matched}.}
+
+\image{approx24.png}{1.0}{Example of perfect matching with weight $16$.}
+
+The matching problem can be solved in \textbf{polynomial time}.
+
+The \textbf{$3/2$-approximation algorithm} is the following:
+
+\begin{enumerate}
+    \item \textbf{Find} the minimum spanning tree of $G$: $MST(G)$;
+    \item \textbf{Locate} the \textbf{odd degree vertices} in the MST (any graph has an even number of odd degree nodes);
+
+    \imageB{approx23.png}{0.7}
+
+    \item Let $M$ be the minimum weight perfect matching on the odd degree nodes located at the previous step;
+    
+    \imageB{approx25.png}{0.8}
+
+    \item \textbf{Merge} the perfect edges with MST ($E=M+MST$): $E$ is Eulerian, so find a Eulerian walk of $E$;
+
+    \imageB{approx26.png}{0.8}
+
+    \item \textbf{Bypass repeated nodes} on the Eulerian walk to get a TSP tour.
+    
+\end{enumerate}
+
+\theoremBox{The above algorithm gives a $3/2$-approximation for the TSP problem (in a metric graph with the triangle inequality).}
+
+\textit{Proof.} We have:
+$$cost(T) \leq cost(OPT)$$ since OPT is a cycle, remove any edge and obtain a spanning tree, MST is a lower bound of TSP.
+
+Then,
+$$cost(M) \leq 0.5 * cost(OPT)$$, since a tour contains 2 matchings, thus the cost of a minimum weight perfect matching is at most
+$0.5 * C(OPT)$.
+
+Moreover, $$cost(EC) = cost(T) + cost(M) \leq 1.5 * cost (OPT)$$ and $$cost(A) \leq cost(EC) \leq 1.5 * cost(OPT)$$ since there are shortcuttings.
+
+Thus, $$cost(A) \leq 1.5 * cost(OPT) \hspace{10mm} \blacksquare$$
+
+\subsection{The Pricing Method: Vertex Cover}
+We now turn to our second general technique for designing approximation algorithms, the pricing method, and we will introduce this technique by considering a version of the Vertex Cover Problem. 
+
+\subsubsection{The problem}
+Recall that a vertex cover in a graph $G = (V, E)$ is a set $S \in V$ so that each edge has at least one end in $S$. In the version of the problem we consider here, each vertex $i \in V$ has a weight $w_i \geq 0$, with the weight of a set $S$ of vertices denoted $w(S) = \sum_{i \in S} w_i$. We would like to find a \textbf{vertex cover} $S$ for which $w(S)$ is \textbf{minimum}. 
+
+\example{In this example, we have two different vertex covers, but the first one has minimum weight. \imageB{approx27.png}{0.8}}
+
+When all weights are equal to 1, deciding if there is a vertex cover of weight at most $k$ is the standard decision version of Vertex Cover. 
+
+\subsubsection{The Pricing Method}
+The pricing method (also known as the primal-dual method) is motivated by an economic perspective. For the case of the Vertex Cover Problem, we will think of the \textbf{weights} on the nodes as \textbf{costs}, and we will think of each \textbf{edge} as having to pay for its “share” of the cost of the vertex cover we find. We will think of the weight $w_i$ of the vertex $i$ as the cost for using $i$ in the cover. We will think of each edge $e$ as a separate “agent” who is willing to “pay” something to the node that covers it. The \textbf{algorithm} will not only find a \textbf{vertex cover} $S$, but also determine \textbf{prices} $p_e \geq 0$ for each edge $e \in E$, so that if each edge $e \in E$ pays the price $p_e$, this will in total approximately \textbf{cover} the \textbf{cost} of $S$. 
+
+First of all, selecting a vertex $i$ covers all edges incident to $i$, so it would be “unfair” to charge these incident edges in total more than the cost of vertex $i$. 
+
+\definition{Fairness}{We call prices $p_e$ \textbf{fair} if, for each vertex $i$, the edges adjacent to $i$ do not have to pay more than the cost of the vertex, i.e. $\sum_{e=(i,j)} p_e \leq w_i$.} 
+
+\imageB{appro28.png}{0.8}
+
+A useful fact about fair prices is that they provide a lower bound on the cost of any solution.
+
+\lemmaName{Fairness Lemma}{For any vertex cover $S$ and any fair price $p_e$, $\sum_e p_e \leq w(S)$.}
+
+\textit{Proof.} We have that:
+
+$$
+\sum_e p_e \leq \sum_{i \in S} \sum_{e = (i,j)} p_e \leq \sum_{i \in S} w_i = w(S)
+$$
+
+Note:
+
+\begin{itemize}
+    \item The fist inequality comes from the fact that each edge $e$ is covered by at least one node in $S$;
+    \item The second inequality comes from the fact that we sum fairness inequalities for each node in $S$ (recall, from fairness definition, that $\sum_{e=(i,j)} p_e \leq w_i$)
+\end{itemize}
+
+\subsubsection{The algorithm}
+The \textbf{goal} of the approximation algorithm will be to find a \textbf{vertex cover} and to \textbf{set prices} at the \textbf{same time}. We can think of the algorithm as being \textbf{greedy} in how it sets the prices. It then uses these prices to drive the way it selects nodes for the vertex cover.
+
+\definition{Tight node}{We define vertex $i$ \textbf{tight} if $\sum_{e = (i,j)} p_e = w_i$}
+
+The algorithm is the following.
+
+\imageB{approx29.png}{1.0}
+
+\example{Consider the execution of the algorithm on the following graph.\imageB{approx30.png}{1.0}Initially, no node is tight; the algorithm decides to select the edge $(a, b)$. It can raise the price paid by $(a, b)$ up to 3, at which point the node $b$ becomes tight and it stops. The algorithm then selects the edge $(a, d)$.It can only raise this price up to 1, since at this point the node $a$ becomes tight (due to the fact that the weight of $a$ is 4, and it is already incident to an edge that is paying 3). Finally, the algorithm selects the edge $(c, d)$. It can raise the price paid by $(c, d)$ up to 2, at which point $d$ becomes tight. We now have a situation where all edges have at least one tight end, so the algorithm terminates. The tight nodes are $a, b$ and $d$; so this is the resulting vertex cover. (Note that this is not the minimum-weight vertex cover; that would be obtained by selecting a and c.)}
+
+\subsubsection{Analyzing the algorithm}
+\paragraph{Termination}
+The algorithm \textbf{terminates} since at least one new node becomes tight after each iteration of while loop and the edges are finite.
+
+\paragraph{Correctness}
+Let $S$ be the set of all tight nodes upon termination of algorithm. $S$ is a \textbf{vertex cover}: if some edge $i-j$ is uncovered, then neither $i$ nor $j$ is tight. But then while loop would not terminate.
+
+\theoremBox{The previous algorithm gives a 2-approximation for the Vertex Cover problem.}
+
+\textit{Proof.} Let $S^*$ be \textbf{optimal} vertex cover. Then, $w(S) \leq 2w(S^*)$. We have that:
+
+$$
+w(S) = \sum_{i \in S} w_i = \sum_{i \in S} \sum_{e = (i,j)} p_e \leq \sum_{i \in V} \sum_{e = (i,j)} p_e = 2 \sum_{e \in E} p_e \leq 2w(S^*)
+$$
+
+Note:
+\begin{itemize}
+    \item $w(S) = \sum_{i \in S} w_i = \sum_{i \in S} \sum_{e = (i,j)} p_e$ because all nodes in $S$ are tight;
+    \item $\sum_{i \in S} \sum_{e = (i,j)} p_e \leq \sum_{i \in V} \sum_{e = (i,j)} p_e$ because $S \subseteq V$ and all the prices are $\geq 0$;
+    \item $\sum_{i \in V} \sum_{e = (i,j)} p_e = 2 \sum_{e \in E} p_e$ because each edge is counted twice;
+    \item Finally, the last inequality derives from the \textbf{fairness lemma}, which states that for any $S$, $\sum_e p_e \leq w(S)$, so it also holds that $\sum_e p_e \leq w(S^*)$, which is the optimal one.
+\end{itemize}
+
+\newpage
+\subsection{Exercises}
+\begin{enumerate}
+    \item Try to run the 2-approximation algorithm for the VERTEX COVER problem on this graph; \imageB{approx2.png}{1.0}
+    \item Try to run the 2-approximation algorithm for the VERTEX COVER problem on this graph. Solution on slide 8 of L4; \imageB{approx3.png}{1.5}
+    \item Try to run the 2-approximation algorithm for the VERTEX COVER problem on this graph;\imageB{approx4.png}{1.5}
+    \item Consider the center selection problem of the example. Compute $r(C)$, find the optimal solution, the related centers and $r(C^*)$: check the relation $r(C) \leq 2r(C^*)$ for this case. Solution on slide 16 of L5;
+    \item Try to run the center selection algorithm with 3 centers. What is $r(C)$, what is $r(C^*)$? Solution on slide 24 of L5; \imageB{approx17.png}{0.5}
+    \item Define the metric TSP problem, describe a 2-approximation algorithm and show an example. Solution on slide 23-27 of L11;
+    \item Run metric TSP algorithms on a complete graph of 5 nodes. Find a good assignment to the edges so that the triangle inequality holds. Solution on slides 4-5 of L6;
+    \item Apply the pricing method for finding the vertex cover of minimum weight of the following graph. Solution on slides 15-20 of L6; \imageB{approx31.png}{0.6}
+    \item Apply the pricing method for finding the vertex cover of minimum weight of the following graph; \imageB{approx32.png}{0.8}
+    \item Define the load balancing problem, the load of a machine and the makespan. Does the problem belong to the class P? If so provide a polynomial time exact algorithm, otherwise provide a simple 2-approximation algorithm. First describe the algorithm (in code, or pseudocode or words) in a complete and precise way, then show how the algorithm works on a small example. Can we improve the algorithm? Describe an improved variation of the algorithm and show a small example. Solution on slide 7-13 of L11.5;
+    \item What is the vertex cover problem? Describe a trivial 2-approximation algorithm (with code, pseudocode, words, as long as it is complete, precise and clear). Provide an execution example on this graph.
+    \imageB{ex1.png}{1.5}
+    \item Define the vertex cover of minimum weight. Describe in a complete and precise way (in code, or pseudocode or words) the algorithm seen in class to solve the weighted vertex cover problem. Show how the algorithm works in the following example. Solution on slide 20-24 of L11.5
+    \imageB{ex4.png}{1.5}
+\end{enumerate}

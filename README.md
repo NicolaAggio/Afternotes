@@ -9,5 +9,6 @@ Afternotes of the courses of the master degree in [Computer Science and Informat
 - [Information Retrieval and Web Search](https://github.com/NicolaAggio/Afternotes/tree/main/Information%20Retrieval%20and%20Web%20Search);
 - [Image and Video Understanding](https://github.com/NicolaAggio/Afternotes/tree/main/Image%20and%20Video%20Understanding);
 - [Cryptography](https://github.com/NicolaAggio/Afternotes/tree/main/Cryptography);
+- [Advanced and Distributed Algorithms](https://github.com/NicolaAggio/Afternotes/tree/main/Advanced%20and%20Distributed%20Algorithms);
 
 The template for the afternotes is taken from [Antonio Cinà's afternotes](https://github.com/Cinofix/Afternotes/tree/master/ArtificialIntelligence)

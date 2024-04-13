@@ -1,0 +1,91 @@
+\section{Introduction}
+
+\subsection{Course content}
+The course provides basic techniques for the development and analysis of advanced algorithms. The contents of the course are the following:
+\begin{itemize}
+    \item Revision of NP-completeness concepts;
+    \item Approximation algorithms;
+    \item Local search techniques;
+    \item Randomized algorithms;
+    \item Distributed algorithms;
+    \item Examples of applications in security and robotics.
+\end{itemize}
+
+\subsection{Easy and hard problems}
+In this section we provide a very informal definition of \textit{easy} and \textit{hard} problems. A problem is defined as \textbf{easy} if a computer is able to solve it in a very fast way; on the other hand, a problem is \textbf{hard} when even the fastest computers cannot solve it in a \textit{smart way}, i.e. they have to check all the possible solutions.
+
+In general, when we approach a new problem, it is always very important to classify it as an \textit{easy} or \textit{hard} one: we will see two examples of similar problems, one of which is easy, and the other one is hard.
+
+\subsubsection{Easy problem}
+An example of easy problem is the problem of the \textbf{Könisberg} (Prussian city) \textbf{bridges}, introduced by Euler, which states the following: starting from an area, is it possible to come back to the same area by visiting all bridges exactly one time?
+
+Before addressing more specifically this problem, we need to introduce some basic definitions. 
+
+\definition{Path}{Given a graph and two nodes $x$ and $y$ of such graph, a \textbf{path} from $x$ to $y$ is a sequence of adjacent nodes that connects node $x$ to node $y$.}
+
+\definition{Closed path}{A \textbf{closed path} is a path that starts from a node and goes back to the same node.}
+
+\example{\imageB{intro1.png}{0.35}In the image, if we choose $x = 1$ and $y = 5$, then \{1,2,5\} is one of the paths from 1 to 5, while \{1,4,2,1\} is a closed path for $x=1$.}
+
+\definition{Simple path}{A \textbf{simple path} is a path without repeated nodes.}
+
+\definition{Circuit}{A \textbf{circuit} is a simple closed path.}
+
+\example{In the previous image, \{1,2,5\} is a simple path, \{1,2,4,1,2,5\} is not a simple path and \{1,2,4,1\} is a circuit.}
+
+\definition{Tree}{A \textbf{tree} is an undirected simple graph G that satisfies any of the following equivalent conditions: \begin{itemize}\item An acyclic graph with $|E|=|V|-1$; \item Connected and acyclic graph; \item Acyclic and connected graph, and by adding an edge it becomes cyclic.\end{itemize} A rooted tree is a tree with a node called root. A degree of a vertex of an undirected graph is the number of \textit{in-degree} and \textit{out-degree} edges. In each tree nodes with degree $\geq 2$ are called internal nodes, the ones with degree 1 are called leaves.}
+
+Coming back to the problem of the Könisberg bridges, it is clear that such problems can be formulated using graphs, where we have a node for each area, and an arc for each bridge, as showed in the image.
+
+\imageB{intro2.png}{0.3}
+
+Intuitively, it easy easy to notice that in order to provide a solution to the problem, we require each node to have an even number of arcs (if we go away from a node, we need another arc to come back), but mathematically the previous problem can be re-formulated as the problem of searching for an Eulerian circuit in the graph.
+
+\definition{Eulerian circuit}{A \textbf{Eulerian circuit} is a circuit that visits each \textbf{arc} of the graph \textbf{exactly once}.}
+
+In order to solve this problem, we must rely on the following theorem.
+
+\theoremBox{A graph is Eulerian (i.e. it has a Eulerian circuit) if and only if \begin{enumerate}\item Is is connected (i.e. there exists a path between every pair of nodes); \item All nodes have an even degree. \end{enumerate}}
+
+Exploiting this theorem, we can easily solve the previous problem: \textit{If a graph does not satisfy the previous properties, then it is not Eulerian, otherwise we need an algorithm for finding it}. 
+
+The algorithm that finds an Eulerian circuit in a graph is outlined as follows.
+
+\begin{algorithm} \caption{Find the Eulerian circuit of a graph}
+  \KwIn{Vertex $v_1$}
+  \KwOut{..}
+  
+  \If{$v_1$ does not have outgoing arcs}{
+    \Return $v_1$\;
+  }
+  \Else{
+    Create a closed path $C = [v_1, v_2, .., v_k, v_1]$ from $v_1$ visiting all the arcs only once\;
+    
+    Erase all the arcs of path $C$\;
+    
+    \Return (\textit{Eulero}($v_1$), .., \textit{Eulero}($v_k$), $v_1$)\;
+  }
+\end{algorithm}
+
+Note that the \textbf{complexity} of the algorithm is $O(m)$ steps, where $m=|E|$ is the number of arcs.
+
+\subsubsection{Hard problem}
+An example of \textit{hard problem} is the one of finding an Hamiltonian circuit in the graph.
+
+\definition{Hamiltonian circuit}{An \textbf{Hamiltonian circuit} is a circuit that visits all the \textbf{nodes} of the graph \textbf{exactly once}.}
+
+This is a \textit{hard} problem, since there exists no efficient algorithm that solves it in general (for any possible graph). The only solution is to find all paths.
+
+As we can see, the two problems we've seen are very \textbf{similar} (in one we have to visit all the arcs exactly once, in the other all the nodes), but one is \textit{easy} to solve, the other is \textit{hard}.
+
+Another hard problem similar to the search for the Hamiltonian circuit is the \textbf{travelling salesman problem}: given a weighted (with weight on arcs) complete (with all possible arcs) graph, find a Hamiltonian circuit of minimum weight. The salesman has to start from a city, visit all other cities, go back to the starting point travelling the minimal number of kilometers.
+
+In general, computer science studies real problems, builds mathematical models and searches for efficient algorithms that solve the problems. It is useful to CLASSIFY the problems, i.e., to evaluate if a problem is “easy” (thus solvable by an efficient algorithm) or hard. In the second case we will search for: approximate solutions, or solutions which are correct with high probability, etc..
+
+\subsection{Exercises}
+\begin{enumerate}
+    \item Execute the algorithm for finding Eulerian circuit in the following graph.
+
+    \imageB{intro3.png}{0.25}
+    
+\end{enumerate}

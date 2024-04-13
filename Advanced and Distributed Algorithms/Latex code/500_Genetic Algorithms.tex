@@ -1,0 +1,174 @@
+\section{Genetic algorithms}
+\subsection{Introduction}
+Genetic algorithms, originally developed by John Holland (1975), represent another class of iterative improvement algorithms, and they are part of the family of Evolutionary Algorithms (EA). They provide efficient and effective techniques for optimization and machine learning applications.
+
+\imageB{gen1.png}{0.6}
+
+The idea is the following: A genetic algorithm maintains a population of candidate solutions for the problem at hand, and makes it evolve by iteratively applying a set of stochastic operators. We can see that this category of algorithms is inspired by the biological evolution process, and uses concepts of "Natural Selection" and "Genetic Inheritance" (Darwin 1859).
+
+\paragraph{Structure}
+
+\begin{enumerate}
+    \item Randomly generate an initial population;
+    \item Evaluate the fitness population;
+    \item Select parents and “reproduce” the next generation;
+    \item Replace the old generation with the new generation;
+    \item Repeat step 2 though 4 till iteration $N$.
+\end{enumerate}
+
+\paragraph{Population} The population might be represented by bit strings ($0101..1100$), real numbers, permutations of elements, lists of rules, program elements or any data structure.
+
+\paragraph{Evaluation}
+The evaluator decodes a chromosome (part of the population) and assigns it a fitness measure: the evaluator is the only link between a classical GA and the problem it is solving.
+
+\subsubsection{Genetic algorithms}
+The idea of genetic algorithms is to start with a \textbf{population} of candidate solutions, and then evolve it by applying the so-called \textbf{stochastic operators}:
+
+\begin{itemize}
+    \item \textbf{Selection}: replicates most successful solutions at a rate proportional to their relative quality (according to the fitness function);
+    \item \textbf{Recombination} (cross-over): decomposes two solutions and randomly recompose them to form new solutions;
+    \item \textbf{Mutation}: randomly perturbs a candidate solution.
+\end{itemize}
+
+\imageB{gen2.png}{0.6}
+
+Moreover, we can classify two types of genetic algorithms:
+
+\begin{itemize}
+    \item \textit{Generational GA}, where the entire population is replaced in each iteration;
+    \item \textit{Steady-state GA}, where a few members replaced in each generation.
+\end{itemize}
+
+\example{\imageB{gen3.png}{1.3}}
+
+There exist a lot of variants of genetic algorithms with different selection, crossover, and mutation rules, and in general GA have a wide application in optimization (e.g., circuit layout and job shop scheduling). Much work remains to be done to formally understand GA’s and to identify the conditions under which they perform well.
+
+\subsubsection{When to use}
+\begin{itemize}
+    \item Alternate solutions are too slow or overly complicated;
+    \item Need an exploratory tool to examine new approaches;
+    \item Problem is similar to one that has already been successfully solved by using a GA;
+    \item Want to hybridize with an existing solution.
+\end{itemize}
+
+\subsection{The Maxone problem}
+In this problem we want to maximize the number of ones in a binary string of $l$ (here we assume $l = 10$) bits. In this sense, an individual is encoded as a string of 10 bits, e.g. $0000000001$.
+
+Clearly, the fitness $f$ of a candidate to the Maxone problem is the number of ones in its genetic code. We start with a population of $n$ random strings (we assume that $l = 10$ and $n = 6$). 
+
+\subsubsection{Initialization}
+Suppose we toss a fair coin 60 times, and we get the following initial population:
+
+\begin{align*}
+    s_1 = 1111010101 \quad f(s_1) = 7 \\
+s_2 = 0111000101 \quad f(s_2) = 5 \\
+s_3 = 1110110101 \quad f(s_3) = 7 \\
+s_4 = 0100010011 \quad f(s_4) = 4 \\
+s_5 = 1110111101 \quad f(s_5) = 8 \\
+s_6 = 0100110000 \quad f(s_6) = 3
+\end{align*}
+
+\subsubsection{Selection}
+Next, we apply fitness proportionate selection with the \textit{roulette wheel method}: according to this method individual $i$ will have a probability 
+
+$$
+\frac{f(i)}{\sum_i f(i)}
+$$
+
+to be chosen. As we can see, this probability is directly proportional to its fitness: the biggest the fitness value, the bigger the probability of an element of the population to be chosen.
+
+We repeat the extraction as many times as the number of individuals we need to have the same parent population size (6 in our case).
+
+\subsubsection{Crossover}
+Next, we mate strings for crossover: for each couple we decide according to crossover probability (for instance 0.6) whether to actually perform crossover or not. Suppose that we decide to actually perform crossover only for couples $(s_1', s_2')$ and $(s_5', s_6')$: for each couple, we randomly extract a crossover point, for instance 2 for the first and 5 for the second.
+
+Before crossover:
+
+\begin{align*}
+    s_1' = 11 \color{red} 11010101 \color{black} \quad s_5' = 01000 \color{red} 10011 \\
+    s_2' = \color{green} 11 \color{black} 10110101 \color{black} \quad s_6' = \color{green} 11101 \color{black} 11101 
+\end{align*}
+
+After crossover:
+\begin{align*}
+    s_1' = 11 10110101 \quad s_5' = 01 00011101 \\
+    s_2' = \color{green} 11 \color{red} 11010101 \color{black} \quad s_6' = \color{green} 11101 \color{red} 10011 
+\end{align*}
+
+\subsubsection{Mutation}
+The final step is to apply random mutation: for each bit that we are to copy to the new population we allow a small probability of error (for instance 0.1).
+
+Before applying mutation:
+\begin{align*}
+    s_1'' = 11101\color{red}1 \color{black}0101 \quad s_4'' = 0100010011 \\
+    s_2'' = 1111\color{red}0 \color{black}1010\color{red}1 \color{black} \quad s_5'' = 0100011101 \\
+    s_3'' = 111011\color{red}1 \color{black}1 \color{red}1 \color{black}1 \quad s_6'' = 11101100\color{red}1 \color{black}1 
+\end{align*}
+
+After applying mutation:
+\begin{align*}
+    s_1''' = 11101\color{red} 0 \color{black} 0101 \quad f(s_1''') = 6 \\
+    s_2''' = 1111\color{red} 1 \color{black} 1010 \color{red} 0 \color{black} \quad f(s_2''') = 7 \\
+    s_3''' = 111011\color{red} 1 \color{black} 1 \color{red} 1 \color{black} 1 \quad f(s_3''') = 9 \\
+    s_4''' = 0100010011 \quad f(s_4''') = 4 \\
+    s_5''' = 0100011101 \quad f(s_5''') = 5 \\
+    s_6''' = 11101100\color{red} 0 \color{black} 1 \quad f(s_6''') = 6 
+\end{align*}
+
+In one generation, the total population fitness changed from 34 to 37, thus improved by $\sim 9 \%$. At this point, we go through the same process all over again, until a stopping criterion is met.
+
+\subsection{Traveling Salesman Problem}
+In this case, given a complete graph, the goal is to find a Hamiltonian tour of a given set of cities so that each city is visited only once and the total distance traveled is minimized. In this case the encoding is the following:
+
+\begin{itemize}
+    \item Label the cities $1, 2, .. , n$;
+    \item One complete tour is one permutation (e.g., for $n =4$, $[1,2,3,4], [3,4,2,1]$ are OK)
+\end{itemize}
+
+As we can see the search space is huge: How many solutions do you have for 30 cities? $30!$, so in general, for $n$ cities we have $n!$ solutions.
+
+\subsubsection{Selection}
+In this case the fitness $f$ of a solution is the inverse cost of the corresponding tour (recall: $\min \text{cost} = \max \frac{1}{\text{cost}}$.)
+
+\subsubsection{Crossover}
+As for the mutation, the normal crossover operators will often lead to inadmissible solutions, so we need a different rule. The idea is to preserve the relative order in which the elements occur:
+
+\begin{enumerate}
+    \item Choose an arbitrary part from the first parent;
+    \item Copy this part to the first child;
+    \item Copy the numbers that are not in the first part, to the first child: starting right from cut point of the copied part, using the order of the second parent and wrapping around at the end;
+    \item Analogous for the second child, with parent roles reversed.
+\end{enumerate}
+
+\example{\begin{enumerate} \item Copy randomly selected set from the first parent; \imageB{gen9.png}{1.0} \item Copy the rest $(1,2,3,8,9)$ using the order of the second parent $(1,9,3,8,2)$ starting from the cut point.\imageB{gen10.png}{1.0} As we can see, after the 7 we write 1, since after the cut point, in the second parent we have a 1. Then, we write 9 since it is the second element we encounter when visiting the second parent from the beginning, and so on..  \item Repeat for the other child. \end{enumerate}}
+
+\subsubsection{Mutation}
+In general, the mutation operation  is quite tricky, since when mutating the population we must take into consideration the restrictions of the problem, i.e. of having an Hamiltonian tour that visits the cities only once. Thus, we have multiple choices.
+
+\newpage
+\paragraph{Insert mutation for permutations}
+\begin{enumerate}
+    \item Pick two allele values at random;
+    \item Move the second to follow the first, shifting the rest along to accommodate.
+\end{enumerate}
+
+\imageB{gen4.png}{1.0}
+Note that this preserves most of the order and the adjacency information.
+
+\paragraph{Swap mutation for permutations}
+Pick two alleles at random and swap their positions.
+
+\imageB{gen5.png}{1.0}
+
+\paragraph{Inversion mutation for permutations}
+Pick two alleles at random and then invert the substring between them.
+\imageB{gen6.png}{1.0}
+This preserves most adjacency information.
+
+\paragraph{Scramble mutation for permutations}
+Pick a subset of genes at random and randomly rearrange the alleles in those positions.
+
+\imageB{gen7.png}{1.0}
+
+
+The GA stops when the system has converged or a certain number of iterations have been performed.

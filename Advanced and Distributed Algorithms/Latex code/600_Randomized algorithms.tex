@@ -1,0 +1,271 @@
+\section{Randomized algorithms}
+\subsection{Introduction and motivations}
+Randomization and probabilistic analysis are themes that cut across many areas of computer science, including algorithm design, and when one thinks about random processes in the context of computation, it is usually in one of two distinct ways. One view is to consider the world as behaving randomly: One can consider traditional algorithms that confront randomly generated input. This approach is often termed average-case analysis, since we are studying the behavior of an algorithm on an “average” input (subject to some underlying random process), rather than a worst-case input. 
+
+A second view is to consider algorithms that behave randomly: The world provides the same worst-case input as always, but we allow our algorithm to make random decisions as it processes the input. Thus the role of randomization in this approach is purely internal to the algorithm and does not require new assumptions about the nature of the input. It is this notion of a randomized algorithm that we will be considering in this chapter.
+
+Why might it be useful to design an algorithm that is allowed to make random decisions? A first answer would be to observe that by allowing randomization, we’ve made our underlying model more powerful. Efficient deterministic algorithms that always yield the correct answer are a special case of efficient randomized algorithms that only need to yield the correct answer with high probability; they are also a special case of randomized algorithms that are always correct, and run efficiently in expectation. Even in a worst case world, an algorithm that does its own “internal” randomization may be able to offset certain worst-case phenomena. So problems that may not have been solvable by efficient deterministic algorithms may still be amenable to randomized algorithms.
+
+But this is not the whole story, and in fact we’ll be looking at randomized algorithms for a number of problems where there exist comparably efficient deterministic algorithms. Even in such situations, a randomized approach often exhibits considerable power for further reasons: It may be conceptually much simpler; or it may allow the algorithm to function while maintaining very little internal state or memory of the past. The advantages of randomization seem to increase further as one considers larger computer systems and networks, with many loosely interacting processes—in other words, a distributed system. Here random behavior on the part of individual processes can reduce the amount of explicit communication or synchronization that is required; it is often valuable as a tool for symmetry-breaking among processes, reducing the danger of contention and “hot spots.” A number of our examples will come from settings like this: regulating access to a shared resource, balancing load on multiple processors, or routing packets through a network. Even a small level of comfort with randomized heuristics can give one considerable leverage in thinking about large systems.
+
+\subsection{General features}
+The general features of randomized algorithms can be resumed as follows:
+\begin{enumerate}
+    \item The same randomized algorithm may provide \textbf{different solutions} on the \textbf{same input};
+    \item A randomized algorithm may provide a \textbf{wrong result}, but this should happen with a \textbf{small probability} ($<< 1$) for every instance of the problem;
+    \item By \textbf{increasing} the \textbf{number of times} in which we run the randomized algorithm, we \textbf{increase} the \textbf{confidence} of the result;
+    \item Usually, a randomized algorithm has a \textbf{better} \textbf{average case complexity} compared to a deterministic algorithm.
+\end{enumerate}
+
+\subsection{Examples}
+\begin{itemize}
+    \item \textbf{Numerical algorithms}: provide an approximate result with a certain confidence. By repeating the algorithms we increase the precision. E.g.: \textit{With probability $90\%$ the answer is $20 \pm 1$};
+    \item \textbf{Monte Carlo algorithms}: they provide a correct answer with very high probability. In some cases the answer is wrong. By repeating the algorithms we increase the probability of getting a correct answer. The execution time is deterministic. E.g.: \textit{With probability $99\%$, the answer is 20};
+    \item \textbf{Las Vegas algorithms}: it always provides a correct answer or may not return a result. The execution time may vary from one run to another. E.g.: \textit{The answer is 20}.
+\end{itemize}
+
+\example{Consider the problem of finding an 'a' in an array of $n$ elements. In this case the input is an array of $n \geq 2$ elements, in which half are 'a's and the other half are 'b's. Notice that the complexity of a standard iterative algorithm is $O(\frac{n}{2})$. \\Let's consider a Monte Carlo algorithm for this problem.\imageB{r1.png}{1.5}As we can see, if an 'a' is found, the algorithm succeeds, else the algorithm fails. After $k$ iterations, the probability of finding an 'a' is $$Pr(\text{find an 'a'}) = 1 - \left(\frac{1}{2}\right)^k$$The algorithm does not guarantee success, but the running time is fixed. It is executed an \textbf{expected} number of $1 \leq k <2$ times, therefore the running time is $O(1)$.\\We now consider a Las Vegas algorithm for the same problem.\imageB{r2.png}{1.5}In this case, the algorithm succeeds with probability 1 (I stop when I find an 'a'). The expected running time over many calls is $O(1)$. Notice that the Las Vegas version is exactly the same of the Monte Carlo without the termination condition on the variable $i$.}
+
+As a general rule:
+\begin{itemize}
+    \item A Monte Carlo algorithm is guaranteed to run in poly-time, likely to find correct answer. Ex: Contraction algorithm for global min cut;
+    \item A Las Vegas algorithm is guaranteed to find correct answer, likely to run in poly-time. Ex: Randomized quicksort, Johnson's MAX-3SAT algorithm.
+\end{itemize}
+
+Remark: we can always convert a Las Vegas algorithm into Monte Carlo, but no known method to convert the other way.
+
+\subsection{Content resolution problem}
+We begin with a first application of randomized algorithms: contention resolution in a distributed system. In particular, it is a chance to work through some basic manipulations involving events and their probabilities, analyzing intersections of events using independence as well as unions of events using a simple union bound.
+
+\subsubsection{The problem}
+Suppose we have $n$ processes $P_1, P_2,.. , P_n$, each competing for access to a single shared database. We imagine time as being divided into discrete rounds. The database has the property that it can be accessed by at most one process in a single round; if two or more processes attempt to access it simultaneously, then all processes are “locked out” for the duration of that round. So, while each process wants to access the database as often as possible, it’s pointless for all of them to try accessing it in every round; then everyone will be perpetually locked out. What’s needed is a way to divide up the rounds among the processes in an equitable fashion, so that all processes get through to the database on a regular basis. 
+
+If it is easy for the processes to communicate with one another, then one can imagine all sorts of direct means for resolving the contention. But suppose that the processes can’t communicate with one another at all; how then can they work out a protocol under which they manage to “take turns” in accessing the database?
+
+\subsubsection{Randomized algorithm}
+Randomization provides a natural protocol for this problem, which we can specify simply as follows. For some number $p > 0$ that we’ll determine shortly, each process will attempt to access the database in each round with probability $p$, independently of the decisions of the other processes. So, if exactly one process decides to make the attempt in a given round, it will succeed; if two or more try, then they will all be locked out; and if none try, then the round is in a sense “wasted”. 
+
+This type of strategy, in which each of a set of identical processes randomizes its behavior, is the core of the symmetry-breaking paradigm that we mentioned initially: If all the processes operated in lockstep, repeatedly trying to access the database at the same time, there’d be no progress; but by randomizing, they “smooth out” the contention.
+
+\subsubsection{Analyzing the algorithm}
+\claim{Let $S(i,t)$ denote the event that process $P_i$ succeeds in accessing the database at a time $t$. Then $$\frac{1}{en} \leq Pr(S(i,t)) \leq \frac{1}{2n}$$}
+
+\textit{Proof.} By independence, we have that 
+$$
+Pr(S(i,t)) = p(1-p)^{n-1}
+$$
+where:
+\begin{itemize}
+    \item $p$ represents the probability that process $P_i$ requests the access;
+    \item $(1-p)^{n-1}$ represents the probability that the other $n-1$ processes do not request access.
+\end{itemize}
+
+If we set $p = \frac{1}{n}$, we have that $P(S(i,t)) = \frac{1}{n} \left( 1 - \frac{1}{n} \right)^{n-1}$. It’s worth getting a sense for the asymptotic value of this expression, with the help of the following extremely useful fact from basic calculus: as $n$ increases from 2,
+
+\begin{itemize}
+    \item The function $\left( 1 - \frac{1}{n} \right)^n$ converges monotonically from $\frac{1}{4}$ up to $\frac{1}{e}$;
+    \item The function $\left( 1 - \frac{1}{n} \right)^{n-1}$ converges monotonically from $\frac{1}{2}$ down to $\frac{1}{e}$;
+\end{itemize}
+
+Using these relations, we can see that
+
+$$
+\frac{1}{en} \leq Pr(S(i,t)) \leq \frac{1}{2n} \qquad \blacksquare
+$$
+
+\textbf{Waiting for a particular process to succeed}
+
+Let’s consider this protocol with the optimal value $p = 1/n$ for the access probability. Suppose we are interested in how long it will take process $P_i$ to succeed in accessing the database at least once. We see from the earlier calculation that the probability of its succeeding in any one round is not very good, if $n$ is reasonably large. How about if we consider multiple rounds?
+
+\claim{The probability that process $P_i$ fails to access the database in $en$ rounds is at most $\frac{1}{e}$. After $en(c \ln n)$ rounds, the probability is at most $n^{-c}$, i.e. the event happens with small probability.}
+
+\textit{Proof.} Let $F(i, t)$ denote the “failure event” that process $P_i$ does not succeed in any of the rounds 1 through $t$. This is clearly just the intersection of the complementary events $S(i, r)$ for $r = 1, 2, .., t$. Moreover, since each of these events is independent, we can compute the probability of $F(i, t)$ by multiplication:
+
+$$
+Pr(F(i,t)) \leq \left( 1 - \frac{1}{en} \right)^t
+$$
+
+If we set $t = \lceil en \rceil$, we get:
+
+$$
+Pr(F(i,t)) \leq \left( 1 - \frac{1}{en} \right)^{\lceil en \rceil} \leq \left( 1 - \frac{1}{en} \right)^{en} \leq \frac{1}{e}
+$$
+
+This is a very compact and useful asymptotic statement: The probability that process $P_i$ does not succeed in any of rounds 1 through $\lceil en \rceil$ is upper-bounded by the constant $e^{-1}$, independent of $n$. 
+
+Now, if we increase $t$ by some fairly small factors, the probability that $P_i$ does not succeed in any of rounds 1 through $t$ drops precipitously: If we set $t = \lceil en \rceil (c \ln n)$, then we have:
+
+$$
+Pr(F(i,t)) \leq \left( 1 - \frac{1}{en} \right)^{c \ln n} = n^{-c}
+$$
+
+\textbf{Waiting for all processes to get through}
+
+Finally, we’re in a position to ask the question that was implicit in the overall setup: How many rounds must elapse before there’s a high probability that all processes will have succeeded in accessing the database at least once? 
+
+To address this, we say that the protocol fails after $t$ rounds if some process has not yet succeeded in accessing the database. Let $F(t)$ denote the event that the protocol fails after $t$ rounds; the goal is to find a reasonably small value of $t$ for which $Pr(F(t))$ is small. 
+
+\claim{The probability that all the processes succeed within $2e n \ln n$ rounds is at least $1-\frac{1}{n}$.}
+
+The event $F(t)$ occurs if and only if one of the events $F(i, t)$ occurs; so we can write
+
+$$
+Pr(F(t)) = Pr \left( \lor_{i = 1}^n F(i,t) \right) \leq \sum_{i = 1}^n Pr(F(i,t)) \leq n \left( 1 - \frac{1}{en} \right)^t
+$$
+
+Notice that:
+
+\begin{itemize}
+    \item The first inequality comes from the union bound, which states that $Pr \left( \lor_{i = 1}^n E_i \right) \leq \sum_{i = 1}^n Pr(E_i)$;
+    \item The second inequality comes from the fact that $Pr(F(i,t)) \leq (1-\frac{1}{en})^t$.
+\end{itemize}
+
+\subsection{Randomized quicksort}
+Divide and conquer often works well in conjunction with randomization, and we illustrate this by giving divide-and-conquer algorithms for two fundamental problems: computing the median of $n$ numbers, and sorting. In each case, the “divide” step is performed using randomization; consequently, we will use expectations of random variables to analyze the time spent on recursive calls.
+
+\subsubsection{Standard quicksort}
+Before analyzing the randomized version, we first take into consideration the standard version of this sorting algorithm.
+
+Given an array of $n$ elements, the algorithm works as follows:
+\begin{enumerate}
+    \item If the array only contains one element, return;
+    \item Otherwise:
+    \begin{enumerate}
+        \item Pick one element and use it as a \textit{pivot};
+        \item Partition the elements into two sub-arrays: elements smaller or equal to the pivot, elements bigger that the pivot;
+        \item Quicksort the two sub-arrays;
+        \item Return results.
+    \end{enumerate}
+\end{enumerate}
+
+How do we partition the arrays at step (b)? The idea is to keep two pointers:
+
+\begin{enumerate}
+    \item The first one points to the element right after the pivot;
+    \item The second one points to the last element of the array;
+    \item We start my moving forward the first pointer: when it finds a number which is $\geq$ pivot, then it stops;
+    \item Then, we move the second pointer backward: when it finds a number which is $<$ pivot, it stops;
+    \imageB{r4.png}{1.1}
+    \imageB{r5.png}{1.1}
+    \item We swap the two elements and we continue to move the pointers;
+    \imageB{r6.png}{1.3}
+    \item When the two pointers cross, we stop;
+    \imageB{r7.png}{1.1}
+    \item Finally, we swap the pivot with the element pointed by the second pointer: now, the pivot is the only element in the array that is in the right position. Then, we recursively apply the same algorithm to the two sub-arrays.
+\end{enumerate}
+
+The worst-case complexity of the standard algorithm is $O(n^2)$, since if the array is in decreasing order, at each step we should compare all the elements.
+
+\subsubsection{Randomized quicksort}
+\image{r8.png}{1.5}{Randomized quicksort.}
+
+This algorithm is a Las Vegas algorithm.
+
+\paragraph{Running time} In the \textbf{best case} the quicksort selects the median element as the splitter, and it makes $\Theta(n \log n)$ comparisons. 
+
+In the \textbf{worst case} the quicksort selects the smallest or biggest element as the pivot, making $\Theta(n^2)$ comparisons.
+
+\paragraph{Randomization} In this case randomization protects against the worst-case scenario, by choosing a split at random. Intuitively, if we always select an element that is bigger than 25\% of the elements and smaller than 25\% of the elements, then quicksort makes $\Theta(n \log n)$ comparisons.
+
+\paragraph{BST representation} We draw a recursive BST of the splitters.
+
+\imageB{r9.png}{1.5}
+
+The elements are only compared with its ancestor and descendants, and we call it a portion, defined as $Z_{ij}$. We assume $i=2$, $j=7$:
+\begin{itemize}
+    \item $x_2$ and $x_7$ are compared if their $lca = x_2$ or $x_7$, i.e., one of them is a pivot;
+    \item $x_2$ and $x_7$ are not compared if their $lca = x_3$ or $x_4$ or $x_5$ or $x_6$;
+    \item Portion $Z_{ij}$ contains $j-i+1$ elements.
+\end{itemize}
+
+\imageB{r10.png}{1.3}
+
+
+\claim{$Pr(x_i \text{ and } x_j \text{ are compared}) = \frac{2}{|j - i + 1|}$} 
+
+This comes from the fact that the probability that $i$ or $j$ is the pivot is $\frac{1}{|j-i+1|}$, i.e. that $x_i$ is in the path between $x_j$ and the root and vice-versa (definiton of ancestor).
+
+\theorem{The expected number of comparisons is $O(n \log n)$.}
+
+\textit{Proof.}
+
+$$
+\sum_{1 \leq i < j \leq n} \frac{2}{j-i+1} = 2 \sum_{i = 1}^n \sum_{j = 2}^i \frac{1}{j} \leq 2n \sum_{j = 1}^n \frac{1}{j} \approx 2n \int_{x = 1}^n \frac{1}{x} dx = 2n \ln n
+$$
+
+\example{If $n = 1$ million, then the probability that randomized quicksort takes less than $4n \ln n$ comparisons is at least 99.94\%.}
+
+\subsection{Numerical algorithms}
+As we said earlier in this chapter, numerical algorithms provide an approximate result with a certain confidence: with probability $p$ the correct solution is $y \pm \epsilon$.
+
+\example{With probability 90\% the answer is $20 \pm 1$. By repeating the algorithms we increase the precision.}
+
+\subsubsection{Buffon's needle}
+This example represents an 18th century approach to approximating $\pi$. The idea is to drop $N$ needles of unit length (1) randomly (with uniform distribution) over a floor (width of floor boards is 2 units): some will fall across the boards (the red ones), some will not (the blue ones).
+
+\imageB{r11.png}{1.5}
+
+\theoremName{Leclerc}{If we drop 1 needle of length $l$ on the floor and the boards are at distance $d$, the probability that it will cross a board is $\frac{2 l}{\pi d}$.}
+
+Note that when $l = 1$ and the boards are at distance $d = 2$, we get $\frac{2l}{\pi d} = \frac{2}{2 \pi} = \frac{1}{\pi}$. If we throw $n$ needles, the number of the ones that cross the boards is $k = \frac{n}{\pi}$, i.e., the mean of a binomial process w.p. 1.
+
+The algorithm designed by Buffon exploits the following: with a high number $n$ of dropping of needles we can estimate $\pi$ as the number of needles that cross the board $\pi \approx \frac{n}{k}$ (which is derived from the previous relationship).
+
+\paragraph{Bernullian distribution}
+This distribution best describes all situations where a "trial" is made resulting in either "success" or "failure,” such as when tossing a coin. The Bernoulli distribution is a discrete distribution having two possible outcomes labelled by $n=0$ and $n=1$, and in which $n=1$ ("success") occurs with probability $p$ and $n=0$ ("failure”) occurs with probability $(1-p)$, where $0<p<1$. It therefore has the following probability density function:
+
+$$
+P(n) = \begin{cases}
+    1-p \qquad \text{for } n = 0 \\
+    p \qquad \text{for } n = 1
+\end{cases}
+$$
+
+The expected value of a Bernoulli random variable is $p$, while the variance is $p (1-p)$.
+
+\paragraph{Binomial distribution}
+The Bernoulli distribution is a special case of the binomial distribution with $n=1$ trial. If $X$ is a binomially distributed random variable, $n$ being the total number of experiments and $p$ the probability of each experiment yielding a successful result, then the expected value of $X$ is $n p$, while the variance is $n p (1-p)$.
+
+\paragraph{The algorithm}
+Let $X_i$ be the bernoullian variable that describes the $i$-th needle: it takes value 1 if the needle crosses the board, 0 otherwise.
+
+For Leclerc’s algorithm with $l=1$ and $d=2$ we get, $Pr(X_i= 1) = \frac{1}{\pi}$ for each $i$. According to the bernoullian distribution, $p = \frac{1}{\pi}$, and the variance $p(1-p)= (\frac{1}{\pi}) (1- \frac{1}{\pi})$.
+
+Let $X$ be the binomial variable that describes the mean (not the sum) of $n$ drops ($k$ successes in $n$ trials), then:
+
+$$
+X = \frac{\sum_{i = 1}^n X_i}{n}
+$$
+
+so we have that:
+
+$$
+Pr\left(X = \frac{k}{n}\right) = \binom{n}{k} \left(\frac{1}{\pi}\right)^k \left(1 - \frac{1}{\pi}\right)^{n-k}
+$$
+
+By doing some computations on the variable $X$, we get:
+
+$$
+Pr\left( \left|X-\frac{1}{\pi}\right| < \epsilon \right) \geq 99\% \qquad \text{for } n > \frac{1,440}{\epsilon^2}
+$$
+
+By doing different computations we get an estimate of $\pi$ with an absolute error $\epsilon < 0,0415$ with 99\% of confidence, and we need to repeat the needle drops for $n \geq 1440/\epsilon^2$ times.
+
+\newpage
+\subsection{Exercises}
+\begin{enumerate}
+    \item Given as input an array of $n$ numbers and an integer $k$ between 1 and $n$, the goal is to provide as output the $k$-th smallest number in the array:
+    \begin{enumerate}
+        \item Devise a simple algorithm with complexity $O(n \log n)$;
+        \item Devise a randomized algorithm with expected running time $O(n)$, then compute the complexity in the best and in the worst-case.
+    \end{enumerate}
+    \item What is the difference between a Las Vegas and a Monte Carlo algorithm? In which context are they used?
+
+    You are given an array $A$ of length $n$ (where $n$ is a multiple of 3), where the elements are 1/3 number 1, 1/3 number 2 and 1/3 number 3; e.g. $A = [1,2,1,1,3,2,3,3,2]$ and $n = 9$.
+    \begin{enumerate}
+        \item Define a randomized Monte Carlo algorithm $MC_1$ that finds a number 2 in the array;
+        \item What is the probability of finding a 2 after $k$ iterations of $MC_1$?
+        \item Solve the same problem using a Las Vegas algorithm $LV_2$;
+        \item What is the probability that $LV_2$ succeeds?
+    \end{enumerate}
+\end{enumerate}

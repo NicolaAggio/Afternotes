@@ -1,0 +1,239 @@
+\section{Basics of algorithm analysis}\label{ch2}
+Before providing the formal definitions, let us introduce an intuitive overview of what easy, hard/intractable and undecidable problems are:
+
+\begin{itemize}
+    \item \textbf{Easy} problem: it is possible to solve it using an efficient algorithm (with at most polynomial time complexity);
+    \item \textbf{Hard} or \textbf{intractable} problem: to find a solution we have to explore all the possible ones;
+    \item \textbf{Undecidable} problem: it does not have algorithmic solution.
+\end{itemize}
+
+In general, \textbf{analyzing algorithms} involves thinking about how their \textbf{resource requirements} (the amount of time and space they use) will \textbf{scale} with \textbf{increasing input size}.
+
+\subsection{Worst-case running time and brute-force search}
+To begin with, we will focus on analyzing the \textbf{worst-case running time}: we will look for a \textbf{bound} on the \textbf{largest} possible \textbf{running time} the algorithm could have over all inputs of a given size $N$, and see how this scales with $N$. 
+
+While in general the \textbf{worst-case analysis} of an algorithm has been found to do a reasonable job of capturing its efficiency in practice, \textbf{average-case analysis} (the obvious appealing alternative, in which one studies the performance of an algorithm averaged over “random” instances) can sometimes provide considerable \textbf{insight}, but very often it can also become a \textbf{quagmire}. As we observed earlier, it’s very \textbf{hard} to express the \textbf{full range of input instances} that arise in practice, and so attempts to study an algorithm’s performance on “random” input instances can quickly devolve into debates over how a random input should be generated: the same algorithm can perform very well on one class of random inputs and very poorly on another. After all, real inputs to an algorithm are generally not being produced from a random distribution, and so average-case analysis risks telling us more about the means by which the random inputs were generated than about the algorithm itself.
+
+But what is a reasonable analytical benchmark that can tell us whether a running-time bound is impressive or weak? A first simple guide is by comparison with brute-force search over the search space of possible solutions.
+
+\definition{Efficient algorithm (1)}{An algorithm is \textbf{efficient} if it achieves qualitatively better worst-case performance, at an analytical level, than brute-force search.}
+
+\subsection{Polynomial time as a definition of efficiency}
+When people first began analyzing discrete algorithms mathematically (a thread of research that began gathering momentum through the 1960s) a consensus began to emerge on how to quantify the notion of a \textbf{“reasonable” running time}. Search spaces for natural combinatorial problems tend to grow exponentially in the size $N$ of the input; if the input size increases by one, the number of possibilities increases multiplicatively. We’d like a good algorithm for such a problem to have a \textbf{better scaling property}: when the input size increases by a constant factor (say, a factor of 2) the algorithm should only slow down by some constant factor $C$.
+
+Arithmetically, we can formulate this scaling behavior as follows.
+
+\definition{Polynomial-time algorithm}{Suppose an algorithm has the following property: there are absolute constants $c > 0$ and $d > 0$ so that on every input instance of size $N$, its running time is bounded by $c N^d$ steps (in other words, its running time is at most proportional to $N^d$). If this running-time bound holds, for some $c$ and $d$, then we say that the algorithm has a \textbf{polynomial running time}, or that it is a \textbf{polynomial-time algorithm}.}
+
+Note that any polynomial-time bound has the scaling property we’re looking for. If the input size increases from $N$ to $2N$, the bound on the running time increases from $c N^d$ to $c(2N)^d = c  2^d N^d$, which is a slow-down by a factor of $2d$. Since $d$ is a constant, so is $2^d$; of course, as one might expect, lower-degree polynomials exhibit better scaling behavior than higher-degree polynomials.
+
+From this notion, we can derive another definition of efficiency.
+
+\definition{Efficient algorithm (2)}{An algorithm is \textbf{efficient} if it has a \textbf{polynomial running time}.}
+
+The justification for this definition relies on the fact that it really works: problems for which polynomial-time algorithms exist almost invariably turn out to have algorithms with running times proportional to very moderately growing polynomials like $n$, $n \log n$, $n^2$, or $n^3$. Conversely, problems for which no polynomial-time algorithm is known tend to be very difficult in practice. 
+
+There are certainly \textbf{exceptions} to this principle in both directions: there are cases, for example, in which an algorithm with \textbf{exponential worst-case} behavior generally runs \textbf{well} on the kinds of instances that arise in practice; and there are also cases where the best \textbf{polynomial-time} algorithm for a problem is completely \textbf{impractical} due to large constants or a high exponent on the polynomial bound. 
+
+One further reason why the mathematical formalism and the empirical evidence seem to line up well in the case of polynomial-time solvability is that the gulf between the growth rates of polynomial and exponential functions is enormous, as shown in the image below.
+
+\image{ba1.png}{1.5}{The running times (rounded up) of different algorithms on inputs of increasing size, for a processor performing a million high-level instructions per second. In cases where the running time exceeds $10^{25}$ years, we simply record the algorithm as taking a very long time.}
+
+\subsection{Analysis and design of algorithms}
+In order to evaluate an algorithm $A$ for a problem $P$, we need to consider the following aspects:
+
+\begin{itemize}
+    \item \textbf{Correctness:} \textit{Does $A$ solve the problem $P$?} \textit{Does $A$ terminate?};
+    \item \textbf{Complexity} (i.e. analysis of the performance of $A$): compute the complexity of $A$ in the worst/average case;
+    \item Find a \textbf{lower bound} to the problem: try to compute the number of operations that are “necessary” to solve the problem, no matter which solution is provided;
+    \item \textbf{Compare} the complexity of $A$ with the \textbf{lower bound}: is $A$ a “good” algorithm?
+\end{itemize}
+
+\example{Given a sequence of numbers $32, 1, 25, 9, 2, 23, 34, 0, 77$, find the maximum value. A possible algorithm could be the following: initialize the maximum value with the first element of the sequence, and then update it as we scan the sequence. In this case: \begin{itemize} \item Correctness? Does the algorithm solve the problem? Yes, simple argument; \item Complexity? How many operations are required? $n-1$ comparisons in worst/average case (no matter which is the input), so the complexity is $T(n)=n-1$ (linear time complexity); \item Lower bound: $n-1$ comparisons (intuitive idea: $n-1$ is with $<n-1$ comparisons, as the maximum could be excluded. Think it as a tournament, at each match the biggest wins, each element has to loose but the biggest, so at least $n-1$ “loosers”, i.e., comparisons. We could also think about $n-1$ internal nodes of a binary tree with $n$ leaves); \item Optimality: the complexity of the algorithm is $n-1$ and it mathces the lower bound, thus the algorithm is optimal. \end{itemize}}
+
+\subsection{Complexity of problems}
+We can now provide more formal definitions of easy, hard/intractable and undecidable problems:
+
+\begin{itemize}
+    \item \textbf{Easy problems:} it is possible to solve them using an \textbf{efficient algorithm} (with at most a polynomial complexity, $O(n^k)$ where $n$ is the size of the input and $k$ is a constant);
+    \item \textbf{Hard or intractable problems:} to find the solution we have to explore \textbf{all the possible solutions} ($O(k^n)$, where $n$ is the size of the input and $k$ is a constant, no polynomial solution is known);
+    \item \textbf{Undecidable problem}: they do \textbf{not} have any \textbf{algorithmic solution}.
+\end{itemize}
+
+\subsubsection{The first undecidable problem}
+The first example of undecidable problem was the \textbf{Halting problem} (Alan Turing, 1936). In this case:
+
+\begin{itemize}
+    \item Input: An arbitrary algorithm $A$ and its input data $D$;
+    \item Output: Decide in finite time if computing $A$ on $D$ halts (finishes execution) or not.
+\end{itemize}
+
+We could try to solve this problem by simply applying $A$ to $D$ and wait the result.., and what if $A(D)$ does not terminate? Turing proved that the existence of such an algorithm $A$ would produce a paradox.
+
+\subsubsection{Hard or intractable problems}
+Some examples of hard/intractable problems (no polynomial solution is presently known) are the problem of finding an \textbf{Hamiltonian circuit} in a graph, i.e. finding a closed path that visits all the nodes of the graph exactly once, or the \textbf{travelling salesman problem} (TSP), where we want to find an Hamiltonian circuit of minimum weight cost.
+
+Usually it is not easy to find the solution, we have to search for ALL the possible paths, so we have to label the vertices as $1,2, .., n$. What is the number of possible paths? If the labels of the vertices are $1,2, .., n$ we check all the $n!$ permutations of all vertices to see if there is an Hamiltonian path ($n!$ is not a polynomial number in $n$). If we are luck we find it right away, otherwise at the end (notice that we could only check from one node, thus having $(n-1)!$): note that if the graph is bipartite with $n$ odd no solution exists.
+
+This problem is \textbf{hard}, and problems like these are called \textbf{NP-complete}. We now define the related \textbf{decisional problem}, e.g., \textit{"Do we have a Hamiltonian cycle or not, no matter which the solution (sequence of nodes) is?"}. The answer of such problems is YES or NO.
+
+\subsection{NP and computation intractability}
+We first define what a decision problem is.
+
+\definition{Decision problem}{A decision problem is a \textbf{problem} $P: I \xrightarrow{} S$ where: \begin{itemize} \item $I$ is a set of instances; \item $S$ are the solutions, i.e. $S = \{YES, NO\}$. \end{itemize}}
+
+\example{Given a graph $G$, does an Hamiltonian cycle exist?}
+
+\example{Given a graph $G$, a source $s$ and a destination $d$, does a path between $s$ and $d$ exist, having length at most $k$?}
+
+To define NP-complete problems we will refer to decision problems. Clearly, there's a difference between \textbf{optimization} and \textbf{decision problems}:
+
+\begin{itemize}
+    \item Decision problem: Given a graph $G$, a source $s$ and a destination $d$, does a path between $s$ and $d$ exist, having length at most $k$? Given a complete undirected weighted graph $G$, does it have an Hamiltonian cycle of cost at most $k$?;
+    \item Optimization problem: Given a graph $G$, a source $s$ and a destination $d$, find a shortest path (a path of minimal length, i.e., with a minimal number of nodes) from $s$ to $d$. Given a complete undirected weighted graph $G$ find an Hamiltonian cycle of minimal cost.
+\end{itemize}
+
+Note: if we show that the decisional problem is NP-complete, then also the optimization problem in NP-complete.
+
+\subsection{P problems}
+
+\definition{P problems}{P problems are \textbf{decision problems} for which there is a \textbf{poly-time algorithm}. The algorithm has \textbf{complexity} $O(n^k)$ where $n$ is the input and $k$ a constant. Usually, $k$ is \textbf{small}.}
+
+Some examples of P problems are showed in the image below.
+
+\imageB{ba2.png}{1.6}
+
+\subsection{NP problems}
+
+\definition{NP problems (1)}{NP problems are \textbf{decision problems} which can be \textbf{verified} in \textbf{poly-time}.}
+
+Intuitively, NP problems are the ones for which, given their solution, we can check the correctness in polynomial time.
+
+\example{Given an undirected weighted graph $G$ of 4 nodes, verify if a given sequence of 4 nodes is a Hamiltonian cycle of length at most 20. We have to do 4 (in general $n$) additions. The cost of verifying the solution is polynomial in $n$ (while finding the optimal solution is not easy ..).}
+
+We can define NP problems using a \textbf{certification} intuition. A certifier views things from "managerial" viewpoint, and does not determine a solution of the problem P, rather, it checks a proposed solution for P.
+
+\definition{NP problems (2)}{Given a problem $P$, an instance $x$ of $P$ is true if and only if there exists a \textbf{certificate} for $x$ of length limited by a polynomial $p(.)$ in $x$, such that given to $P$ will say YES in \textbf{polynomial time}.}
+
+\definition{NP problems (3)}{\textbf{Decision problems} for which there exists a \textbf{poly-time certifier}.}
+
+\example{We consider the COMPOSITES problem: given an integer $s$, is $s$ composite (i.e. not prime)? In this case a \textbf{certificate} is a nontrivial factor $t$ of $s$, and such a certificate exists if and only if $s$ is composite. Moreover $|t| \leq |s|$. The \textbf{certifier} is showed in the following image. \imageB{ba3.png}{1.7} For these reasons, COMPOSITES is in NP.}
+
+\example{We consider the HAM-CYCLE problem: given an undirected graph $G = (V, E)$, does a simple cycle $C$ that visits every node exist? In this case a \textbf{certificate} is a permutation (a list) of the $n$ nodes, while the \textbf{certifier} checks if the permutation contains each node in $V$ exactly once, and if there is an edge between each pair of adjacent nodes in the permutation (e.g., look at the adjacency list of nodes). Thus, HAM-CYCLE is in NP. \\ Notice that if I send a sequence of nodes which is not a solution, the certifier only returns NO, but this does not mean that another solution does not exist.}
+
+\example{We consider the SAT problem: given a CNF (Conjunctive Normal Form) formula $F$, is there a satisfying assignment (i.e., an assignment that makes the formula true)? \\ We use $\land$ and $\lor$ or $\lnot$ not, the $x_i$ are Boolean variables which are combined into clauses in CNF. A literal is either a variable (in which case it is called a positive literal) or the negation of a variable (called a negative literal). In this case the \textbf{certificate} is an assignment of truth values to the $n$ boolean variables, and the \textbf{certifier} checks that each clause in $F$ has at least one true literal. \imageB{ba5.png}{3.0}}
+
+\theoremBox{$P \subseteq NP$}
+
+\textit{Proof.} Consider any problem $p$ in $P$: by definition, there exists a poly-time algorithm $A$ that solves $p$. In we consider a certificate $t = e$ (empty), then the certifier is $C (p, t) = A (p)$. (i.e., the certifier is the algorithm itself). $\blacksquare$
+
+\subsection{EXP problems}
+\definition{EXP problems}{Decision problems for which there is an \textbf{exponential algorithm} that runs in $O(2^{p(n)})$ time, where $p(n)$ is a polynomial function of $n$.}
+
+Intuitively, problems in EXP can be solved in exponential time, but cannot be checked in polynomial time.
+
+\theoremBox{$NP \subseteq EXP$}
+
+\subsection{P vs NP}
+A big question is clearly whether $P = NP$ (Millennium Prize problem), i.e. to establish if the decision problems are as easy as the certification problems. If yes, then we have efficient algorithms for 3-COLOR, TSP, FACTOR, SAT; if no, there are no efficient algorithms possible for 3-COLOR, TSP etc..
+
+\imageB{ba4.png}{1.6}
+
+The consensus opinion is that $P \neq NP$.
+
+\subsection{NP-Complete problems}
+In the absence of progress on the $P = NP$ question, people have turned to a related but more approachable question: What are the hardest problems in NP? Before analyzing NP-complete problems, let's introduce some crucial concepts.
+
+\definition{Polynomial transformation}{We say that a decision problem $P_1$ \textbf{polynomial transforms} to a decision problem $P_2$ if given any input $x$ to $P_1$, we can construct an input $y$, such that $x$ is a yes instance of $P_1$ if and only if $y$ is a yes instance of $P_2$. We denote this concept as $P_1 \leq_p P2$}
+
+Intuitively a problem $P_1$ can be reduced to a problem $P_2$ if any instance of $P_1$ can be “easily rephrased” as an instance of $P_2$.
+
+\example{\begin{itemize} \item $P_1$ = solution of linear equations $ax+b=0$; \item $P_2$ = solution of quadratic equations $a'x^2 + b'x + c'=0$; \end{itemize}  $P_1$ reduces to $P2$: given an instance $ax+b=0$ of $P_1$, we transform it into an instance of $P_2$ as $0x^2+ax+b=0$. A solution of $0x^2+ax+b=0$ provides a solution to $ax+b=0$ and vice versa.}
+
+Thus, $P_1$ can be reduced to $P$, i.e., intuitively $P_1$ is “not harder to solve” than $P_2$.
+
+\example{\begin{itemize} \item $P_1$ = Does a Hamiltonian cycle exist in a graph?; \item $P_2$ = Does a Hamiltonian cycle of cost at most k exist in a graph? \end{itemize} $P_1$ reduces to $P_2$: we have to write an instance of $P_1$ into an instance of $P_2$. We take an undirected weighted $G$ of $k$ nodes, give cost 1 to the existing arcs, transform it into a complete graph $G'$ and give cost 2 to the new arcs. \begin{itemize} \item Now, we look for a solution of $P_2$ of $G'$ of cost $k$, if such a solution exists, it contains only arcs in $G$, thus $G$ is Hamiltonian (if it does not exist, we have taken at least a new arc of cost 2); \item Now we look for a solution of $P_1$, a Hamiltonian cycle in $G$, if it exists it has cost $k$ and is also a solution to $P_2$\end{itemize}}
+
+\definition{NP-complete problems}{A problem $P_2$ is \textbf{NP-complete}, i.e. it is in NPC if: \begin{itemize} \item $P_2$ is in NP; \item Every problem $P_1$ in NP, $P_1 \leq_p P_2$, i.e., all the known problems in NP reduce to $P_2$. \end{itemize} If only the second relation holds, we say that the problem is \textbf{NP-hard}.}
+
+\imageB{ba6.png}{1.5}
+
+\theoremBox{Suppose $P_1$ is an NP-complete problem. Then $P_1$ is solvable in polynomial time if and only if $P = NP$.}
+
+\textit{Proof.} 
+
+\begin{itemize}
+    \item If $P = NP$, then $P_1$ can be solved in poly-time since $P_1$ is in NP and thus in P;
+    \item Suppose $P_1$ can be solved in poly-time. Let $X$ be any problem in NP. Since $X \leq_p P_1$, we can solve $X$ in poly-time. This implies $NP \subseteq P$. We already know $P \subseteq NP$. Thus $P = NP$. $\blacksquare$
+\end{itemize}
+
+\example{We consider the CIRCUIT-SAT problem: given a combinational circuit built out of AND, OR, and NOT gates, is there a way to set the circuit inputs so that the output is 1? Intuitively, this problem is in NP, because if we have a solution, i.e. a set of inputs for which the output is 1, then we can verify it in polynomial time.}
+
+\theoremBox{CIRCUIT-SAT is NP-complete.}
+
+Note:
+\begin{itemize}
+    \item We use this as a base to prove that all the other problems are NP-complete;
+    \item We do not need to prove that all NP-complete problems reduce to a new problem $P_1$, but we can pick just one and show the reduction.
+\end{itemize}
+
+\theoremBox{3-SAT is NP-complete.}
+
+\textit{Proof.}
+It is sufficient to show that $CIRCUIT-SAT \leq_p 3-SAT$, since 3-SAT is in NP (omitted). $\blacksquare$
+
+We recall that the 3-SAT problem is the SAT problem where each clause is limited to at most three literals.
+
+\subsubsection{Establishing NP-completeness}
+Once we establish first "natural" NP-complete problem, others fall like dominoes: the recipe to establish NP-completeness of problem $P_1$ is the following:
+
+\begin{enumerate}
+    \item Show that $P_1$ is in NP;
+    \item Choose an NP-complete problem $X$;
+    \item Prove that $X \leq_p P_1$: if $X$ is an NP-complete problem, and $P_1$ is a problem in NP with the property that $X \leq_p P_1$ then $P_1$ is NP-complete.
+\end{enumerate}
+
+All problems below are NP-complete and polynomial reduce to one another!
+\imageB{ba7.png}{1.4}
+
+\subsubsection{NP-completeness proofs}
+We now consider the proof of a very famous NP-complete problem.
+
+\definition{Clique}{A clique in an undirected graph $G =(V,E)$, is a subset $V' \subseteq V$ of vertices such that each vertex $u,v \subseteq V'$ is connected by an edge $(u,v) \in E$. In other words, a clique is a \textbf{complete subgraph} of $G$}
+
+We can have two possible problems:
+\begin{itemize}
+    \item The optimization \textbf{CLIQUE} problem: find a clique of maximum size in a graph;
+    \item The Decision Clique Problem (\textbf{DCLIQUE}): given an undirected graph $G$ and an integer $k$, determine whether $G$ has a clique with $k$ vertices. 
+\end{itemize}
+
+\theoremBox{The DCLIQUE problem in NP-complete.}
+
+\textit{Proof.}
+We need to show two things: 
+\begin{enumerate}
+    \item That $DCLIQUE \in NP$;
+    \item That there is some $P_1 \in NP$-complete such that $P_1 \leq_p DCLIQUE$. 
+\end{enumerate}
+
+1) We prove that $DCLIQUE \in NP$. A certificate will be a set of vertices $V' \subseteq V$, $|V'|=k$, that is a possible clique. To check that $V'$ is a clique all that is needed is to check that all edges $(u,v)$ with $u \neq v$, $u,v \in V'$ are in $E$. This can be done in time $O(|V|^2)$ if the edges are kept in an adjacency matrix;
+
+2) We prove that there is some $P_1 \in NP$-complete such that $P_1 \leq_p DCLIQUE$. We choose $P_1=3-SAT$ which is NP-complete. Given a CNF formula consisting of $k$ clauses $C_1 \land C_2 \land .. \land C_k$, where each $C_i$ is composed of 3 elementary literals $l_1^i, l_2^i, l_3^i$, the corresponding graph consists of a vertex for each literal, and an edge between each two non-contradicting literals from different clauses. The graph has a $k$-clique if and only if the formula is satisfiable. So:
+\begin{itemize}
+    \item If I have a true assignment, each clause has to be true, at least one element is set to true. Since two groups of vertices are connected if the literals are non-contradicting, I have a clique;
+    \item If $V$ has a clique $V'$ of size $k$, and since vertices of the same group are not connected, I cannot pick two of them to form the clique but they have to belong to different groups. I then set true to the corresponding literal, and there are no contradicting literals in distinct groups, thus I satisfy the formula. $\blacksquare$
+\end{itemize}
+
+\example{The 3-SAT instance $(x \lor x \lor y) \land (\neg x \lor \neg y \lor \neg y) \land (\neg x \lor y \lor y)$ reduced to a clique problem. The green vertices form a 3-clique and correspond to the satisfying assignment x=FALSE, y=TRUE. \imageB{ba8.png}{1.3}}
+
+\newpage
+\subsection{Exercises}
+\begin{enumerate}
+    \item Define the decisional version of the vertex cover problem.
+    
+    Describe the simple 2-approximation algorithm seen in class for the solution of this problem. First describe the algorithm (in code, or pseudocode or words) in a complete and precise way, then show how the algorithm works on a small example with $n=5$ nodes.
+
+    Solution on slide 30-31 of L10.
+
+    \item Give the formal definition of polynomial time transformation and describe a simple example. Solution on slide 20 of L15.
+\end{enumerate}

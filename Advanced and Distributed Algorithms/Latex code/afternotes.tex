@@ -1,0 +1,53 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage[english]{isodate}
+\usepackage[paper=a4paper]{geometry}
+\newgeometry{top=3.5cm,bottom=2.5cm,right=2.5cm,left=2.5cm}
+\usepackage{graphicx}
+\usepackage{comment}
+\usepackage{fancyhdr}
+\usepackage{framed}
+\usepackage{lastpage}
+\usepackage[hidelinks]{hyperref}
+\usepackage{tabularx}
+\usepackage[table]{xcolor}
+\usepackage{enumitem}
+\usepackage{mdwlist}
+\usepackage{placeins}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{xparse}
+\usepackage{float}
+\usepackage{chngcntr}
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+\usepackage{caption}
+\usepackage{tcolorbox}
+
+\counterwithin*{equation}{section}
+\counterwithin*{equation}{subsection}
+
+\DeclareCaptionFormat{custom}
+{
+    \textbf{#1#2}\textit{\small #3}
+}
+\captionsetup{format=custom}
+
+\begin{document}
+
+\newcommand{\titolo}{Advanced and Distributed Algorithms}
+\newcommand{\versione}{2.0}
+
+\input{setup.tex}
+
+\include{100_Introduction.tex}
+\include{200_Basics of Algorithm Analysis}
+\include{300_Approximation Algorithms}
+\include{400_Local Search}
+\include{500_Genetic Algorithms}
+\include{600_Randomized algorithms}
+\end{document}

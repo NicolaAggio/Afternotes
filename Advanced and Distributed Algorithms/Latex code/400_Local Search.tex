@@ -1,0 +1,384 @@
+\section{Local Search}
+In the previous two chapters, we have considered techniques for dealing with computationally intractable problems: in Chapter \ref{ch2}, by identifying structured special cases of NP-hard problems, and in Chapter \ref{ch3}, by designing polynomial-time approximation algorithms. We now develop a third and final topic related to this theme: the design of local search algorithms. 
+
+Local search is a very general technique; it describes any algorithm that “explores” the space of possible solutions in a sequential fashion, moving in one step from a current solution to a “nearby” one. The generality and flexibility of this notion has the advantage that it is not difficult to design a local search approach to almost any computationally hard problem; the counterbalancing disadvantage is that it is often very difficult to say anything precise or provable about the quality of the solutions that a local search algorithm finds, and consequently very hard to tell whether one is using a good local search algorithm or a poor one. Our discussion of local search in this chapter will reflect these trade-offs.
+
+Local search algorithms are generally heuristics designed to find good, but not necessarily optimal, solutions to computational problems, and we begin by talking about what the search for such solutions looks like at a global level. A useful intuitive basis for this perspective comes from connections with energy minimization principles in physics, and we explore this issue first.
+
+\subsection{Landscape of an optimization problem}
+Much of the core of local search was developed by people thinking in terms of analogies with \textbf{physics}. Looking at the wide range of hard computational problems that require the minimization of some quantity, they reasoned as follows. Physical systems are performing \textbf{minimization} all the time, when they seek to minimize their potential energy. What can we learn from the ways in which nature performs minimization? Does it suggest new kinds of algorithms?
+
+\subsubsection{Potential energy} 
+If the world really looked the way a freshman mechanics class suggests, it seems that it would consist entirely of hockey pucks sliding on ice and balls rolling down inclined surfaces. Hockey pucks usually slide because you push them; but why do balls roll downhill?
+
+\image{ls1.png}{1.0}{When the potential energy landscape has the structure of a simple funnel, it is easy to find the lowest point.}\label{ls1}
+
+One perspective that we learn from Newtonian mechanics is that the ball is trying to minimize its potential energy: so, if we release a ball from the top of the funnel-shaped landscape in Figure \ref{ls1}, its potential energy will be \textbf{minimized} at the lowest point. 
+
+If we make the \textbf{landscape} a little more \textbf{complicated}, some extra issues creep in. Consider the \textbf{“double funnel”} in Figure \ref{ls2}. 
+
+\image{ls2.png}{1.0}{Most landscapes are more complicated than simple funnels; for example, in this “double funnel,” there’s a deep global minimum and a shallower local minimum}{\label{ls2}}
+
+Point $A$ is lower than point $B$, and so is a more desirable place for the ball to come to rest. But if we start the ball rolling from point $C$, it will not be able to get over the barrier between the two funnels, and it will end up at $B$. We say that the ball has become \textbf{trapped} in a local minimum\textbf{}: It is at the lowest point if one looks in the neighborhood of its current location; but stepping back and looking at the whole landscape, we see that it has missed the global minimum.
+
+\subsubsection{The connection to optimization}
+This perspective on energy minimization has really been based on the following core ingredients: The physical system can be in one of a large number of possible states; its energy is a function of its current state; and from a given state, a small perturbation leads to a “neighboring” state. The way in which these neighboring states are linked together, along with the structure of the energy function on them, defines the underlying energy landscape. 
+
+It’s from this perspective that we again start to think about computational minimization problems. In a typical such problem, we have:
+
+\begin{itemize}
+    \item A large (typically exponential-size) set $C$ of possible solutions;
+    \item A cost function $c(.)$ that measures the quality of each solution: for a solution $S \in C$, we write its cost as $c(S)$.
+\end{itemize}
+
+The goal is to find a \textbf{solution} $S^* \in C$ for which $c(S^*)$ is as \textbf{small} as possible. 
+
+So far this is just the way we’ve thought about such problems all along. We now add to this the notion of a \textbf{neighbor relation} on solutions, to capture the idea that one solution $S'$ can be obtained by a \textbf{small modification} of another solution $S$. We write $S \sim S'$ to denote that $S'$ is a neighboring solution of $S$, and we use $N(S)$ to denote the neighborhood of $S$, the set $\{ S' : S \sim S' \}$. 
+
+We will primarily be considering \textbf{symmetric} neighbor relations here, though the basic points we discuss will apply to asymmetric neighbor relations as well. A crucial point is that, while the set $C$ of possible solutions and the cost function $c(.)$ are provided by the specification of the problem, we have the freedom to make up any neighbor relation that we want. 
+
+A \textit{local search algorithm} takes this setup, including a neighbor relation, and works according to the following high-level scheme. At all times, it maintains a \textbf{current solution} $S \in C$. In a given step, it chooses a \textbf{neighbor} $S'$ of $S$, declares $S'$ to be the \textbf{new current solution}, and iterates. Throughout the execution of the algorithm, it remembers the \textbf{minimum-cost solution} that it has seen thus far; so, as it runs, it gradually finds \textbf{better} and better \textbf{solutions}. Note that there's \textbf{no guarantee} that we'll end up at the \textbf{best solution}. The crux of a local search algorithm is in the \textbf{choice} of the \textbf{neighbor relation}, and in the design of the rule for \textbf{choosing} a \textbf{neighboring solution} at each step. 
+
+Thus one can think of a neighbor relation as defining a (generally undirected) graph on the set of all possible solutions, with edges joining neighboring pairs of solutions. A \textbf{local search algorithm} can then be viewed as performing a \textbf{walk on this graph}, trying to move toward a good solution.
+
+\paragraph{An application to the vertex cover problem}
+This is still all somewhat vague without a concrete problem to think about; so we’ll use the Vertex Cover Problem as a running example here. It’s important to keep in mind that, while Vertex Cover makes for a good example, there are many other optimization problems that would work just as well for this illustration. 
+
+Thus we are given a graph $G = (V, E)$, and the goal is to find a \textbf{subset of nodes} $S$ of \textbf{minimal cardinality} such that each edge in $E$ has at least one end in $S$; the set $C$ of possible solutions consists of all subsets $S$ of $V$ that form vertex covers. Hence, for example, we always have $V \in C$. The cost $c(S)$ of a vertex cover $S$ will simply be its size; in this way, \textbf{minimizing} the \textbf{cost of a vertex cover} is the same as finding one of minimum size. Finally, we will focus our examples on local search algorithms that use a particularly simple neighbor relation: we say that $S \sim S'$ if $S'$ can be obtained from $S$ by adding or deleting a single node. Thus our local search algorithms will be \textbf{walking} through the \textbf{space} of possible \textbf{vertex covers}, \textbf{adding} or \textbf{deleting} a \textbf{node} to their current solution in each step, and trying to find as small a vertex cover as possible. 
+
+One useful fact about this neighbor relation is the following: each vertex cover $S$ has at most $n$ neighboring solutions. The reason is simply that each neighboring solution of $S$ is obtained by adding or deleting a distinct node. A consequence of this property is that we can efficiently examine all possible neighboring solutions of $S$ in the process of choosing which to select.
+
+Let’s think first about a very \textbf{simple} local search algorithm, which we’ll term \textbf{gradient descent}. Gradient descent starts with the \textbf{full vertex set} $V$ and uses the following \textbf{rule} for \textbf{choosing} a \textbf{neighboring solution}.
+
+\textit{Let $S$ denote the current solution. If there is a neighbor $S'$ of $S$ with strictly lower cost, then choose the neighbor whose cost is as small as possible. Otherwise terminate the algorithm.}
+
+So gradient descent \textbf{moves} strictly \textbf{“downhill”} as long as it can; once this is no longer possible, it stops. 
+
+We can see that gradient descent \textbf{terminates} precisely at solutions that are \textbf{local minima}: solutions $S$ such that, for all neighboring $S'$, we have $c(S) \leq c(S')$. This definition corresponds very naturally to our notion of local minima in energy landscapes: They are points from which no one-step perturbation will improve the cost function. 
+
+How can we \textbf{visualize} the behavior of a local search algorithm in terms of the kinds of energy landscapes we illustrated earlier? Let’s think first about gradient descent. 
+
+\begin{itemize}
+    \item The \textbf{easiest} instance of Vertex Cover is surely an $n$-node graph with \textbf{no edges}. The \textbf{empty set} is the \textbf{optimal solution} (since there are no edges to cover), and gradient descent does exceptionally well at finding this solution: It starts with the full vertex set $V$, and keeps deleting nodes until there are none left. Indeed, the set of vertex covers for this edge-less graph corresponds naturally to the funnel we drew in Figure \ref{ls1}: The unique local minimum is the global minimum, and there is a downhill path to it from any point;
+    \item The hardest instance corresponds to the \textbf{"star graph"} $G$, consisting of nodes $x_1, y_1, y_2,.. , y_{n-1}$, with an edge from $x_1$ to each $y_i$. The minimum vertex cover for $G$ is the singleton set $\{x_1\}$, and gradient descent can reach this solution by successively deleting $y_1, .., y_{n-1}$ in any order. But, if gradient descent deletes the node $x_1$ first, then it is immediately stuck: No node $y_i$ can be deleted without destroying the vertex cover property, so the only neighboring solution is the full node set $V$, which has higher cost. Thus the algorithm has become trapped in the local minimum $\{y_1, y_2, .., y_{n-1}\}$, which has very high cost relative to the global minimum. Pictorially, we see that we’re in a situation corresponding to the double funnel of Figure \ref{ls2};
+    \item What kind of graph might yield a Vertex Cover instance with a landscape like the jagged funnel in Figure \ref{ls3}?
+
+    \image{ls3.png}{1.0}{In a general energy landscape, there may be a very large number of local minima that make it hard to find the global minimum.}\label{ls3}
+    
+    One such graph is simply an $n$-node path, where $n$ is an odd number, with nodes labeled $v_1, v_2, .., v_n$ in order. The unique minimum vertex cover $S^*$ consists of all nodes $v_i$ where $i$ is even. But there are many local optima. For example, consider the vertex cover ${v_2, v_3, v_5, v_6, v_8, v_9, ..}$ in which every third node is omitted. This is a vertex cover that is significantly larger than $S^*$; but there’s no way to delete any node from it while still covering all edges.
+\end{itemize}
+
+Another example of local search algorithm is called \textbf{Hill-climbing search}: this is the opposite of what we've seen so far, since here we have to maximize our result.
+
+\imageB{ls4.png}{1.0}
+
+\subsection{The Metropolis algorithm}
+The first idea for an improved local search algorithm comes from the work of Metropolis, Rosenbluth, Rosenbluth, Teller, and Teller (1953). This represents an attempt to \textbf{improve} the simplified \textbf{idea} of \textbf{gradient descend} by \textbf{simulating} the behavior of a \textbf{physical system} according to principles of statistical mechanics. The \textbf{intuition} behind the behaviour of this algorithm is that it is globally \textbf{biased} toward \textbf{"downhill" steps}, but occasionally makes \textbf{"uphill" steps} to \textbf{break out} of \textbf{local minima} (and to correct wrong choices). 
+
+A \textbf{basic model} from this field asserts that the probability of finding a physical system in a state with energy $E$ is proportional to the Gibbs-Boltzmann function $e^{-E/(kT)}$, where $T > 0$ is the \textbf{temperature} and $k > 0$ is a \textbf{constant}. 
+
+Let’s look at this function. 
+
+\begin{itemize}
+    \item For any temperature $T$, the function is \textbf{monotone decreasing} in the energy $E$, so this states that a physical \textbf{system} is \textbf{more likely} to be in a \textbf{lower energy state} than in a \textbf{high energy state};
+    \item Now let’s consider the effect of the \textbf{temperature} $T$:
+    \begin{itemize}
+        \item When $T$ is \textbf{small}, the \textbf{probability} for a \textbf{low-energy state} is significantly \textbf{larger} than the \textbf{probability} for a \textbf{high-energy state};
+        \item However, if the temperature is \textbf{large}, then the \textbf{difference} between these two \textbf{probabilities} is very \textbf{small}, and the system is almost equally likely to be in any state.
+    \end{itemize} 
+\end{itemize}
+
+\paragraph{Metropolis algorithm}
+Metropolis et al. proposed the following method for performing step-by-step simulation of a system at a \textbf{fixed temperature} $T$. At all times, the simulation maintains a \textbf{current state} $S$ of the system and tries to produce a \textbf{new state} $S' \in N(S)$ by applying a \textbf{perturbation} to this state (we’ll assume that we’re only interested in states of the system that are "reachable" from some fixed initial state by a sequence of small perturbations, and we’ll assume that there is only a finite set $C$ of such states.)
+
+\begin{enumerate}
+    \item In a single step, we first generate a \textbf{small random perturbation} to the current state $S$ of the system, resulting in a \textbf{new state} $S'$. Let $E(S)$ and $E(S')$ denote the \textbf{energies} of $S$ and $S'$, respectively;
+    \item If $E(S') \leq E(S)$, then we \textbf{update} the current state to be $S'$. Otherwise let $\Delta E = E(S') - E(S) > 0$;
+    \item We update the current state to be $S'$ with \textbf{probability} $e^{-\Delta E/(kT)}$, and otherwise leave the current state at $S$.
+\end{enumerate}
+
+Let's see some examples:
+\begin{itemize}
+    \item On the Vertex Cover instance consisting of the star graph we see that the Metropolis Algorithm will quickly bounce out of the local minimum that arises when $x_1$ is deleted: The neighboring solution in which $x_1$ is put back in will be generated and will be accepted with positive probability. On more complex graphs as well, the Metropolis Algorithm is able, to some extent, to correct the wrong choices it makes as it proceeds;
+    \item In the case of a graph with no edges, the gradient descent solves this instance with no trouble, deleting nodes in sequence until none are left. But, while the Metropolis Algorithm will start out this way, it begins to go astray as it nears the global optimum. Consider the situation in which the current solution contains only $c$ nodes, where $c$ is much smaller than the total number of nodes, $n$. With very high probability, the neighboring solution generated by the Metropolis Algorithm will have size $c + 1$, rather than $c-1$, and with reasonable probability this uphill move will be accepted. Hence, the algorithm in this case has a tendency to step away from good solutions.
+\end{itemize}
+
+\subsection{Hopfield Neural Networks}
+Thus far we have been discussing local search as a method for trying to find the global optimum in a computational problem. There are some cases, however, in which, by examining the specification of the problem carefully, we discover that it is really just an arbitrary local optimum that is required.We now consider a problem that illustrates this phenomenon.
+
+\subsubsection{The problem}
+The problem we consider here is that of finding stable configurations in \textit{Hopfield neural networks}. \textbf{Hopfield networks} have been proposed as a simple \textbf{model} of an \textbf{associative memory}, in which a large collection of \textbf{units} are \textbf{connected} by an \textbf{underlying network}, and neighboring units try to correlate their states. 
+
+Concretely, a Hopfield network can be viewed as an \textbf{undirected graph} $G = (V, E)$, with an integer-valued \textbf{weight} $w_e$ on each edge $e$; each weight may be positive or negative. A \textbf{configuration} $S$ of the network is an assignment of the value $-1$ or $+1$ to each node $u$; we will refer to this value as the \textbf{state} $s_u$ of the node $u$. The meaning of a configuration is that each node $u$, representing a unit of the neural network, is trying to choose between one of two possible states ("on" or "off"; "yes" or "no"); and its choice is influenced by those of its neighbors as follows. Each \textbf{edge} of the network imposes a \textbf{requirement} on its endpoints: 
+
+\begin{itemize}
+    \item If $u$ is joined to $v$ by an edge of \textbf{negative} weight, then $u$ and $v$ want to have the \textbf{same state};
+    \item If $u$ is joined to $v$ by an edge of \textbf{positive} weight, then $u$ and $v$ want to have \textbf{opposite states}.
+\end{itemize}
+
+The absolute value $|w_e|$ will indicate the \textbf{strength} of this requirement, and we will refer to $|w_e|$ as the \textbf{absolute weight} of edge $e$.
+
+Unfortunately, there may be \textbf{no configuration} that respects the \textbf{requirements} imposed by all the edges. For example, consider three nodes $a, b, c$ all mutually connected to one another by edges of weight 1. Then, no matter what configuration we choose, two of these nodes will have the same state and thus will be violating the requirement that they have opposite states.
+
+\definition{Good edge}{With respect to a given configuration, we say that an edge $e = (u, v)$ is \textbf{good} if the requirement it imposes is satisfied by the states of its two endpoints: either $w_e < 0$ and $s_u = s_v$, or $w_e > 0$ and $s_u \neq s_v$. Otherwise we say $e$ is \textbf{bad}. Note that we can express the condition that $e$ is good very compactly, as follows: $w_e s_u s_v < 0$.}
+
+\definition{Node satisfaction}{We say that a node $u$ is \textbf{satisfied} in a given configuration if the total \textbf{absolute weight} of all \textbf{good} edges incident to $u$ is at least \textbf{as large} as the total \textbf{absolute weight} of all \textbf{bad} edges incident to $u$. We can write this as $$\sum_{v: e = (u,v)} w_e s_u s_v \leq 0$$}
+
+\definition{Stable configuration}{A configuration is \textbf{stable} if all nodes are \textbf{satisfied}}
+
+\imageB{ls5.png}{1.2}
+
+Why do we use the term \textbf{stable} for such configurations? This is based on viewing the network from the perspective of an individual node $u$. On its own, the only choice $u$ has is whether to take the state $-1$ or $+1$; and like all nodes, it wants to respect as many edge requirements as possible (as measured in absolute weight). Suppose $u$ asks: Should I flip my current state? We see that if $u$ does flip its state (while all other nodes keep their states the same), then all the good edges incident to $u$ become bad, and all the bad edges incident to $u$ become good. So, to maximize the amount of good edge weight under its direct control, $u$ should flip its state if and only if it is not satisfied. In other words, a stable configuration is one in which no individual node has an incentive to flip its current state. 
+
+A basic question now arises: Does a Hopfield network always have a \textbf{stable configuration}, and if so, how can we find one?
+
+\subsubsection{State-flipping algorithm}
+The intuition behind the \textbf{algorithm} is to repeatedly \textbf{flip} the \textbf{state} of an \textbf{unsatisfied node}.
+
+\image{ls6.png}{1.0}{State-flipping algorithm}
+
+An \textbf{example} of the execution of this algorithm is depicted in Figure \ref{ls7}, ending in a stable configuration.
+
+\image{ls7.png}{1.0}{Parts (a)–(f) depict the steps in an execution of the State-Flipping Algorithm for a five-node Hopfield network, ending in a stable configuration. (Nodes are colored black or white to indicate their state.)}\label{ls7}
+
+\vspace{10mm}
+\textbf{Analyzing the algorithm}
+
+\theoremBox{State-flipping algorithm terminates with a stable configuration after at most $W = \sum_e |w_e|$ iterations.}\label{th1}
+
+Clearly, \textbf{if} the State-flipping \textbf{algorithm} we have just defined \textbf{terminates}, we will have a \textbf{stable configuration}. What is not obvious is whether it must in fact terminate. Indeed, in the earlier directed example, this process will simply cycle through the three nodes, flipping their states sequentially forever. 
+
+We now \textbf{prove} that the state-flipping algorithm always \textbf{terminates}, and we give a \textbf{bound} on the \textbf{number of iterations} it takes until termination. This will provide a proof of Theorem \ref{th1}. The key to proving that this process terminates is an idea we’ve used in several previous situations: to look for a \textbf{measure of progress}, i.e. a \textbf{quantity} that \textbf{strictly increases} with every \textbf{flip} and has an \textbf{absolute upper bound}. This can be used to bound the number of iterations. 
+
+Probably the most natural progress measure would be the \textbf{number of satisfied nodes}: If this increased every time we flipped an unsatisfied node, the process would run for at most n iterations before terminating with a stable configuration. Unfortunately, \textbf{this} \textbf{does not turn out to work}. When we flip an unsatisfied node $v$, it’s true that it has now become satisfied, but several of its previously satisfied neighbors could now become unsatisfied, resulting in a net decrease in the number of satisfied nodes. This actually happens in one of the iterations depicted in Figure \ref{ls7}: when the middle node changes state, it renders both of its (formerly satisfied) lower neighbors unsatisfied.
+
+However, there is a more subtle progress measure that does increase with each flip of an unsatisfied node. Specifically, for a given configuration $S$,we define $\Phi(S)$ to be the \textbf{total absolute weight of all good edges} in the network. That is,
+
+$$
+\Phi(S) = \sum_{\text{good edge $e$}} |w_e|
+$$
+
+Note:
+\begin{itemize}
+    \item Clearly, for any configuration $S$, we have $\Phi(S) \geq 0$ (since $\Phi(S)$ is a sum of positive integers), and $\Phi(S) \leq W = \sum_e |w_e|$ (since, at most, every edge is good);
+    \item Now suppose that, in a \textbf{non-stable configuration} $S$, we choose a node $u$ that is \textbf{unsatisfied} and \textbf{flip} its state, resulting in a configuration $S'$. What can we say about the relationship of $\Phi(S')$ to $\Phi(S)$? When $u$ flips its state:
+    \begin{itemize}
+        \item All \textbf{good} edges incident to $u$ become \textbf{bad};
+        \item All \textbf{bad} edges incident to $u$ become \textbf{good};
+        \item All edges that don’t have $u$ as an endpoint remain the same.
+    \end{itemize}
+\end{itemize} 
+
+So, if we let $g_u$ and $b_u$ denote the \textbf{total absolute weight on good and bad edges} incident to $u$, respectively, then we have
+
+$$\Phi(S') = \Phi(S) - g_u + b_u$$
+
+But, since $u$ was unsatisfied in $S$, we also know that $b_u > g_u$; and since $b_u$ and $g_u$ are both integers, we in fact have $b_u \geq g_u + 1$. Thus
+
+$$\Phi(S') \geq \Phi(S) + 1$$
+
+Hence the value of $\Phi$ begins at some non-negative integer, increases by at least 1 on every flip, and cannot exceed $W$. Thus our process runs for at most $W$ \textbf{iterations}, and when it terminates, we must have a stable configuration. 
+
+Moreover, in each iteration we can identify an unsatisfied node using a number of arithmetic operations that is polynomial in $n$; thus a \textbf{running-time bound} that is polynomial in $n$ and $W$ follows as well.
+
+It’s worth noting that while our algorithm proves the \textbf{existence} of a \textbf{stable configuration}, the running time leaves something to be desired when the absolute weights are large. Specifically, the algorithm we obtain here is \textbf{polynomial} only in the actual magnitude of the weights, not in the size of their binary representation. For very large weights, this can lead to running times that are quite \textbf{infeasible}. However, no simple way around this situation is currently known. It turns out to be an open question to find an algorithm that constructs stable states in time polynomial in $n$ and $\log W$ (rather than $n$ and $W$), or in a number of primitive arithmetic operations that is polynomial in $n$ alone, independent of the value of $W$.
+
+\subsection{Maximum Cut approximation via Local Search}
+We now discuss a case where a local search algorithm can be used to provide a provable approximation guarantee for an optimization problem. We will do this by analyzing the structure of the local optima, and bounding the quality of these locally optimal solutions relative to the global optimum. The problem we consider is the Maximum-Cut Problem, which is closely related to the problem of finding stable configurations for Hopfield networks that we saw in the previous section.
+
+\subsubsection{The problem}
+In the \textbf{Maximum-Cut Problem}, we are given an undirected graph $G = (V, E)$, with a positive integer weight $w_e$ on each edge $e$. For a partition $(A, B)$ of the vertex set, we use $w(A, B)$ to denote the total weight of edges with one end in $A$ and the other in $B$:
+
+$$
+w(A,B) = \sum_{e = (u,v) \\ u \in A, v \in B} w_e
+$$
+
+The \textbf{goal} is to find a \textbf{partition} $(A, B)$ of the vertex set so that $w(A, B)$ is \textbf{maximized}. Maximum Cut is \textbf{NP-hard}, in the sense that, given a weighted graph $G$ and a bound $\beta$, it is \textbf{NP-complete} to decide whether there is a partition $(A, B)$ of the vertices of $G$ with $w(A, B) \geq \beta$. 
+
+\subsubsection{The algorithm}\label{sec4.4.2}
+The State-Flipping Algorithm used for Hopfield networks provides a local search algorithm to approximate the Maximum Cut objective function $\Phi(S) = w(A, B)$. In terms of partitions, it says the following: If there exists a node $u$ such that the total weight of edges from $u$ to nodes in its own side of the partition exceeds the total weight of edges from $u$ to nodes on the other side of the partition, then $u$ itself should be moved to the other side of the partition. 
+
+We’ll call this the \textbf{“single-flip” neighborhood} on partitions: Partitions $(A, B)$ and $(A', B')$ are \textbf{neighboring} solutions if $(A', B')$ can be obtained from $(A, B)$ by \textbf{moving} a \textbf{single node} from \textbf{one side} of the partition \textbf{to the other}. 
+
+\imageB{ls9.png}{1.5}
+
+\subsubsection{Analyzing the algorithm}
+
+Let’s ask two basic questions:
+\begin{enumerate}
+    \item Can we say anything concrete about the \textbf{quality} of the \textbf{local optima} under the \textbf{single-flip neighborhood}?
+    \item Since the single-flip neighborhood is about as simple as one could imagine, what other \textbf{neighborhoods} might yield \textbf{stronger} \textbf{local search} algorithms for Maximum Cut?
+\end{enumerate}
+
+We address the first of these questions here, and we take up the second one in the next section.
+
+\theoremBox{Let $(A, B)$ be a partition that is a local optimum for Maximum Cut under the single-flip neighborhood. Let $(A^*, B^*)$ be a globally optimal partition. Then $w(A, B) \geq \frac{1}{2}w(A^*, B^*)$.}
+
+\textit{Proof.} Let $W = \sum_e w_e$. We also extend our notation a little: for two nodes $u$ and $v$, we use $w_{uv}$ to denote $w_e$ if there is an edge $e$ joining $u$ and $v$, and 0 otherwise. 
+
+For any node $u \in A$, we must have
+
+$$
+\sum_{v \in A} w_{uv} \leq \sum_{v \in B} w_{uv}
+$$
+
+, since otherwise $u$ should be moved to the other side of the partition, and $(A, B)$ would not be locally optimal. Suppose we add up these inequalities for all $u \in A$; any edge that has both ends in $A$ will appear on the left-hand side of exactly two of these inequalities, while any edge that has one end in $A$ and one end in $B$ will appear on the right-hand side of exactly one of these inequalities. 
+
+Thus, we have
+$$2 \sum_{\{u,v\} \subseteq A} w_{uv} \leq \sum_{u \in A,v \in B} w_{uv} = w(A, B)$$
+
+We can apply the same reasoning to the set $B$, obtaining
+
+$$2 \sum_{\{u,v\} \subseteq B} w_{uv} \leq \sum_{u \in A,v \in B} w_{uv} = w(A, B)$$
+
+If we add together the inequalities  and divide by 2, we get
+
+$$
+\sum_{\{u,v\} \subseteq A} w_{uv} + \sum_{\{u,v\} \subseteq B} w_{uv} \leq  w(A, B)
+$$
+
+The \textbf{left-hand side} of inequality accounts for a\textbf{ll edge weight} that does \textbf{not} cross from $A$ to $B$; so, if we add $w(A, B)$ to both sides, the left-hand side becomes equal to $W$. The \textbf{right-hand side} becomes $2w(A, B)$,so we have $W \leq 2w(A, B)$, or $w(A, B) \geq \frac{1}{2} W$. 
+
+Since the globally optimal partition $(A^*, B^*)$ clearly satisfies $w(A^*, B^*) \leq W$, we have $w(A, B) \geq \frac{1}{2} w(A^*, B^*)$.
+
+Notice that we never really thought much about the optimal partition $(A^*, B^*)$ in the proof of the theorem; we really showed the stronger statement that, in any l\textbf{ocally optimal solution} under the single-flip neighborhood, at least \textbf{half} the total edge weight in the graph \textbf{crosses} the \textbf{partition}. 
+
+Moreover, the theorem proves that a local optimum is a \textbf{2-approximation} to the maximum cut. This suggests that the \textbf{local optimization} may be a \textbf{good} algorithm for approximately \textbf{maximizing} the cut value. However, there is one more issue that we need to consider: the \textbf{running time}. As we saw in the previous sections, the Single-Flip Algorithm is only \textbf{pseudo-polynomial}, since we can only bound it by $W$ and it is an open problem whether a local optimum can be found in \textbf{polynomial time}. However, in this case we can do almost as well, simply by stopping the algorithm when there are no \textbf{“big enough” improvements}. 
+
+\definition{Big improvement flip}{Let $(A, B)$ be a partition with weight $w(A, B)$. For a fixed $\epsilon > 0$, let us say that a single node flip is a \textbf{big-improvement-flip} if it improves the cut value by at least $\frac{2 \epsilon}{n} w(A, B)$ where $n =|V|$.}
+
+Now, consider a version of the Single-Flip Algorithm when we only accept big-improvement-flips and terminate once no such flip exists, even if the current partition is not a local optimum. We claim that this will lead to almost as good an approximation and will run in polynomial time. First we can extend the previous proof to show that the resulting cut is almost as good. We simply have to add the term $\frac{2 \epsilon}{n} w(A, B)$ to each inequality, as all we know is that there are no big-improvement-flips.
+
+\claim{Let $(A,B)$ be a partition s.t. no big-improvement-flip is possible. Let $(A^*, B^*)$ be a globally optimal partition. Then, $(2+\epsilon) w(A,B) \geq w(A^*, B^*)$.}
+
+\claim{The version of the Single-Flip Algorithm that only accepts big-improvement-flips terminates after at most $O(\epsilon^{-1} n \log W)$ flips, assuming the weights are integral, and $W = \sum_e w_e$.}
+
+\theoremNameBox{Sahni-Gonzales, 1976}{There exists a $\frac{1}{2}$-approximation algorithm for the maximum cut problem.}
+
+\theoremNameBox{Goemans-Williamson, 1995}{There exists an 0.878567-approximation algorithm for the maximum cut problem.}
+
+\theoremNameBox{Hastad, 1997}{Unless $P = NP$, no $16/17$-approximation algorithm exists for the maximum cut problem.}
+
+\subsection{Choosing a neighbor relation}
+We began the chapter by saying that a local search algorithm is really based on two fundamental ingredients: the \textbf{choice} of the \textbf{neighbor relation}, and the rule for \textbf{choosing} a \textbf{neighboring solution} at each step. In previous sections we spent time thinking about the second of these: the Metropolis Algorithm took the neighbor relation as given and modified the way in which a neighboring solution should be chosen. 
+
+What are some of the \textbf{issues} that should go into our \textbf{choice} of the \textbf{neighbor relation}? This can turn out to be quite subtle, though at a high level the \textbf{trade-off} is a basic one.
+
+\begin{enumerate}
+    \item The \textbf{neighborhood} of a \textbf{solution} should be \textbf{rich} enough that we do not tend to get \textbf{stuck} in \textbf{bad local optima}; but
+    \item the \textbf{neighborhood} of a solution should \textbf{not} be \textbf{too large}, since we want to be able to efficiently search the set of neighbors for possible local moves.
+\end{enumerate}
+
+If the \textbf{first} of these points were the only concern, then it would seem that we should simply make all solutions neighbors of one another (after all, then there would be no local optima, and the global optimum would always be just one step away!). The \textbf{second point} exposes the (obvious) problem with doing this: If the \textbf{neighborhood} of the \textbf{current solution} consists of \textbf{every possible solution}, then the \textbf{local search} paradigm gives us \textbf{no leverage} whatsoever; it reduces simply to \textbf{brute-force search} of this neighborhood.
+
+\subsubsection{Local search algorithms for Graph Partitioning}
+In Section \ref{sec4.4.2}, we considered a state-flipping algorithm for the Maximum-Cut Problem, and we showed that the locally optimal solutions provide a 2-approximation. We now consider \textbf{neighbor relations} that produce \textbf{larger neighborhoods} than the single-flip rule, and consequently attempt to \textbf{reduce} the prevalence of \textbf{local optima}. Perhaps the most natural generalization is the $k$-flip neighborhood, for $k \geq 1$.
+
+\definition{$k$-flip neighborhood}{We say that partitions $(A, B)$ and $(A', B')$ are neighbors under the $k$-flip rule if $(A', B')$ can be obtained from ($A, B$) by moving at \textbf{most} $k$ nodes from one side of the partition to the other.}
+
+Now, clearly if $(A, B)$ and $(A', B')$ are neighbors under the $k$-flip rule, then they are also neighbors under the $k'$-flip rule for every $k' > k$. Thus, if $(A, B)$ is a local optimum under the $k'$-flip rule, it is also a local optimum under the $k$-flip rule for every $k < k'$. But \textbf{reducing} the \textbf{set of local optima} by raising the value of $k$ comes at a steep \textbf{computational price}: to examine the set of neighbors of $(A, B)$ under the $k$-flip rule, we must consider all $\Theta(n^k)$ ways of moving up to $k$ nodes to the opposite side of the partition. This becomes prohibitive even for \textbf{small values} of $k$. 
+
+Kernighan and Lin (1970) proposed an alternate \textbf{method} for \textbf{generating neighboring solutions}; it is \textbf{computationally} much more \textbf{efficient}, but still allows \textbf{large-scale transformations} of solutions in a single step. Their method, which we’ll call the \textbf{K-L heuristic}, defines the neighbors of a partition $(A, B)$ according to a $n$-phase procedure.
+
+\subsection{Nash Equilibrium}
+Thus far we have been considering local search as a technique for solving optimization problems with a single objective, in other words, applying local operations to a candidate solution so as to minimize its total cost. There are many settings, however, where a potentially large number of agents, each with its own goals and objectives, collectively interact so as to produce a solution to some problem. A solution that is produced under these circumstances often reflects the "tug-of-war" that led to it, with each agent trying to pull the solution in a direction that is favorable to it. We will see that these interactions can be viewed as a kind of local search procedure; analogues of local minima have a natural meaning as well, but having multiple agents and multiple objectives introduces new challenges. 
+
+The field of \textbf{game theory} provides a natural framework in which to talk about what happens in such situations, when a collection of agents interacts strategically—in other words, with each trying to optimize an individual objective function. To illustrate these issues, we consider a concrete application, motivated by the problem of routing in networks; along the way, we will introduce some notions that occupy central positions in the area of game theory more generally.
+
+\subsubsection{The problem}
+In a network like the Internet, one frequently encounters situations in which a number of nodes all want to establish a connection to a single source node $s$. For example, the source $s$ may be generating some kind of data stream that all the given nodes want to receive, as in a style of one-to-many network communication known as \textbf{multicast}. We will model this situation by representing the underlying network as a \textbf{directed graph} $G = (V, E)$, with a \textbf{cost} $c_e \geq 0$ on each edge. There is a designated \textbf{source node} $s \in V$ and a collection of $k$ \textbf{agents} located at distinct \textbf{terminal nodes} $t_1, t_2, .., t_k \in V$. For simplicity, we will not make a distinction between the agents and the nodes at which they reside; in other words, we will think of the agents as being $t_1, t_2, .., t_k$. Each agent $t_j$ wants to construct a \textbf{path} $P_j$ from $s$ to $t_j$ using as \textbf{little total cost} as possible. 
+
+Now, if there were \textbf{no interaction} among the agents, this would consist of $k$ separate shortest-path problems: Each agent $t_j$ would find an $s-t_j$ path for which the total cost of all edges is minimized, and use this as its path $P_j$. What makes this problem interesting is the prospect of agents being able to \textbf{share} the \textbf{costs} of edges. Suppose that after all the agents have chosen their paths, agent $t_j$ only needs to pay its "fair share" of the cost of each edge $e$ on its path; that is, rather than paying $c_e$ for each $e$ on $P_i$, it pays $c_e$ divided by the number of agents whose paths contain $e$. In this way, there is an \textbf{incentive} for the agents to \textbf{choose paths that overlap}, since they can then benefit by splitting the costs of edges. 
+
+\example{\imageB{gen11.png}{1.3}In the example, suppose the two agents start out using their outer paths. Then $t_1$ sees no advantage in switching paths (since $4 < 5+ 1$), but $t_2$ does (since $8 > 5+ 1$), and so $t_2$ updates its path by moving to the middle. Once this happens, things have changed from the perspective of $t_1$: There is suddenly an advantage for $t_1$ in switching as well, since it now gets to share the cost of the middle path, and hence its cost to use the middle path becomes $2.5 + 1< 4$. Thus it will switch to the middle path. Once we are in a situation where both sides are using the middle path, neither has an incentive to switch, and so this is a stable solution.}
+
+Let’s discuss two \textbf{definitions} from the area of game theory that capture what’s going on in this simple example. While we will continue to focus on our particular multicast routing problem, these definitions are relevant to any setting in which multiple agents, each with an individual objective, interact to produce a collective solution.
+
+\definition{Best response dynamics}{Each \textbf{agent} is continually \textbf{prepared} to \textbf{improve} its \textbf{solution} in response to changes made by the other agent(s). In other words, we are interested in the dynamic behavior of a process in which each agent updates based on its best response to the current situation.}
+
+\definition{Nash equilibrium}{A Nash equilibrium is a solution where \textbf{no agent} has an \textbf{incentive to switch}, i.e. it is a \textbf{stable solution}.}
+
+\example{\imageB{ls12.png}{1.5}This examples illustrates the possibility of multiple Nash equilibria. In this example, there are $k$ agents that all reside at a common node $t$ (that is, $t_1 = t_2 = .. = t_k = t$), and there are two parallel edges from $s$ to $t$ with different costs. The solution in which all agents use the left-hand edge is a Nash equilibrium in which all agents pay $(1+ \epsilon)/k$. The solution in which all agents use the right-hand edge is also a Nash equilibrium, though here the agents each
+pay $k/k = 1$.}
+
+The fact that this latter solution is a Nash equilibrium exposes an important point about best-response dynamics. If the agents could somehow synchronously agree to move from the right-hand edge to the left-hand one, they’d all be better off. But under best-response dynamics, each agent is only evaluating the consequences of a unilateral move by itself. In effect, an agent isn’t able to make any assumptions about future actions of other agents, and so it is only willing to perform updates that lead to an immediate improvement for itself.
+
+\definition{Social optimum}{A solution is a social optimum if it minimizes the total cost to all agents.}
+
+Note that in both the previous examples there is a social optimum that is also a Nash equilibrium, although in the second example there is also a second Nash equilibrium whose cost is much greater.
+
+\subsubsection{The relationship to Local Search}
+A set of agents following best-response dynamics are engaged in some kind of gradient descent process, exploring the “landscape” of possible solutions as they try to minimize their individual costs. The \textbf{Nash equilibria} are the natural analogues of \textbf{local minima} in this process: solutions from which no improving move is possible. And the “local” nature of the search is clear as well, since agents are only updating their solutions when it leads to an immediate improvement.
+
+Having said all this, it’s important to think a bit further and notice the crucial ways in which this \textbf{differs} from standard local search. In the beginning of this chapter, it was easy to argue that the \textbf{gradient descent} algorithm for a combinatorial problem must terminate at a \textbf{local minimum}: each update decreased the cost of the solution, and since there were only finitely many possible solutions, the sequence of updates could not go on forever. In other words, the cost function itself provided the progress measure we needed to establish termination.
+
+In best-response dynamics, on the other hand, each agent has its own personal objective function to minimize, and so it’s not clear what overall "progress" is being made when, for example, agent $t_i$ decides to update its path from $s$. There’s progress for $t_i$, of course, since its cost goes down, but this may be offset by an even larger increase in the cost to some other agent. 
+
+Consider, for example, the network in Figure \ref{ls13}. 
+
+\image{ls13.png}{1.5}{A network in which the unique Nash equilibrium differs from the social equilibrium.}\label{ls13}
+
+If both agents start on the middle path, then $t_1$ will in fact have an incentive to move to the outer path; its cost drops from 3.5 to 3, but in the process the cost of $t_2$ increases from 3.5 to 6. (Once this happens, $t_2$ will also move to its outer path, and this solution (with both nodes on the outer paths) is the unique Nash equilibrium.)
+
+There are examples, in fact, where the cost-increasing effects of best response dynamics can be much worse than this.\image{ls14.png}{1.5}{A network in which the unique Nash equilibrium costs $H(k) = \Theta(\log k)$ times more than the social optimum.}\label{ls14}Consider the situation in Figure \ref{ls14}, where we have $k$ agents that each have the option to take a common outer path of cost $1+ \epsilon$ (for some small number $\epsilon> 0$), or to take their own alternate path. The alternate path for $t_j$ has cost $1/j$. Now suppose we start with a solution in which all agents are sharing the outer path. Each agent pays $(1+ \epsilon)/k$, and this is the solution that minimizes the total cost to all agents. But running best-response dynamics starting from this solution causes things to unwind rapidly. First $t_k$ switches to its alternate path, since $1/k <(1+ \epsilon)/k$. As a result of this, there are now only $k-1 $ agents sharing the outer path, and so $t_{k-1}$ switches to its alternate path, since $1/(k-1)<(1+ \epsilon)/(k-1)$. After this, $t_{k-2}$ switches, then $t_{k-3}$, and so forth, until all $k$ agents are using the alternate paths directly from $s$.
+
+The total cost to all agents under even the most favorable Nash equilibrium solution can be worse than the total cost under the social optimum. How much worse? The total cost of the social optimum in this example is $1+\epsilon$, while the cost of the unique Nash equilibrium is $1 + \frac{1}{2} + \frac{1}{3} + .. = \sum \limits_{i = 1}^k \frac{1}{i}$. This quantity is the harmonic number $H(k)$ its asymptotic value is $H(k) = \Theta(\log k)$. 
+
+These examples suggest that one can’t really view the social optimum as the analogue of the global minimum in a traditional local search procedure. In standard local search, the global minimum is always a stable solution, since no improvement is possible. Here the social optimum can be an unstable solution, since it just requires one agent to have an interest in deviating.
+
+\subsubsection{Two basic questions}
+\begin{itemize}
+    \item The existence of a Nash equilibrium. At this point, we actually don’t have a proof that there even exists a Nash equilibrium solution in every instance of our multicast routing problem. The most natural candidate for a progress measure, the total cost to all agents, does not necessarily decrease when a single agent updates its path;
+    \item The price of stability. So far we’ve mainly considered Nash equilibria in the role of “observers”: essentially, we turn the agents loose on the graph from an arbitrary starting point and watch what they do. But if we were viewing this as protocol designers, trying to define a procedure by which agents could construct paths from $s$, we might want to pursue the following approach. 
+    
+    Given a set of agents, located at nodes $t_1, t_2,.., t_k$, we could propose a collection of paths, one for each agent, with two properties:
+    
+    (i) The set of paths forms a Nash equilibrium solution; and
+    
+    (ii) Subject to (i), the total cost to all agents is as small as possible.
+
+    Of course, ideally we’d like just to have the smallest total cost, as this is the social optimum. But if we propose the social optimum and it’s not a Nash equilibrium, then it won’t be stable: Agents will begin deviating and constructing new paths. Thus properties (i) and (ii) together represent our protocol’s attempt to optimize in the face of stability, finding the best solution from which no agent will want to deviate.
+
+    \definition{Price of stability}{The price of stability is the ratio of the cost of the best Nash equilibrium solution to the cost of the social optimum. This quantity reflects the blow-up in cost that we incur due to the requirement that our solution must be stable in the face of the agents’ self-interest.}
+\end{itemize}
+
+\subsubsection{Finding a good Nash equilibrium}
+The following algorithm terminates with a Nash equilibrium.
+
+\imageB{ls15.png}{1.8}
+
+\subsubsection{Bounding the price of stability}
+\theoremBox{There is a Nash equilibrium for which the total cost to all agents exceeds that of the social optimum by at most a factor of $H(k)$, meaning that the Nash equilibrium is a quite good solution.}
+
+\newpage
+\subsection{Exercises}
+\begin{enumerate}
+    \item Execute the State-flipping algorithm on the following graph;
+
+    \imageB{ls8.png}{1.0}
+
+    \item Execute the Maximum-Cut algorithm on the following graph. Solution on slide 25 of L7;
+
+    \imageB{ls10.png}{1.0}
+
+    \item Execute the Maximum-Cut algorithm on the following graph;
+
+    \imageB{ls11.png}{1.5}
+
+    \item Given this Hopfield neural network, find a stable configuration.
+
+    \imageB{r3.png}{1.0}
+
+    What happens if all values are positive? Does this remind you of any known problem?
+
+    \item Execute the Maximum-Cut algorithm on the following graph, and find a stable configuration. Solution on slide 19-21 of L11;
+
+    \imageB{ex.png}{1.0}
+
+    \item What is a Hopfield Neural Network? When do we have a stable configuration? Describe the simple algorithm seen in class, that finds a stable configuration (if such a configuration exists). First describe the algorithm (in code, or pseudocode or words) in a complete and precise way, then show how the algorithm works on this example. Solution on slide 15-18 of L11.5
+
+    \imageB{ex3.png}{1.0}
+
+    \item Describe the local search technique in general and very briefly. Solution on slide 33 of L10;
+    
+\end{enumerate}
