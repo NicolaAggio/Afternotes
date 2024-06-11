@@ -31,7 +31,29 @@
 	\end{figure}
 }
 
+\newcommand{\imageCouple}[5]{
+        \begin{figure}[h!]
+    	\centering
+    	\includegraphics[scale = #3]{img/#1}
+            \includegraphics[scale = #4]{img/#2}
+    	\caption{#5} 
+	\end{figure}
+}
+
+\newcommand{\imageTriple}[7]{
+        \begin{figure}[h!]
+    	\centering
+    	\includegraphics[scale = #4]{img/#1}
+            \includegraphics[scale = #5]{img/#2}
+            \includegraphics[scale = #6]{img/#3}
+    	\caption{#7} 
+	\end{figure}
+}
+
+\newcommand{\behav}{B(\mathcal{E})}
 \newcommand{\Z}{\mathbb{Z}}
+\newcommand{\mess}{\mathbf{M}}
+\newcommand{\tim}{\mathbf{T}}
 
 \newcommand{\definition}[2]{
 \vspace{3mm} \textbf{Definition (#1).} \textit{#2} \vspace{3mm}
@@ -67,6 +89,10 @@
 
 \newcommand{\lemma}[2]{
 \vspace{3mm} \textbf{Lemma #1.} \textit{#2} \vspace{1mm}
+}
+
+\newcommand{\lemmaVoid}[1]{
+\vspace{3mm} \textbf{Lemma.} \textit{#1} \vspace{1mm}
 }
 
 \newcommand{\lemmaName}[2]{

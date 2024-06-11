@@ -1,0 +1,298 @@
+\section{Peer-to-Peer systems }
+Peer-to-Peer systems (\textbf{P2P}) belong to distributed systems, which differ from centralized systems from the fact that the communication is characterized by message exchange, while in centralized systems a shared memory is responsible for communication.
+
+\subsection{Architecture}
+P2P can be seen as an organizational principle, in which the participating \textbf{entities are all equal} (in principal), in contrast with client-server systems, where each entity has a clear role:
+\begin{itemize}
+    \item The \textbf{server} provides a service and manages the resources;
+    \item The \textbf{client} uses the service.
+\end{itemize}
+
+Thus, in P2P everyone acts as client and as server at the same time.
+
+In general, P2P systems can be classified as:
+\begin{itemize}
+    \item \textbf{Hybrid}, e.g. \textit{Napster} and \textit{KaZaA} (super peer);
+    \item \textbf{Pure}, which in turns can be classified as:
+    \begin{itemize}
+        \item \textbf{Structured}, e.g. \textit{Chord};
+        \item \textbf{Unstructured}, e.g. \textit{Gnutella}.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Concepts and properties}
+The basic \textbf{concepts} of P2P are:
+\begin{itemize}
+    \item \textbf{Self organizing} (no central management);
+    \item Based on \textbf{voluntary} (i.e. not forced) collaboration;
+    \item Peers are all \textbf{equal} (more or less);
+    \item \textbf{Large number} of peers in network;
+    \item High \textbf{autonomy} from central servers;
+    \item Exploits \textbf{resource} (e.g., storage) of every peer in the network;
+    \item Peers join and leave the network, so it is a very \textbf{dynamic network}.
+\end{itemize}
+
+On the other hand, the typical \textbf{properties} of P2P are:
+\begin{itemize}
+    \item Unreliable;
+    \item Unmanaged;
+    \item Uncoordinated;
+    \item Resilient to attacks;
+    \item Large collection of resources.
+\end{itemize}
+
+\subsection{Search}
+\subsubsection{Search in hybrid P2P systems}
+\paragraph{Napster}
+The \textbf{idea} behind this system is the following: share content, storage and bandwidth of individual (home) users. In particular, each user machine stores a subset of files and can download files from all users in the system, using the \textit{Centralized Napster Index}, which stores the system index that maps files to alive machines (look-up table).
+
+\image{pp1.png}{0.8}{Centralized Napster Index.}
+
+In this sense:
+\begin{itemize}
+    \item The peers send \textbf{metadata} to the look-up server;
+    \item When a resource request arrives, the server returns the list of the peers that store the resource;
+    \item \textbf{Data} are then exchanged among peers
+\end{itemize}
+
+The main \textbf{challenges} are:
+\begin{itemize}
+    \item \textit{Where is a specific file stored?}
+    \item \textit{How to scale the system up to thousands or millions of machines?}
+    \item \textit{How to handle dynamicity (machines coming and going)?}
+\end{itemize}
+
+Among the \textbf{advantages}, we can underline:
+\begin{itemize}
+    \item \textbf{Easy} to implement sophisticated search engine technique for centralized index;
+    \item \textbf{Ideal} (user) \textbf{machine load};
+    \item Central servers have a \textbf{complete} and \textbf{consistent view} of the system (who is aware of which files are available);
+    \item Answer always \textbf{correct} (no, means there is no file).
+\end{itemize}
+
+On the other hand, among the \textbf{disadvantages}, we have:
+\begin{itemize}
+    \item \textbf{Scalability}: Centralized index has to handle all the queries;
+    \item \textbf{Robustness}: Centralized index is single point of failure (failures, attacks...): if the index is not available, the system does not work;
+    \item Result \textbf{unreliable}: no guarantee about file content and correctness of user information.
+\end{itemize}
+
+\subsubsection{Search in pure unstructured P2P systems}
+\paragraph{Gnutella}
+In this case we have a \textbf{pure} P2P system, without a central server: Peers have an initial a set of addresses known for the first connection, and are equally treated, no matter which bandwidth they have and how many files they share. Each peer provides both the files and sends/replies to routing requests, and each peer is both a client and a server. In general, this system is hard to control/regulate.
+
+\begin{itemize}
+    \item Each peer “knows" a \textbf{subset of neighbouring peers}, and there are some \textbf{cache servers} that maintain as many peer addresses as possible. When the application starts, it contacts one of these cache servers that will add the new peer to the P2P network;
+    \item Requests from a peer $R$ are sent from neighbour to neighbour (\textit{PING}): The message stops either when the resource is found or after a limited and predefined number of steps (\textit{TTL}, \textit{Time To Live});
+    \item If the resource has been found, the address of the peer $P$ that stores it is sent to $R$ (the ID of $R$ can be sent together with the request) (\textit{PONG}). $R$ will directly contact $P$ and will download the resource
+\end{itemize}
+
+\imageTriple{peer1.png}{peer2.png}{peer3.png}{0.5}{0.5}{0.5}{Example.}
+
+Among the \textbf{advantages}, we have:
+\begin{itemize}
+    \item This system is completely \textbf{distributed} and \textbf{decentralized};
+    \item It is \textbf{robust} w.r.t. randomized node failures.
+\end{itemize}
+
+On the other hand, the \textbf{disadvantages} are:
+\begin{itemize}
+    \item $R$ might receive \textbf{redundant results} (if the resource is in many different peers), or nothing although the resource is stored by a far away peer (TTL too small);
+    \item One \textbf{peer} might be \textbf{visited} \textbf{many times} (e.g., $A$ from $F$ and $G$);
+    \item Increasing the TTL increases the \textbf{resource availability}, but also the flood of the network increases;
+    \item Risk of \textbf{“Denial of service” attacks}, if somebody floods the network with resources requests. Thus, we need to maintain resource statistics and close the network to “offending peers”.
+\end{itemize}
+
+\paragraph{Iterative Deepeinig}
+Iterative deepening represents another example of pure unstructured P2P system. In this case the search is implemented as follows:
+\begin{enumerate}
+    \item The system is \textbf{flooded} with a limited TTL: If the resource is not found we start with a bigger TTL (predefined sequence of TTLs);
+    \item We \textbf{repeat} up to when the resource is found or when a boundary TTL is found.
+\end{enumerate}
+
+\subsubsection{Search in hybrid systems}
+\paragraph{Super KaZaA}
+In this case the idea is to organize the machines using a hierarchy, so there are two kinds of nodes in a two-tier hierarchy:
+\begin{itemize}
+    \item \textbf{Ordinary nodes} (\textbf{ON}) at the lower-level tier, which is a normal machine run by the user. An ordinary node belongs to a single supernode;
+    \item \textbf{Supernodes} (\textbf{SN}) at top-level tier, which is a machine run by a user with more resources and responsibilities. It acts like a Napster centralized index for its ON. The super peers also operate as normal peers and exchange information directly, but they do not have information about ONs belonged by other SNs.
+\end{itemize}
+
+In this sense, this system combines the characteristics of hybrid and pure systems. Finally, in order to join the system, an ON sends request to one SN (its IP address known somehow) and sends list of files to share. In general, we also need mechanisms to handle SNs.
+
+In order to \textbf{search} a file:
+\begin{enumerate}
+    \item ON sends request to its SN;
+    \item The SN answers for its ONs and forwards request to other SNs;
+    \item Other SNs answer for their own ONs.
+\end{enumerate}
+
+Clearly, we have may consider several questions, e.g. \textit{What is a good number of leaves for each super peer?} \textit{How should super peers connect together (structured or not)?}.
+
+The main \textbf{advantage} of this system is that it combines advantages from Napster and Gnutella, providing an \textbf{efficient searching} within SN \textit{Flooding} restricted to SNs.
+
+On the other hand, the \textbf{disadvantages} are:
+\begin{enumerate}
+    \item Combine \textbf{disadvantages} from Napster and Gnutella, i.e. an existing file might not be found;
+    \item SNs are \textbf{points of failure}.
+\end{enumerate}
+
+\subsubsection{Search in structured systems}
+We will consider \textit{Chord} lately in the sections.
+
+\subsubsection{Other applications}
+\begin{itemize}
+    \item E-Donkey: similar to Napster but with different servers;
+    \item E-mule (for windows) and A-mule (Mac, Linux): open source, uses the E-Donkey e Kad networks;
+    \item Bit torrent. In this case:
+    \begin{itemize}
+        \item Many users can simultaneously download the same file without too much delay;
+        \item Files are not downloaded from the same server but they are divided into different portions, so the same file is distributed among many peers;
+        \item Each peer that makes a request, offers already downloaded portions to the other peers, thus contributing to the downloading of the other peers;
+        \item Works in Microsoft Windows, Mac OS, Linux and Android.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Comparison}
+
+\image{peer4.png}{0.5}{Comparison of the systems.}
+
+\subsection{Distributed Hash Tables}
+We now consider the following questions: \textit{Where to store the information in a P2P system?} \textit{How to find it?} In this sense, we need to consider the following parameters:
+\begin{itemize}
+    \item \textbf{System scalability}: limit the communication overhead and the memory used by the nodes with respect to the number of nodes in the system;
+    \item \textbf{Robustness} and \textbf{adaptability}: in the presence of failures and changes.
+\end{itemize}
+
+We may consider:
+\begin{itemize}
+    \item \textbf{Centralized} approach: we send a request to the server, so we need $O(N)$ memory on the server, while search is performed in $O(1)$ step (to reach the server);
+    \item \textbf{Decentralized} approach: we send a request to all our neighbours (different optimizations, e.g. TTL), so we need $O(1)$ memory, while search is performed in $O(N^2)$ steps,
+\end{itemize}
+
+\image{peer5.png}{0.7}{Why Distributed Hash Tables?}
+
+\textit{Can we find a solution that finds a good memory/step trade-off?} The answer is given by \textbf{Distributed Hash Tables} (\textbf{DHT}), which are characterized by:
+\begin{itemize}
+    \item $O(\log N)$ steps to find the information (Time);
+    \item $O(\log N)$ entries in the routing table of each node (Space).
+\end{itemize}
+
+Moreover, this technique is also characterized by \textbf{adaptability}: it is simple to insert (assign the information) and to remove nodes (reassignment to the neighbouring nodes), and it \textbf{balances information} on the nodes (makes routing efficient).
+
+In general, peers and data are mapped in the same address space through hash functions, and:
+\begin{itemize}
+    \item For the \textbf{nodes} we consider the \textbf{hash} of the \textbf{IP};
+    \item For \textbf{data} we consider the \textbf{hash} of the \textbf{content} (title, etc..).
+\end{itemize} 
+
+The DHT are used by many different systems (Chord, Can, Pastry, Tapestry,..), and all these systems use APIs such as: \textit{Put(key,value)}, \textit{Get(key)} and \textit{Value}.
+
+\subsubsection{Chord}
+In \textit{Chord}:
+\begin{itemize}
+    \item \textbf{Data} are distributed among \textbf{peers} using a precise algorithm;
+    \item \textbf{Data} are replicated to improve \textbf{availability}.
+\end{itemize}
+
+For the \textbf{assignment}:
+\begin{itemize}
+    \item Each peer has an \textbf{ID} (hash of the IP);
+    \item Each resource has a \textbf{key} (hash of the title, etc.);
+    \item The \textbf{assignment} uses \textit{SHA-1} (Secure Hash Standard), which is now deprecated, and uses long keys to avoid collisions (same key), e.g. 160 bit;
+    \item The peer stores resources with keys similar to the one of the peers (same logical addressing space);
+    \item Given a key of a resource the peer sends the request to the peer with the most similar key.
+\end{itemize}
+
+Finally, through \textbf{consistent hashing}:
+\begin{itemize}
+    \item We assign the keys to the peers;
+    \item There should be load balancing so that with very high probability each peer receives the same number of resources/keys;
+    \item We ask for key updates when a peer connects/disconnects from the network;
+    \item The insertion of the $N$-th key with high probability will require the movement of $1/N$ other keys.
+\end{itemize}
+
+The \textbf{advantages} of this system are:
+\begin{itemize}
+    \item We maintain \textbf{consisting hashing} although the information is not stored in all the nodes;
+    \item The system is \textbf{simple}, correctness and performance are easy to prove;
+    \item It takes at most $O(\log N)$ to reach the destination;
+    \item A peer requires a table of $O(\log N )$ bits for an efficient routing, but the performance decreases when the tables are not updated;
+    \item The insertion/removal of a node generates $O(\log^2 N)$ messages.
+\end{itemize}
+
+The \textbf{logical space} is a circular ring $0, ..,2^m - 1$, ring ($\mod 2^m$): A resource with key $K$ is stored in the node which is the closest successor from $K$ (\textit{successor(K)}).
+
+\image{peer6.png}{1.0}{Chord logical space.}
+
+Notice that two nodes cannot have the same hash value, and if a peer crashes, the information could be not precise and correct.
+
+\example{Suppose that $m = 7$, thus the ring goes from 0 up to $2^m -1 = 127$.\image{peer7.png}{0.8}{Example.}Notice that each key is stored at its successor, which is represented by the node with the next higher ID. For example, the successor of peer 22 is 87, of 87 is 103, of 103 is 22. The predecessor is the active peer the precedes (in clockwise direction) in the ring, e.g. the predecessor of 87 is 22. Thus, keys are not necessarily consecutive.}
+
+\paragraph{Routing. First version} Routing represents a \textbf{simple} algorithm: each node stores only its successor: if the resource is not on this node, then the query is sent to the successor.
+
+The algorithm is characterized by:
+\begin{itemize}
+    \item $O(1)$ memory;
+    \item $O(N)$ search: in the worst case we have to visit the whole ring before we find the resource;
+    \item The failure of a node blocks the procedure.
+\end{itemize}
+
+\imageTriple{peer8.png}{peer9.png}{peer10.png}{0.5}{0.5}{0.5}{Example of Routing algorithm.}
+
+The main \textbf{limit} of this version of the algorithm is that in the worst case it requires \textbf{too many operations}, so the idea is to maintain other routing information. Note that, this extra information is not required for the correctness of the procedure but it helps speeding up the search. The protocol works given that the value of the next successor is correctly maintained/updated.
+
+\paragraph{Routing. Second version} In this case each node stores $N$ successors: if a resource $K$ is not on a node, the node looks in the successor node.
+
+In this case, we have:
+\begin{itemize}
+    \item $O(N)$ memory;
+    \item $O(1)$ search.
+\end{itemize}
+
+However, the best solution is in the middle.
+
+\paragraph{Routing. Third version} Each node stores $m$ values. The search of $K$ is sent to the \textbf{furthest known predecessor} of $K$. We store more values of close nodes and less of more distant nodes, thus routing is more precise close to a node.
+
+In this case, we have:
+\begin{itemize}
+    \item $O(\log N)$ memory;
+    \item $O(\log N)$ search.
+\end{itemize}
+
+Each node maintains:
+\begin{itemize}
+    \item A \textbf{finger table}, where the $i$-th entry of the finger table of $x$ is the first node that succeeds or equals $(x + 2^i) \mod 2^m$;
+    \item \textbf{Predecessor node}.
+\end{itemize}
+An item identified by \textit{id} is stored on the successor node of \textit{id}.
+
+\image{peer11.png}{0.8}{Routing: finger table.}
+
+\example{We assume $m = 3$, thus $2^m = 8$. If node $n_1:(1)$ joins, all entries in its finger table are initialized to itself (no other peer is there). The entries are $1 + 2^0 = 2$, $1 + 2^1 = 3$ and $1 + 2^2 = 5$.\image{peer12.png}{0.5}{Example \#1.}If node $n_2:(2)$ joins, the situations becomes the following.\image{peer13.png}{0.5}{Example \#2.}Now, nodes $n_3:(0)$ and $n_4:(6)$ join.\image{peer14.png}{0.5}{Example \#3.}Now, suppose that the items are $7:(0)$ and $1:(1)$, if we get a query for item $7$, we have the following situation.\image{peer15.png}{0.5}{Example \#4.}As we said, upon receiving a query for item ID, a node:\begin{itemize} \item Checks whether it locally stores the item; \item If not, it forwards the query to the largest node in its successor table that does not exceed id.\end{itemize}}
+
+In order to compute the \textbf{complexity} of the algorithm, we need to consider the following theorems:
+\begin{itemize}
+    \item In a CHORD network with $m$-bits ids, the number of nodes that has to be traversed for the routing of a single query is at most $m$;
+    \item Given a query $q$ the number of nodes that has to be traversed to find the successor of $q$ in a CHORD ring of $N$ nodes is, with high probability, $O(\log N)$;
+    \item The finger table of a node $x$ contains at most $O(\log N)$ distinct entities.
+\end{itemize}
+
+CHORD can deal with the \textbf{dynamical changes} of the network such as:
+\begin{itemize}
+    \item Node failures (replica are needed);
+    \item Network failures;
+    \item Adding of new peers (insertion);
+    \item Removal of a peer
+\end{itemize}
+Two \textbf{operations} are required:
+\begin{itemize}
+    \item Successor update (routing correctness);
+    \item Finger table update (routing efficiency).
+\end{itemize}
+
+\newpage
+\subsection{Exercises}
+\begin{enumerate}
+    \item Implement the search for item 1 by peer 6, and build the table for $n_5:(4)$.\imageB{peer16.png}{0.8}
+\end{enumerate}

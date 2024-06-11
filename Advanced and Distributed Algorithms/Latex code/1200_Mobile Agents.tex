@@ -1,0 +1,210 @@
+\section{Mobile Agents}
+\subsection{The model}
+In this case the model is represented by a graph $G = (V,E)$, where the nodes are the \textbf{hosts}, and the edges are the \textbf{communication links}. Moreover, each edge is characterized by an edge label, called \textbf{port number}, and all the edge labels are distinct.
+
+For what regards the mobile agents, they:
+\begin{itemize}
+    \item Have an \textbf{homebase};
+    \item Have \textbf{computing capabilities};
+    \item Have \textbf{local storage};
+    \item Can \textbf{move} from a node to a neighboring one;
+    \item Have the \textbf{same behaviour}, i.e. they execute the same protocol;
+    \item \textbf{Communicate}, e.g., through whiteboards (using a storage of $\log n$ tipically), stored in nodes and accessed in mutual exclusion (etc..)
+\end{itemize}
+
+\image{mob1.png}{0.5}{Mobile agents.}
+
+Moreover, we can have:
+\begin{itemize}
+    \item \textbf{Asynchronous} setting (i.e., actions take a finite but unpredictable amount of time);
+    \item \textbf{Synchronous} setting (i.e., an agent traverses an edge in one unit of time).
+\end{itemize}
+
+Notice that in all the possible investigations (e.g. \textit{exploration}, \textit{map construction} etc..), it is assumed that the network is \textbf{safe}. However, unfortunately networks (such as the Internet) can be \textbf{dangerous}.
+
+\subsection{Black hole search}
+In general, we can distinguish:
+\begin{itemize}
+    \item \textbf{Harmful Host} (harmful stationary process): exists also in regulated systems where agents cooperate (hardware or software failure);
+    \item \textbf{Harmful Agent} (malicious mobile process): acute in unregulated non-cooperative settings (e.g. Internet).
+\end{itemize}
+
+If we're dealing with harmful hosts, the main task is to protect the agents. 
+
+A very famous example of harmful host is the \textbf{black hole}. This host:
+\begin{itemize}
+    \item \textbf{Destroys} any agent arriving at that node;
+    \item Does not leave any \textbf{trace} of destruction;
+    \item Its \textbf{location} is \textbf{unknown} to the agents.
+\end{itemize}
+
+In this sense, in this case the goal is to \textbf{find} and \textbf{report} the \textbf{location of the black hole}, so that no agent is destroyed. From this we can derive that at least one agent must survive and know the location of the black hole.
+
+Notice that the cost and efficiency of the algorithms we will consider is given by:
+\begin{itemize}
+    \item \textbf{Size of the Team} (Number of Agents): the agents are required to locate the black hole, so our goal is to minimize this quantity;
+    \item \textbf{Cost} (Number of Moves);
+    \item \textbf{Time}.
+\end{itemize}
+
+\subsubsection{Cautious Walks}
+The idea of cautious walk is that we want at most one agent to walk on a dangerous link. In particular, each port can be:
+\begin{itemize}
+    \item \textbf{Unexplored} i.e. no agent traversed, so it could be dangerous;
+    \image{mob2.png}{0.7}{Unexplored port.}
+    \item \textbf{Active}, i.e. an agent is traversing it;
+    \image{mob3.png}{0.7}{Active port.}
+    \item \textbf{Explored}, i.e. an agent traversed the edge and successfully returned.
+    \image{mob4.png}{0.7}{Explored port.}
+\end{itemize}
+
+The main \textbf{disadvantage} of this solution is that \textbf{asynchrony} makes this problem difficult, since we cannot distinguish between a slow agent and one that disappeared in the black hole. This becomes \textbf{impossible} if $n$ is unknown, and in general if the node connectivity of the graph $G$ is lower than 2 (intuitively, we need at least two paths to reach each node). This implies that in such conditions it is impossible to verify if a black hole exists.
+
+\subsection{Ring}
+In this case, we have:
+\begin{itemize}
+    \item $n$ nodes: each node has two ports, left and right. Notice that $n$ is known;
+    \item $k$ agents;
+    \item A single black hole.
+\end{itemize}
+
+Clearly, one agent cannot locate the black hole alone. \textit{What about two agents?} In this case the agents, starting from the home base, must explore using \textbf{cautious walk}. The agents must explore disjoint areas otherwise they could both disappear!
+
+\example{Suppose that in this case the agent on the left goes faster than the agent on the right.\image{mob5.png}{0.5}{Example \#1.}Now, the agent on the right get destroyed by the black hole, while the other one reaches the last host.\image{mob6.png}{0.5}{Example \#2.}Since $n$ is known, and since the agent crossed $i = 14$ hosts on one side, while the other crossed $n-i-2 = 5$ on the other, it is able to locate the black hole.}
+
+In this case the cost of the algorithm is $O(n^2)$.
+
+\subsection{Intruder capture}
+As we said before, in our graph we could also have \textbf{harmful agents} (or \textbf{intruders}): in this case, the task becomes to protect the hosts from such agents. In this case, the intruder:
+\begin{itemize}
+    \item \textbf{Moves} from a node to a neighboring one;
+    \item \textbf{Moves} arbitrarily fast;
+    \item \textbf{Cannot cross} a node guarded by an agent;
+    \item It is \textbf{invisible} to the agents;
+    \item Can permanently \textbf{see} the position of the other agents.
+\end{itemize}
+
+Considering the intruder capture problem:
+\begin{itemize}
+    \item \textbf{Initially}, the agents are located at the \textbf{homebase} and form a team;
+    \image{mob7.png}{0.5}{Intruder problem: initial situation.}
+    \item At the \textbf{end}, the agents \textbf{capture} (surround) the \textbf{intruder}.
+    \image{mob8.png}{0.5}{Intruder problem: final situation.}
+\end{itemize}
+
+We can say that the intruder capture problem is equivalent to the decontamination problem. In this case:
+\begin{itemize}
+    \item Initially, the agents are located at the homebase and form a team. The \textbf{whole network is contaminated} (except the homebase);
+    \item An agent cleans a node when it enters it;
+    \item At the end, the \textbf{whole network }must be \textbf{clean};
+    \item A node becomes contaminated if it is not protected by an agent and at least one of its neighbours is contaminated.
+\end{itemize}
+
+Similarly, we can consider the edge \textbf{decontamination problem}:
+\begin{itemize}
+    \item Initially, the agents are located at the homebase and form a team. The nodes and edges of the network are contaminated (except the homebase);
+    \item An agent cleans an edge when it traverses it;
+    \item At the end all the nodes and edges of the network must be clean.
+\end{itemize}
+
+In order to solve such problem, we need to consider contiguous monotone strategies:
+\begin{itemize}
+    \item \textbf{Contiguous}: agents move only to neighbouring nodes;
+    \item \textbf{Monotone}: no recontamination can occur.
+\end{itemize}
+
+The idea of such a strategy is to have a frontier of agents, which moves towards the contaminated area. In this case the complexity is computed considering:
+\begin{itemize}
+    \item \textbf{Number} of \textbf{agents};
+    \item \textbf{Number} of \textbf{moves};
+    \item \textbf{Time}: synchronous or asynchronous (ideal time);
+    \item \textbf{Memory} of agents and nodes (whiteboard).
+\end{itemize}
+
+\subsection{Results}
+In the following results we consider these assumptions:
+\begin{itemize}
+    \item \textbf{Visibility}: agents can see the state of their neighbours (\textit{clean}, \textit{contaminated}, \textit{guarded});
+    \item \textbf{Locality}: agents have only local knowledge.
+\end{itemize}
+
+\subsubsection{Decontamitaning a mesh}
+We consider an asynchronous system, where the storage for a node and an agent requires $O(\log n)$ bits, and we'll focus on both visibility and local models on a $m \times n$ mesh (with $m \leq n$).
+
+The strategies are:
+\begin{itemize}
+    \item Strategy 1: \textbf{With a Synchronizer} (local model). In this case the searching agents do not have visibility power (i.e., they cannot see their neighboring nodes). The synchronizer is an agent that coordinates (or synchronizes) the moves of the other agents;
+    \item Strategy 2: \textbf{Agents with Visibility} (visibility model). Visibility power means agents can see their neighboring nodes. The agents move independently and the synchronizer is not required.
+\end{itemize}
+
+The main idea is the following:
+\begin{enumerate}
+    \item \textbf{Start} from the \textbf{homebase}, and contiguously \textbf{clean the contaminated network} by maintaining a vertical barrier of agents (to avoid recontamination), which has to work asynchronously;
+    \image{mob9.png}{0.6}{The frontier of agents.}
+    \item Move \textbf{one column} at the \textbf{time}.
+\end{enumerate}
+
+\paragraph{Node search with synchronizer} In this case we work with a $m \times n$ mesh, and the strategy is the following:
+\begin{enumerate}
+    \item We have $m+1$ agents ($m$ agents and $1$ synchronizer);
+    \item \textbf{Initialization phase}: place the agents in the first column.
+    \image{mob10.png}{1.0}{Initialization phase.}
+    This phase requires:
+    \begin{itemize}
+        \item $m-1$ time steps;
+        \item $\frac{m(m-1)}{2}$ moves.
+    \end{itemize}
+    \item \textbf{Cleaning phase}: the synchronizer moves the agents one column at a time.
+    \image{mob11.png}{1.0}{Cleaning phase.}
+    This phase requires:
+    \begin{itemize}
+        \item $m-1$ time units NORTH and SOUTH on $n-1$ columns, i.e. $(m-1)(n-1)$ time units;
+        \item $n-2$ time units EAST to the next column;
+        \item $1$ move EAST by the last move;
+        \item $n-1$ moves EAST by the $m$ nodes, so $m(n-1)$;
+        \item $n-2$ moves EAST by the synchronizer, which also moves $n-1$ SOUTH and NORTH for $m-1$ moves.
+    \end{itemize}
+\end{enumerate}
+
+Thus, in total, we have:
+\begin{itemize}
+    \item $m+1$ agents
+    \item $mn-2$ time units;
+    \item $\frac{m^2 + 4mn - 5m - 2}{2}$ moves.
+\end{itemize}
+
+\theorem{The algorithm "Search Synch" is \textbf{correct}, i.e. the mesh is decontaminated and the cleaning is contiguous and monotone.}
+
+\paragraph{Edge search with synchronizer} We have seen how a synchonizer can decontaminate the nodes, what about the edges? The solution is quite simple: at the end of the cleaning phase, the synchronizer cleans the edges of the \textbf{last column}.
+
+\image{mob12.png}{1.0}{Cleaning phase in edge search}
+
+Thus, we need an extra $m$ moves and $m$ time units.
+
+\paragraph{Node search with visibility} Now we consider the case where the agents see the neighboring nodes. In particular, each searcher $s$ has a local variable $WB$:
+\begin{itemize}
+    \item If $WB=\text{empty}$, $s$ writes \textit{clean}, guards the node and moves EAST when all neighbours except the one EAST are \textit{clean} or \textit{guarded};
+    \item If $WB=\text{clean}$, move SOUTH.
+\end{itemize}
+
+This strategy is implemented so that the only uncleaned node is the one in front of the barrier.
+
+\image{mob13.png}{1.0}{Node search with visibility.}
+
+In this case, we have:
+\begin{itemize}
+    \item $m$ agents.
+    \item $m+n-2$ time units;
+    \item $\frac{m^2 + 2mn - 3m}{2}$ moves.
+\end{itemize}
+
+\theorem{The algorithm "Node Search Visib" is \textbf{correct}, i.e., the mesh is decontaminated and the cleaning is contiguous and monotone.}
+
+\paragraph{Lower bound} In any $m \times n$ Mesh ($m \leq n$), the solution of the node search problem requires at least:
+\begin{itemize}
+    \item $m$ agents
+    \item $n+m-2$ time units: initially all at the homebase, upper left corner. Then, at least one agent has to reach the node in the bottom right corner, i.e., at least $n+m-2$ time units;
+    \item $nm$ moves: initially all at the homebase, upper left corner. Then, all nodes ($nm$) have to be visited by some agent (the homebase is already clean);
+\end{itemize}
+
+\image{mob14.png}{1.0}{Complete results.}

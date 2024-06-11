@@ -1,0 +1,329 @@
+\section{Robots}
+A \textbf{robot} can be defined as a \textbf{physically-embodied}, \textbf{artificially intelligent} device with \textbf{sensing} and \textbf{actuation}. Among the properties of such devices, we have:
+\begin{itemize}
+    \item A robot can \textbf{sense} and it can \textbf{act};
+    \item It must \textbf{think}, or process information, to connect sensing and action.
+\end{itemize}
+
+\textit{Is a washing machine a robot?} Most people wouldn’t say so, but it does have sensing, actuation and processing. In this sense, a possible distinction between appliance and robot (David Bisset) relies on whether the workspace is \textbf{physically inside} or \textbf{outside} the device. The \textbf{cognitive} ability required of a robot is much higher: the outside world is complex, and harder to understand and control.
+
+The most widely-used robots today are \textbf{industrial robot} ‘arms’, mounted on fixed bases and used for instance in manufacturing. The task of a robot arm is to position an end-effector through which it interacts with its environment. These types of robots most operate in highly controlled environments.
+
+There is a new wave of advanced mobile robots now aiming at much more flexible robots which can interact with the world in human-like ways. This is the current goal of significant research teams; e.g. \textit{Willow Garage} and \textit{Evolution Robotics} in the USA.
+
+\subsection{Oblivious Mobile Robots}
+The focus of our course will be given to \textbf{mobile robots}. A mobile robot needs actuation for \textbf{locomotion} and sensors for \textbf{guidance}. They are ideally \textbf{untethered} and \textbf{self-contained}: power source, sensing, processing on-board (Return to charging station? Off-board computing? Outside-in sensing?).
+
+Required competences include:
+\begin{itemize}
+    \item \textbf{Obstacle avoidance};
+    \item \textbf{Localisation};
+    \item \textbf{Mapping};
+    \item \textbf{Path planning}.
+\end{itemize}
+
+, as well as whatever specialised task the robot is actually trying to achieve!
+
+The main applications of mobile robots are:
+\begin{itemize}
+    \item \textbf{Field} Robotics
+    \begin{itemize}
+        \item Exploration (planetary, undersea, polar);
+        \item Search and rescue (earthquake rescue; demining);
+        \item Mining and heavy transport; container handling;
+        \item Military (unmanned aircraft and submarines, insect robots).
+    \end{itemize}
+    \item \textbf{Service} Robotics
+    \begin{itemize}
+        \item Domestic (Vacuum cleaning, lawnmowing, laundry, clearing the table..?);
+        \item Medical (helping the elderly, hospital delivery, surgical robots);
+        \item Transport (Autonomous cars);
+        \item Entertainment (Sony AIBO, QRIO, Lego Mindstorms, Robocup competition, many others).
+    \end{itemize}
+\end{itemize}
+
+, whereas we may have some tasks, for example:
+\begin{itemize}
+    \item \textbf{Basic coordination} task: gathering, specific patterns, alignment, scattering;
+    \item \textbf{Complex} tasks: mine sweeping, hazardous retrieval, rescue operations.
+\end{itemize}
+
+\subsubsection{Locomotion}
+In general, \textbf{wheels} are most common, in various configurations. \textbf{Legs} increase mobility, but with much extra complication. Robot \textbf{size} affects power requirements/efficiency, actuator specifications. The \textbf{pose} refers to both \textbf{position} and \textbf{orientation} together, more generally, we will talk about about a robot’s state, which is a set of parameters describing all aspects of interest.
+
+\subsubsection{Sensing}
+Sensing is usually divided into two categories:
+\begin{itemize}
+    \item \textbf{Proprioceptive} sensing, i.e. the ‘self-sensing’ of a robot’s internal state;
+    \item \textbf{External} sensing, of the world around a robot.
+\end{itemize}
+, although sometimes the distinction is not completely clear (e.g. a magnetic compass would normally be considered proprioceptive sensing).
+
+Moreover, most mobile robots have various \textbf{sensors}, each specialised in certain tasks. Combining information from all of these is often called ‘sensor fusion’. Sensors which measure a robot’s internal state:
+\begin{itemize}
+    \item Wheel \textbf{odometry} (encoders, or just checking voltage level and time);
+    \item \textbf{Tilt} sensors (measure orientation relative to gravity);
+    \item \textbf{Gyros} (measure angular velocity);
+    \item \textbf{Compass};
+    \item \textbf{Internal force} sensors (for balance).
+\end{itemize}
+
+\subsection{Computational model}
+We will consider \textbf{weak mobile robots}, with the following characteristics:
+\begin{itemize}
+    \item \textbf{Autonomous} (no central control);
+    \item \textbf{Homogeneous} (run same software);
+    \item \textbf{Identical} (indistinguishable);
+    \item \textbf{No communication capabilities}.
+\end{itemize}
+
+\subsubsection{Capabilities}
+Each robot's basic capabilities refere to:
+\begin{itemize}
+    \item \textbf{Processing} and \textbf{Storage}: limited, execute same protocol;
+    \item \textbf{Sensorial}: "see" other robots, local coordinate system;
+    \item \textbf{Motorial}: move towards a destination
+\end{itemize}
+
+\subsubsection{Life cycle}
+Moreover, a robot's lifecycle is composed by the following states:
+\begin{itemize}
+    \item \textbf{Look}, i.e. the robot uses its sensors to observe the world. The result of this phase is a snapshot of the external world;
+    \item \textbf{Compute}, i.e. the robot receives in input the position of the other robots, and produces a destination point;
+    \item \textbf{Move}, i.e. the robot moves towards the computed destination (it might not reach it);
+    \item \textbf{Sleep}, i.e. the robot may be idle (e.g. to recharge battery).
+\end{itemize}
+
+\subsubsection{Factors}
+Two important factors are \textbf{visibility} and the \textbf{level of agreement}. For what regards visibility, we have that it is limited by the radius of the robot, while we have different levels of agreement on a coordinate system:
+\begin{itemize}
+    \item \textbf{Total} agreement (both axes and both directions);
+    \item Agreement on \textbf{axes} and \textbf{one orientation};
+    \item Agreement on \textbf{axes};
+    \item \textbf{No} agreement.
+\end{itemize}
+
+\subsubsection{Time and Synchronization}
+There are three basic models:
+\begin{itemize}
+    \item \textbf{Fully synchronous} (\textit{FSYNC}): in this case there is a \textbf{global clock} tick reaching all robots simultaneously. At each clock tick every robot becomes active and perform its cycle atomically;
+    \item \textbf{Semi-synchronous} (\textit{SSYNC}): in this case there is a \textbf{global clock} tick reaching all robots simultaneously. At each clock tick every robot is either active or inactive, and only active robots perform their cycle atomically;
+    \item \textbf{Asynchronous} (\textit{ASYNC}): there is \textbf{no global clock} and robots do not have a common notion of time. Each robot becomes active at unpredictable time instants, and each computation and movement takes a finite but unpredictable amount of time. Finally, only the Looking phase is atomic.
+\end{itemize}
+
+In this sense, a specific problem can be classified as solvable or not depending on the model we're dealing with:
+\begin{itemize}
+    \item \textbf{Gathering} of 2 robots is solvable in \textit{FSYNC}, but unsolvable in \textit{SSYINC};
+    \item \textbf{Communication} of a coordinate system is solvable in \textit{SSYNC}, but unsolvable in \textit{ASYNC}.
+\end{itemize}
+
+\subsubsection{Memory}
+\begin{itemize}
+    \item \textbf{When Sleeping}, a robot forgets everything it has seen during the last cycle;
+    \item \textbf{When Looking} again, a robot starts from scratch, with no memory from the past. Thus, every time is the first time.
+\end{itemize}
+
+\subsubsection{Why oblivious?}
+\begin{itemize}
+    \item Robots can \textbf{crash} (and recover at a later time);
+    \item Robots may \textbf{join} at any time, in any state;
+    \item \textbf{Tolerance} to \textbf{memory faults}, motorial errors.
+\end{itemize}
+
+\subsection{The gathering problem}
+In this case, initially the robots are in arbitrary distinct \textbf{positions}, and in finite time, the goal is to \textbf{gather} in the same place.
+
+\subsubsection{Gathering in the FSYNC model}
+Here we have \textbf{instantaneous activities}, and all the robots are \textbf{active} in every round. Thus, the problem is easily solvable.
+
+An example of solution could be to go towards the \textbf{Center-of-Gravity} of the robot group:
+
+$$
+c = \frac{1}{N} \sum_{i = 1}^N p_i
+$$
+
+\image{rob1.png}{1.0}{Gathering in FSYNC.}
+
+Thus, the \textbf{strategy} is the following:
+\begin{enumerate}
+    \item Once all robots are within distance $s_{min}$ of center of gravity, they \textbf{meet} in one round;
+    \item Until then, in each round, robots get closer to center of gravity by at least $s_{min}$.
+\end{enumerate}
+
+An additional \textbf{complication} could be given by the fact that the center of mass could change from one round to the next one.
+
+\subsubsection{Gathering in SSYNC/ASYNC}
+An easy solution to the gathering problem is described as follows. 
+
+Given $r_1, .., r_n$, the \textbf{Weber point} $WP$ is the point that minimizes the sum of distances to it, i.e.
+
+$$
+WP = \text{arg}\min_{p \in R^2} \sum_i \text{dist}(p,r_i)
+$$
+
+The Weber point has the following \textbf{properties}:
+\begin{itemize}
+    \item It is \textbf{unique};
+    \item It is also the \textbf{Weber point} of \textbf{other points} on the line $[r_i, WP]$. Thus, WP is \textbf{invariant} under robot movements toward it;
+\end{itemize}
+
+Finally, the proposed algorithm for solving the gathering problem is the following:
+\begin{enumerate}
+    \item Compute the Weber point $WP$;
+    \item Move towards $WP$.
+\end{enumerate}
+
+The main problem is that $WP$ is \textbf{not computable}, even for $N = 5$.
+
+\theorem{For $N = 2$, the gathering problem is \textbf{unsolvable} in the SSYNC model.}
+
+Indeed, while in the \textit{FSYNC} model the robots can go the middle point, in the \textit{SSYNC} model an adversary might wake up only one robot each round. In this case we would achieve convergence but not gathering. Some \textbf{alternative} ideas are:
+\begin{itemize}
+    \item \textit{Each robot goes to other’s location?} In this case the adversary will wake up both;
+    \item \textit{One robot goes, one stays?} Adversary will wake up the staying.
+\end{itemize}
+
+Thus, some possible \textbf{rules} for robot are:
+\begin{enumerate}
+    \item \textbf{Go to other robot’s place};
+    \item \textbf{Stay} in place;
+    \item Go to some other (vacant) \textbf{point}.
+\end{enumerate}
+
+Then, the correspondent adversarial responses will be:
+\begin{itemize}
+    \item If both robots apply \textbf{rule 1}: \textbf{wake} both;
+    \item \textbf{Otherwise}: \textbf{wake one robot} that does not apply rule 1.
+\end{itemize}
+
+\paragraph{Randomized gathering of two robots}
+In this case the possible rules for a robot are:
+\begin{enumerate}
+    \item \textbf{Go to other robot's place};
+    \item \textbf{Stay} in place.
+\end{enumerate}
+
+The algorithm is:
+\begin{enumerate}
+    \item \textbf{Flip} a fair coin;
+    \item Apply \textbf{rule 1 or 2} accordingly.
+\end{enumerate}
+
+\lemmaVoid{In each round, the robots \textbf{gather} with probability at least $\frac{1}{2}$.}
+
+\theorem{For $N = 3,4, ..$, the gathering problem is solvable.}
+
+\paragraph{Gathering in SSYNC, $N = 3$} In this case we may face 3 situations:
+\begin{itemize}
+    \item The robots are placed in a \textbf{line}, so they have to meet in the \textbf{middle};
+    \image{rob2.png}{1.0}{3-Gather. First situation.}
+    \item Robots are in a \textbf{triangle} with an angle with \textbf{more} than $120\degree$, so they meet on the robot that is placed in the \textbf{vertex} with this angle;
+    \image{rob3.png}{1.0}{3-Gather. Second situation.}
+    \item Robots are in a general \textbf{triangle}, they meet at $c_e$, the \textbf{center of equi-angularity}, which is \textbf{invariant} under movements towards it.
+    \image{rob4.png}{1.0}{Gather. Third situation.}
+    \image{rob5.png}{1.0}{Properties of the center of equi-angularity. Such properties make this point invariant under the movements towards it, i.e. movements towards it do not change it.}
+\end{itemize}
+
+\paragraph{Gathering in SSYNC, $N \geq 3$} Before analyzing this method, we define a \textbf{multiplicity point}. A multiplicity point $p^*$ is a point where two or more robots reside. By assumption:
+\begin{itemize}
+    \item \textbf{Initially}, there are \textbf{no} multiplicity points (namely, each robot is in a distinct location);
+    \item Robots can \textbf{detect} multiplicity.
+\end{itemize}
+
+The strategy for solving this problem consists of two stages:
+\begin{enumerate}
+    \item \textbf{Stage A}: create a single multiplicity point $p^*$;
+    \item \textbf{Stage B}: move to $p^*$ along “free corridors”.
+\end{enumerate}
+
+Notice that if two or more multiplicity points occur, the problem becomes \textbf{unsolvable} (intuitively, we are not able to break the symmetry, as in the case of $N = 2$). In this sense, multiplicity points can be created accidentally, if:
+\begin{itemize}
+    \item The \textbf{paths} of two robots intersect;
+    \item The robots \textbf{halt} prematurely (e.g., after moving a distance $\geq S_{\text{min}}$).
+\end{itemize}
+
+\textbf{\underline{Stage A: Create a multiplicity point}}
+
+In order to solve Stage A, a basic tool we can exploit is the \textbf{Smallest Enclosing Circle} (\textbf{SEC}). For a given point configuration, the SEC:
+\begin{itemize}
+    \item Is \textbf{unique};
+    \item Is \textbf{computable} in \textbf{polynomial time};
+    \item Is \textbf{invariant} while the points on it do not move.
+\end{itemize}
+
+\image{rob6.png}{0.8}{SEC.}
+
+The following \textbf{recursive} procedure \textit{CreateMult} can be used to create a multiplicity point.
+
+\begin{enumerate}
+    \item If $N = 3$, invoke \textit{3-Gather};
+    \item Otherwise, calculate the Smallest Enclosing Circle (\textbf{SEC}), and let $C_{\text{int}}$ be the number of robots inside SEC. Then:
+    \begin{itemize}
+        \item If $|C_{\text{int}}| = 0$, go to the \textbf{center} of SEC;
+        \image{rob7.png}{1.0}{Case \#1.}
+        \item If $|C_{\text{int}}| = 1$, go to the \textbf{internal robot};
+        \image{rob8.png}{1.0}{Case \#2.}
+        \item If $|C_{\text{int}}| = 2$, the two internal robots create a \textbf{multiplicity point}. 
+        \image{rob9.png}{1.0}{Case \#3.}
+        More specifically, we compute the \textbf{Voronoi} partition of the robots on SEC, and we continue by case analysis:
+        \begin{itemize}
+            \item If the internal robots \textbf{do not share a cell}, move to the \textbf{center of SEC};
+            \image{rob10.png}{1.0}{Case \#3a.}
+            \item If the internal robots \textbf{share one cell}, move to the robot defining the \textbf{cell};
+            \image{rob11.png}{1.0}{Case \#3b.}
+            \item If the internal robots \textbf{share two cells}, then the \textbf{inner robot} moves to the \textbf{outer} robot, while the \textbf{outer robot} moves to one of the \textbf{defining robots}.
+            \image{rob12.png}{1.0}{Case \#3c.}
+        \end{itemize}
+        \item If $|C_{\text{int}}| \geq 3$, invoke the procedure \textbf{recursively} for internal robots (external robots remain stationary).
+    \end{itemize}
+\end{enumerate}
+
+Notice that the \textbf{trajectories} of robots moving towards $p_G$ \textbf{never} \textbf{intersect}, thus the robots will \textbf{never} create additional \textbf{multiplicity points} on their way to $p_G$.
+
+\textbf{\underline{Stage B: Moving to the multiplicity point}}
+
+We define the following procedure \textit{GoToMult} for moving towards the multiplicity point defined at Stage A.
+
+\begin{itemize}
+    \item If you have a \textbf{free corridor}, go to $p^*$;
+    \item \textbf{Otherwise} (if other robots block the trajectory), go to counterclockwise $\frac{1}{3}$ angle to closest robot.
+    \imageCouple{rob13.png}{rob14.png}{0.7}{0.7}{GoToMult.}
+\end{itemize}
+
+\paragraph{Gathering in ASYNC}
+We recall that in this case we have complete asynchrony:
+\begin{itemize}
+    \item Robots operate in \textbf{different} and \textbf{variable} \textbf{rates};
+    \item Robots may have \textbf{arbitrary} \textbf{wait} \textbf{periods} between cycles.
+\end{itemize}
+Notice that for $N = 3,4$ the simple algorithms for the SSYNC model still work.
+
+\subsection{Flocking}
+Followers recognize Leader, with unlimited visibility and there is no agreement on local axes.
+\begin{itemize}
+    \item \textbf{Leader} acts \textbf{independently} (e.g., human driven);
+    \image{rob15.png}{0.8}{Flocking: Leader.}
+    \item \textbf{Followers} must \textbf{converge} to a (commonly known) \textbf{pattern} and (approximately) keep it.
+    \imageCouple{rob16.png}{rob17.png}{0.8}{0.8}{Flocking: Followers.}
+\end{itemize}
+
+\subsection{Ant Robotics}
+\subsubsection{Biological inspiration}
+Inspired by foraging behavior of ants, i.e. they find \textbf{shortest paths} from \textbf{nest} to \textbf{food} source. Moreover, ants deposit \textbf{pheromones} along traveled path, which is used by other ants to \textbf{follow the trail}. This kind of \textbf{indirect communication} via the local environment is called \textbf{stigmergy}, and it provides \textbf{adaptability}, \textbf{robustness} and \textbf{redundancy}.
+
+\subsubsection{Foraging behaviour of ants}
+\begin{enumerate}
+    \item Two ants start searching from the nest with equal probability of going on either path;
+    \imageB{rob18.png}{1.0}
+    \item The ant on the shorter path completes the round-trip faster;
+    \imageB{rob19.png}{1.0}
+    \item The density of pheromones on the shorter path is higher (2 ant passes as opposed to 1);
+    \imageB{rob20.png}{1.0}
+    \item The next ant takes the shorter route;
+    \item Over many iterations, more ants use the path with higher pheromone level, thereby further reinforcing it;
+    \imageB{rob21.png}{1.0}
+    \item After some time, the shorter path is used almost exclusively.
+\end{enumerate}
+
+\subsubsection{An colony optimization}
+Simulating this technique leads to the algorithm of Ant Colony Optimization within the area of Swarm Intelligence in AI.

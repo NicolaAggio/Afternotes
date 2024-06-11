@@ -1,0 +1,150 @@
+\section{Synchronous Computations}
+\subsection{Fully Synchronous Systems}
+In the distributed computing environments we have considered so far, we have not made any assumption about \textbf{time}. In fact, from the model, we know only that in absence of failure, a message transmitted by an entity will eventually arrive to its neighbor: the \textit{Finite Delays} axiom. Nothing else is specified, so we do not know for example how much time will a communication take. In our environment, each entity is endowed with a local clock; still no assumption is made on the functioning of these clocks, their rate, and how they relate to each other or to communication delays. 
+
+For these reasons, the distributed computing environments described by the basic model are commonly referred to as \textbf{fully asynchronous systems}. They represent one extreme in the spectrum of message-passing systems with respect to time. 
+
+As soon as we add temporal restrictions, making assumptions on the the local clocks and/or communication delays, we describe different systems within this spectrum. 
+
+At the other extreme are fully \textbf{synchronous systems}, distributed computing environments where there are \textbf{strong assumptions} both on the \textbf{local clocks} and on \textbf{communication delays}. These systems are defined by the following two restrictions about time: \textit{Synchronized Clocks} and \textit{Bounded Transmission Delays}.
+
+\begin{itemize}
+    \item \textbf{Synchronized Clocks}: All local clocks are incremented by one unit simultaneously. In other words, all local clocks ‘tick’ simultaneously. Notice that this assumption does not mean that the clocks have the same value, but just that their value is incremented at the same time;
+    \item \textbf{Bounded Communication Delays}: There exists a known upper bound on the communication delays experienced by a message in absence of failures. In other words, there is a constant $\Delta$ such that in absence of failures, every message sent at time $T$ will arrive and be processed by time $T + \Delta$. In terms of clock ticks, this means that in absence of failures, every message sent at local clock tick $t$ will arrive and be processed by clock tick $t + \lceil \frac{\Delta}{\delta} \rceil $ (sender’s time).
+\end{itemize}
+
+\subsubsection{Overcoming Transmission Costs: 2-bit Communication}
+In order to overcome the transmission costs, we can exploit the following property: \textit{Any information can be transmitted using 2 bits.} This property can be obtained as follows: suppose $A$ wants to send a value $X$ to $B$.
+
+\begin{enumerate}
+    \item $A$ sends a bit at time $t$ (\textit{Start counting});
+    \item $B$ receives at time $t_1 = t+1$;
+    \item $A$ waits $X$ units of time;
+    \item $A$ sends another bit at time $t+X$ (\textit{Stop counting});
+    \item $B$ receives the second bit at time $t_2 = t+X+1$.
+\end{enumerate}
+
+\image{sync1.png}{1.0}{2-bits communication protocol.}
+
+In this case, $X = t_2 - t_1$, and we use:
+\begin{itemize}
+    \item 2 bits;
+    \item $X$ units of time.
+\end{itemize}
+
+Can we improve this protocol?
+\begin{enumerate}
+    \item $A$ sends a bit $b_0$ at time $t$ (\textit{Start counting});
+    \item $B$ receives $b_0$ at time $t_1 = t+1$;
+    \item $A$ waits $\lceil X/2 \rceil$ units of time;
+    \item $A$ sends another bit $b_1$ at time $t+ \lceil X/2 \rceil$ (\textit{Stop counting}), where $b_1 = \begin{cases}
+        0 \qquad \text{if } X \text{ is even} \\
+        1 \qquad \text{if } X \text{ is odd}
+    \end{cases}$
+    \item $B$ receives the second bit at time $t_2 = t+\lceil X/2 \rceil+1$.
+\end{enumerate}
+
+In this case, $X = 2(t_2-t_1) + b_1$, and we use:
+\begin{itemize}
+    \item 2 bits;
+    \item $\lceil X/2 \rceil$ units of time.
+\end{itemize}
+
+\example{Suppose $X = 7$, then: \begin{itemize} \item $t_1 = 1$; \item $\lceil X/2 \rceil = 3$; \item $b_1 = 1$; \item $t_2 = t_1 + 3$; \item $X = 2(3) + 1= 7$ \end{itemize}}
+
+Again, we could improve the protocol as follows:
+\begin{enumerate}
+    \item $A$ sends a bit $b_1$ at time $t$ (\textit{Start counting}), where $b_1 = \begin{cases}
+        0 \qquad \text{if } X \text{ is even} \\
+        1 \qquad \text{if } X \text{ is odd}
+    \end{cases}$
+    \item $B$ receives $b_1$ at time $t_1 = t+1$;
+    \item $A$ waits $y = \lceil X/4 \rceil$ units of time;
+    \item $A$ sends another bit $b_2$ at time $t+y$ (\textit{Stop counting}), where $b_2 = \begin{cases}
+        0 \qquad \text{if } \lceil X/2 \rceil \text{ is even} \\
+        1 \qquad \text{if } \lceil X/2 \rceil \text{ is odd}
+    \end{cases}$
+    \item $B$ receives the second bit $b_2$ at time $t_2 = t+y+1$.
+\end{enumerate}
+
+In this case, $X = 2(2(t_2-t_1)+b_2)+b_1$, and we use:
+\begin{itemize}
+    \item 2 bits;
+    \item $\lceil X/4 \rceil$ units of time.
+\end{itemize}
+
+\subsubsection{Overcoming Transmission Costs: 3-bit Communication}
+In this case the idea is the following.\image{sync2.png}{0.5}{3-bit communicators.}For example, if we want to communicate $X = 40$ with 3 bits, we can follow the protocol.
+\image{sync3.png}{0.8}{Example.}
+The receiver, to decode the information, must compute
+$$
+(t''-t')^2 - (t''' - t'')
+$$
+In the example, $7^2-9 = 49-9 = 40$. In this case we use:
+\begin{itemize}
+    \item 3 bits;
+    \item $O(\lceil\sqrt{X}\rceil)$
+\end{itemize}
+
+\subsubsection{Overcoming Transmission Costs: k-bit Communication}
+In general, using $k$ bits we use:
+\begin{itemize}
+    \item $k$ bits;
+    \item $O(\lceil k X^{1/k} \rceil)$ units of time.
+\end{itemize}
+
+\subsubsection{Pipeline}
+With communicators we have addressed the problem of communicating information between two neighboring entities. What happens if the two entities involved, the sender and the receiver, are not neighbors? Clearly the information from the sender $x$ can still reach the receiver $y$, but other entities must be involved in this communication. Typically there will be a chain of entities, with the sender and the receiver at each end; this chain is, for example, the shortest path between them.
+
+If we use communicators, we have the following situations.
+\image{sync4.png}{0.7}{Multiple communicators.}
+
+On the other hand, we have pipelines.
+
+\image{sync5.png}{0.7}{Pipeline.}
+
+Pipeline can be exploited also for communicating the maximum value.
+
+\image{sync6.png}{1.0}{Pipeline: communicating the maximum}
+
+\subsection{Min-finding and election}
+We now describe the \textbf{Speeding} algorithm, for minimum finding and election. The general idea is that messages travel at different speeds. In this case:
+\begin{itemize}
+    \item The \textbf{knowledge} of $n$ is \textbf{not necessary};
+    \item We consider a \textbf{synchronous} and \textbf{unidirectional} version;
+    \item We assume \textbf{simultaneous start}, but it is not necessary.
+\end{itemize}
+
+We have two ways of eliminating IDs:
+\begin{enumerate}
+    \item Like in \textit{AsFar}, large IDs are stopped by smaller IDs;
+    \item Small IDs travel faster so to catch up with larger IDs and eliminate them.
+\end{enumerate}
+
+In particular, each message travels at a speed which depends on the identity it contains, i.e. identity $i$ travels at some speed $f(i)$. Since speed is assumed to be unitary, and the same for every message, how can we change it? We introduce appropriate delays.
+
+\begin{enumerate}
+    \item When a node receives a message containing $i$ it waits $f(i)$ (e.g. $2^i$) ticks;
+    \item When a node receives its own id, it becomes the leader and sends a notification message around the ring. This message will not be delayed.
+\end{enumerate}
+
+If we use $f(i) = 2^i$, in time $2^i n + n$ the smallest id $i$ traverses the ring. Let the second smallest be $i+1$, with waiting time $2^{i+1}$: how many links does it have the time to traverse (at most) while the smallest ID goes around? The answer is $\frac{2^in+n}{2^{i+1}} \approx \frac{n}{2}$ links. See the example of L19.
+
+In this case, we use:
+\begin{itemize}
+    \item $O(n)$ messages;
+    \item $O(n \log ID)$ bits, where $ID$ is the largest ID;
+    \item $O(2^i n)$ units of time, where $i$ is the smallest ID.
+\end{itemize}
+
+\newpage
+\subsection{Exercises}
+\begin{enumerate}
+    \item Execute the variants of the 2-bits communication protocol for $X = 7$;
+    \item Execute the 3-bits communication protocol for $X = 23$. Solution on slide 12 of L19;
+    \item Given two entities, Alice and Bob, in a synchronous system, how can Alice communicate number 59 to Bob using 3 bits (3 bit communicator)?
+    \item Execute the Pipeline algorithm both for communicating the message $X = 13$ and for communicating the maximum value;
+    \imageB{sync7.png}{1.0}
+    \item What is the Speeding algorithm in a synchronous ring? Describe it (with code, pseudocode, words, as long a it is complete, precise and clear). Provide an execution example on this graph.
+    \imageB{sync8.png}{0.6}
+\end{enumerate}

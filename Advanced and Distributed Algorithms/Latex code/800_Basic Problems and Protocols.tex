@@ -1,0 +1,361 @@
+\section{Basic problems and protocols}
+The aim of this chapter is to introduce some of the basic, primitive, computational problems and solution techniques. These problems are basic in the sense that their solution is commonly (sometimes frequently) required for the functioning of the system (e.g., \textit{broadcast} and \textit{wake-up}); they are primitive in the sense that their computation is often a preliminary step or a module of complex computations and protocols (e.g., traversal and spanning-tree construction).
+
+\subsection{Broadcast}
+Consider a distributed computing system where only one entity, $x$, knows some important information; this entity would like to share this information with all the other entities in the system. This problem is called \textbf{broadcasting} (\textit{Bcast}), and already we have started its examination in the previous chapter. 
+
+To solve this problem means to design a set of rules that, when executed by the entities, will lead (within finite time) to a configuration where all entities will know the information; the solution must work regardless of which entity has the information at the beginning. Built-in the definition of the problem, there is the assumption, \textbf{Unique Initiator} ($UI$), that only one entity will start the task. Actually, this assumption is further restricted, because the unique initiator must be the \textbf{one with the initial information}; we shall denote this restriction by $UI+$. To solve this problem, every entity must clearly be involved in the computation.
+
+Hence, for its solution, broadcasting requires the \textbf{Connectivity} ($CN$) restriction (i.e., every entity must be reachable from every other entity) otherwise some entities will never receive the information. We have seen a simple solution to this problem, \textit{Flooding}, under two additional restrictions: \textbf{Total Reliability} ($TR$) and \textbf{Bidirectional Links} ($BL$). Recall that the set $R =\{BL, CN, TR\}$ is the set of \textbf{standard restrictions}.
+
+\subsubsection{Cost of broadcasting}
+As we have seen, the solution protocol \textit{Flooding} uses $O(m)$ messages and, in the worst case, $O(d)$ ideal time units, where $d$ is the diameter of the network. 
+
+The first and natural question is whether these costs could be reduced significantly (i.e., in order of magnitude) using a \textbf{different approach} or technique, and if so, by how much. This question is equivalent to ask what is the complexity of the broadcasting problem. 
+
+To answer this type of questions we need to establish a \textbf{lower bound}: to find a bound $f$ (typically, a function of the size of the network) and to prove that the cost of every solution algorithm is at least $f$. 
+
+We will denote by $\mess[\text{Bcast/RI+}]$ and $\tim[\text{Bcast/RI+}]$ the \textbf{message} and the \textbf{time complexity} of broadcasting under $RI+ = R \cup UI+$, respectively. 
+
+\paragraph{Time complexity}
+A \textbf{lower bound} on the amount of ideal time units required to perform a broadcast is simple to derive: \textbf{Every entity must receive} the \textbf{information} regardless of how distant they are from the initiator, and any entity could be the initiator. Hence, in the worst case,
+$$\tim[\text{Bcast/RI+}] \geq \max{d(x, y): x, y \in V}= d$$
+
+The fact that \textit{Flooding} performs the broadcast in $d$ ideal time units means that the \textbf{lower bound is tight} (i.e., it can be achieved) and that \textit{Flooding} is \textbf{time optimal}. In other words, we know exactly the ideal time complexity of broadcasting: the \textbf{ideal time complexity} of broadcasting under $RI+$ is $\Theta(d)$.
+
+\paragraph{Message complexity}
+Let us now consider the \textbf{message complexity}. An obvious lower bound on the number of messages is also easy to derive: in the end, \textbf{every entity} must know the \textbf{information}; thus a message must be received by each of the $n-1$ entities (excluded himself), which initially did not have the information. Hence,
+$$\mess[\text{Bcast/RI+}] \geq n - 1$$
+
+With a little extra effort, we can derive a more accurate lower bound:
+$$\mess[\text{Bcast/RI+}] \geq m$$
+This means that any broadcasting algorithm requires $\Omega(m)$ messages. Since \textit{Flooding} solves broadcasting with $2m - n + 1$ messages, this implies $\mess[\text{Bcast/RI+}] \geq 2m - n + 1$. Since the upper bound and the lower bound are of the same order of magnitude, we can summarize: the \textbf{message complexity} of broadcasting under $RI+$ is $\Theta(m)$.
+
+The immediate consequence is that, in order of magnitude, \textit{Flooding} is a \textbf{message-optimal solution}. Thus, if we want to design a new protocol to improve the $2m - n + 1$ cost of \textit{Flooding}, the best we can hope to achieve is to reduce the constant 2; in any case, since $\mess[\text{Bcast/RI+}] \geq m$, the reduction cannot bring the constant below. 
+
+\subsubsection{Broadcasting in special networks}
+The results we have obtained so far apply to generic solutions; that is, solutions that do not depend on $G$ and can thus be applied \textbf{regardless of the communication topology} (provided it is undirected and connected). 
+
+Next, we will consider performing the broadcast in \textbf{special networks}. Throughout we will assume the standard restrictions plus $UI+$.
+
+\paragraph{Broadcasting in Trees} Consider the case when $G$ is a \textbf{tree}; that is, $G$ is connected and contains no cycles. In a tree, $m = n-1$; hence, the use of protocol \textit{Flooding} for broadcasting in a tree will cost $2m - (n - 1) = 2(n - 1) - (n - 1) = n - 1$ messages, i.e. it is \textbf{optimal}.
+
+Note that this cost is achieved even if the entities do not know that the network is a tree, and an interesting side effect of broadcasting on a tree is that the tree becomes rooted in the initiator of the broadcast.
+
+Finally, \textit{Flooding} works very \textbf{well} on \textbf{trees}, so the idea to solve the broadcasting problem is the following:
+\begin{enumerate}
+    \item Build a \textbf{spanning tree} of $G$;
+    \item Run the \textit{Flooding} algorithm.
+\end{enumerate}
+
+However, building a spanning tree is costly.
+
+\paragraph{Broadcasting in Oriented Hypercubes} A communication topology that is commonly used as an interconnection network is the ($k$-dimensional) labeled \textbf{hypercube}, denoted by $H_k$. 
+
+A oriented hypercube $H_1$ of dimension $k = 1$ is just a pair of nodes called (in binary) “0” and “1”, connected by a link labeled “1” at both nodes. 
+
+In a hypercube $H_k$ of dimension $k>1$, every node has a label of $k$ bits, and the arc label represents the position of the bit, starting from the right, where the node labels differ (i.e. the Hamming distance). Notice that each node does not know its own label, but only the ones of the neighboring nodes.
+
+\image{bpp1.png}{1.5}{Oriented Hypercubes.}
+
+A hypercube of dimension $k$ has $n = 2^k$ nodes; each node has $k$ links, labeled $1, 2, ..,k$. Hence, the total number of links is $m = nk/2 = (n/2) \log n = O(n \log n)$. 
+
+A straightforward application of \textit{Flooding} in a hypercube will cost $2m- (n - 1) = n \log n - (n - 1) = n \log n/2 + 1 = O(n \log n)$ messages. However, hypercubes are highly structured networks with many interesting \textbf{properties}. We can exploit these special properties to construct a more efficient broadcast. Obviously, if we do so, the protocol cannot be used in other networks.
+
+Consider the following simple strategy, called \textit{HyperFlood}:
+
+\begin{enumerate}
+    \item The \textbf{initiator} \textbf{sends} the message to all its \textbf{neighbors};
+    \item A \textbf{node receiving} a message from the link labeled $l$ will \textbf{send} the messages only to those \textbf{neighbors} with label $l'<l$.
+\end{enumerate}
+
+The only difference between \textit{HyperFlood} and the normal \textit{Flooding} is in step 2: \textbf{Instead} of sending the message to \textbf{all neighbors except the sender}, the entity will forward it \textbf{only} to \textbf{some of them}, which will depend on the label of the port from where the message is received. As we will see, this strategy correctly performs the broadcast using only $n - 1$ messages (instead of $O(n \log n)$), which is \textbf{optimal}. 
+
+Let us first examine \textbf{termination} and \textbf{correctness}. Let $H_k(x)$ denote the subgraph of $H_k$ induced by the links where messages are sent by \textit{HyperFlood} when $x$ is the initiator. Clearly every node in $H_k(x)$ will receive the information.
+
+\theorem{HyperFlood correctly \textbf{terminates}.}
+
+Also as an exercise it is left the proof that for every $x$, the eccentricity of $x$ in $H_k(x)$ is $k$; this implies that the \textbf{optimal} time delay of \textit{HyperFlood} in $H_k$ is always $k$. That is,
+$$\tim[\text{HyperFlood/$H_k$}] = k$$ 
+
+These costs are the best that any broadcast algorithm can perform in a hypercube regardless of how much more knowledge they have.
+
+Recalling that the distance among two entities in the hypercube is given by the Hamming distance, then the broadcast time, which is equal to $k$, represents the number $k$ of bits used by the labels, and the diameter of the graph.
+
+\paragraph{Broadcasting in Complete Graphs} Among all network topologies, the \textbf{complete graph} is the one with the most links: Every entity is connected to all others; thus $m = n(n - 1)/2 = O(n^2)$ (recall we are considering bidirectional links), and $d = 1$. 
+
+The use of a generic protocol will require $O(n^2)$ messages. But this is really unnecessary. 
+
+Broadcasting in a complete graph is easily accomplished: Because everybody is connected to everybody else, the \textbf{initiator} just needs to \textbf{send} the information to its \textbf{neighbors} (i.e., execute the command “$send(I)$ to $N(x)$”) and the broadcast is completed. This uses only $n - 1$ messages and $d = 1$ ideal time. 
+
+Clearly this protocol, \textit{KBcast}, works only in a complete graph, that is under the additional restriction that $G$ is a complete graph.
+
+Summarizing, the message and the ideal time complexity of broadcasting in a complete graph under $RI+$ is $\Theta(k)$ are $$\mess[\text{Bcast/RI+;K}] = n - 1$$ and $$\tim[\text{Bcast/RI+;K}] = 1$$ respectively.
+
+\subsection{Spanning Tree construction}
+In a distributed computing environment, to construct a spanning tree of $G$ means to move the system from an initial system configuration, where each entity is just aware of its own neigbors, to a system configuration where
+\begin{enumerate}
+    \item Each \textbf{entity} $x$ has selected a \textbf{subset} $\text{Tree-neighbors}(x) \subseteq N(x)$ and
+    \item The \textbf{collection} of all the corresponding \textbf{links} forms a \textbf{spanning tree} of $G$.
+\end{enumerate}
+In the following we will indicate $T(G)$ simply by $T$, if no ambiguity arises. 
+
+Note that $T$ is not known a priori to the entities and might not be known after it has been constructed: an entity needs to know only which of its neighbors are also its neighbors in the spanning tree $T$. As before, we will restrict ourselves to connected networks with bidirectional links and further assume that no failure will occur.
+
+We will first assume that the construction will be started by only one entity (i.e., \textbf{Unique Initiator} ($UI$) restriction); that is, we will consider spanning-tree construction under restrictions $RI$. We will then consider the general problem when \textbf{any number of entities} can independently \textbf{start} the construction. As we will see, the situation changes dramatically from the single-initiator scenario.
+
+\subsubsection{SPT construction with a single initiator: Shout}
+
+Consider the entities; they do not know $G$, not even its size. The only things an entity is aware of are the \textbf{labels} on the ports leading to its neighbors (because of the Local Orientation axiom) and the fact that, if it sends a message to a neighbor, the message will eventually be \textbf{received} (because of the Finite Communication Delays axiom and the Total Reliability restriction). How, using just this information, can a spanning tree be constructed? 
+
+The answer is surprisingly simple. Each entity needs to know which of its neighbors are also neighbors in the spanning tree. The solution strategy is just \textbf{“ask”}.
+
+\paragraph{Strategy Ask-Your-Neighbors}
+
+\begin{enumerate}
+    \item The \textbf{initiator} $s$ will “ask” its neighbors; that is, it will send a message \textit{Q = (“Are you my neighbor in the spanning tree"?)} to all its neighbors;
+    \item An entity $x \neq s$ will reply \textit{“Yes”} only the \textbf{first time} it is asked and, in this occasion, it will \textbf{ask all its other neighbors}; otherwise, it will reply \textit{“No”}. The initiator $s$ will always reply \textit{“No”};
+    \item Each entity \textbf{terminates} when it has \textbf{received} a \textbf{reply from all neighbors} to which it asked the question.
+\end{enumerate}
+For an entity $x$, its neighbors in the spanning tree $T$ are the neighbors that have replied \textit{“Yes”} and, if $x \neq s$, also the neighbor from which the question was first asked.
+
+The corresponding set of rules is depicted in the image below where in bold are shown the tree links and in dotted lines the non-tree links. 
+
+\image{bpp4.png}{0.7}{Set of rules of Shout.}
+
+In general, we can see that each time a $Q$ is sent, we need to receive the answer from all the neighbors, in order to know whether the edges belong to the spanning tree or not. The protocol \textit{Shout} implementing this strategy is shown below. Initially, all nodes are in status \textit{idle} except the sole initiator.
+
+\image{bpp5.png}{1.0}{Shout protocol.}
+
+Notice that:
+\begin{itemize}
+    \item The \textbf{initiator} becomes the \textbf{root} of the ST;
+    \item The \textbf{counter} is used to be sure that each node receives the answer from all the neighbors;
+    \item For an IDLE node, if it is a \textbf{leaf} (condition $\text{counter} = N(x)$), then the only neighbor is the sender, so in this case he does not have to send any message;
+    \item The ACTIVE state represents the case in which a node has \textbf{already} received a $Q$ and replied with a \textit{Yes}.
+\end{itemize}
+
+\image{bpp6.png}{0.5}{States of the Shout protocol}
+
+\image{bpp38.png}{0.5}{Example of execution of the Shout protocol.}
+
+Before we discuss the correctness and the efficiency of the protocol, consider how it is structured and operates. First of all observe that, in \textit{Shout} the question $Q$ is \textbf{broadcasted} through the network (using flooding). Further observe that, when an entity receives $Q$, it always sends a \textbf{reply} (either \textit{Yes} or \textit{No}). Summarizing, the structure of this protocol is a \textbf{flood} where every information message is acknowledged. This type of structure will be called \textit{Flooding + Reply}.
+
+\paragraph{Correctness} The \textit{Shout} protocol builds a Spanning Tree with tree-neighbors. Notice that the execution of protocol \textit{Shout} ends with \textbf{local termination}: each entity knows when its own execution is over; this occurs when it enters status DONE. Notice however that \textbf{no entity}, including the initiator, \textbf{is aware of global termination} (i.e., every entity has locally terminated).
+
+\paragraph{Costs}
+The \textbf{message costs} of \textit{Flooding + Reply}, and thus of \textit{Shout}, are simple to analyze. As mentioned before, \textit{Flooding + Reply} consists of an execution of $Flooding(Q)$ with the addition of a reply (either \textit{Yes} or \textit{No}) for every $Q$. In other words
+$$\mess[\text{Flooding+Reply}] = 2 \mess[\text{Flooding}] = 2(2m - n +1)$$
+
+The \textbf{time costs} of \textit{Flood + Reply}, and thus of \textit{Shout}, are also simple to determine; in fact:
+$$\tim[\text{Flooding+Reply}]= T[\text{Flooding}]+1$$
+
+Thus
+$$\mess[\text{Shout}] = 4m - 2n + 2$$
+$$\tim[\text{Shout}] = r(s^*) + 1 \leq d + 1$$
+
+\textit{Proof.} As we can see from the image below, there exist some situations which can happen, and others that cannot. In particular:
+\begin{itemize}
+    \item The \textbf{total number} of $Q$ messages is given by the number of $Q$ and \textit{Yes} and the number of $Q$ and $Q$.
+    \begin{itemize}
+        \item The number of $Q$ and \textit{Yes} is equal to $n-1$, as the total number of links in the ST;
+        \item The number of $Q$ and $Q$ is $2(m - n + 1)$, which are exactly the links that are not in the ST ($m - (n-1)$);
+    \end{itemize}
+    
+    \item The \textbf{total number} of \textit{No} is given by the number of \textit{No} and \textit{No}, which is equal to the number of $Q$ and $Q$, so $2(m - n + 1)$;
+    \item The \textbf{total number} of \textit{Yes} is exactly $n-1$.
+\end{itemize}
+
+\image{bpp7.png}{0.5}{Possible and impossible situations}
+
+Finally, the \textbf{total number of messages} is given by:
+$$
+\mess[\text{Shout}] = Q + NO + YES = (n-1) + 2(m-n+1) + 2(m-n+1) + (n-1) = 4m - 2n + 2
+$$
+
+Thus, $\Omega(m)$ represents a \textbf{lower bound} also in this case.
+
+\subsubsection{Shout+}
+Let us examine protocol \textit{Shout} to see if it can be \textbf{improved}, thereby, helping us to save some messages. \textit{Do we have to send No messages?}
+
+When \textbf{constructing the spanning tree}, an entity needs to know who its tree-neighbors are; by construction, they are the ones that reply \textit{Yes} and, except for the initiator, also the ones that first asked the question. Thus, for this determination, the \textit{No} messages are \textbf{not needed}. 
+
+On the contrary hand, the \textit{No} messages are \textbf{used} by the protocol to \textbf{terminate in finite time}. Consider an entity $x$ that just sent $Q$ to neighbor $y$; it is now waiting for a reply. If the reply is \textit{Yes}, it knows $y$ is in the tree; if the reply is \textit{No}, it knows $y$ is not. Should we remove the sending of \textit{No}? How can $x$ determine that $y$ would have sent \textit{No}? 
+
+More clearly: Suppose $x$ has been waiting for a reply from $y$ for a (very) long time; it does not know if $y$ has sent \textit{Yes} and the delays are very long, or $y$ would have sent \textit{No} and thus will send nothing. Because the algorithm must terminate, $x$ cannot wait forever and has to make a decision. How can $x$ decide? 
+
+The question is relevant because communication delays are finite but unpredictable. Fortunately, there is a simple answer to the question that can be derived by examining how protocol \textit{Shout} operates. 
+
+Focus on a node $x$ that just sent $Q$ to its neighbor $y$. Why would $y$ reply \textit{No}? It would do so only if it had already said \textit{Yes} to somebody else; if that happened, $y$ sent $Q$ at the same time to all its other neighbors, including $x$. Summarizing, if $y$ replies \textit{No} to $x$, it must have already sent $Q$ to $x$. We can clearly use this fact to our advantage: after $x$ sent $Q$ to $y$, if it receives \textit{Yes} it knows that $y$ is its neighbor in the tree; if it receives $Q$, it can deduce that $y$ will definitely reply \textit{No} to $x$’s question. All of this can be deduced by $x$ without having received the \textit{No}. 
+
+In other words: a \textbf{message} $Q$ that arrives at a node \textbf{waiting for a reply} can act as an \textbf{implicit negative acknowledgment}; therefore, we can \textbf{avoid} sending \textit{No} messages.
+
+\imageCouple{bpp8.png}{bpp9.png}{1.2}{1.2}{Shout+ protocol.}
+
+In this case, on each link there will be exactly 2 messages: either $Q$ and $Q$ or $Q$ and \textit{Yes}. Thus, the total number of messages is:
+$$
+\mess[\text{Shout+}] = 2m
+$$
+
+which is much better than $4m -2n +2$.
+
+\subsubsection{SPT construction with multiple initiators}
+We have started examining the spanning-tree construction assuming that there is a \textbf{unique initiator}. This is unfortunately a very strong (and “unnatural”) assumption to make, as well as difficult and expensive to guarantee. 
+
+What happens to the single-initiator protocols \textit{Shout} if there is \textbf{more than one initiator}? 
+
+Let us examine first protocol \textit{Shout}. Consider the very simple case of three entities, $x, y$, and $z$, connected to each other. Let both $x$ and $y$ be initiators and start the protocol, and let the $Q$ message from $x$ to $z$ arrive there before the one sent by $y$.
+
+\image{bpp10.png}{1.3}{Shout protocol with multiple initiators.}
+
+In this case, neither the link $(x,y)$ nor the link $(y,z)$ will be included in the tree; hence, the algorithm creates not a spanning tree but a spanning forest, which is not connected. Thus, another protocol has to be devised, or an election is needed to have a unique initiator.
+
+\subsection{Computations on trees}
+In this section, we consider computations in tree networks under the standard restrictions $R$ (bidirectional links, ordered messages and full reliability) plus clearly the common knowledge that the network is \textbf{tree}. 
+
+Note that the knowledge of being in a tree implies that each \textbf{entity} can determine whether it is a \textbf{leaf} (i.e., it has only one neighbor) or an \textbf{internal node} (i.e., it has more than one neighbor).
+
+We need to introduce some basic \textbf{concepts} and terminology about trees. In a tree $T$, the removal of a link $(x,y)$ will disconnect $T$ into two trees, one containing $x$ (but not $y$), the other containing $y$ (but not $x$); we shall denote them by $T[x - y]$ and $T[y - x]$, respectively. Let $d[x, y] = \max{d(x, z): z \in T[y - x]}$ be the longest distance between $x$ and the nodes in $T[y - x]$. Recall that the longest distance between any two nodes is called diameter, and it is denoted by $d$. If $d[x, y] = d$, the path between $x$ and $y$ is said to be diametral.
+
+\subsubsection{Saturation: a basic technique}
+The technique, which we shall call \textit{Full Saturation}, is very simple and can be autonomously and independently started by any number of initiators. It is composed of three stages:
+\begin{enumerate}
+    \item The \textbf{activation} stage, started by the initiators, in which all nodes are activated; 
+    \item The \textbf{saturation} stage, started by the leaf nodes, in which a unique couple of neighboring nodes is selected;
+    \item The \textbf{resolution} stage, started by the selected pair.
+\end{enumerate}
+The activation stage is just a \textbf{wake-up}: each initiator sends an activation (i.e., wake-up) message to all its neighbors and becomes active; any non initiator, upon receiving the activation message from a neighbor, sends it to all its other neighbors and becomes active; active nodes ignore all received activation messages. Within finite time, all nodes become active, including the leaves. The \textbf{leaves} will \textbf{start} the \textbf{second stage}. 
+
+Each active \textbf{leaf} starts the saturation stage by sending a \textbf{message} (call it $M$) to its only \textbf{neighbor}, referred now as its “parent” and becomes processing. (Note: $M$ messages will start arriving within finite time to the internal nodes.) An \textbf{internal node} waits until it has received an $M$ message from all its neighbors but one, sends a $M$ message to that neighbor that will now be considered its “parent,” and becomes \textbf{processing}. If a processing node receives a message from its parent, it becomes \textbf{saturated}. 
+
+The \textbf{resolution} stage is started by the \textbf{saturated nodes}; the nature of this stage depends on the application. Commonly, this stage is used as a notification for all entities (e.g., to achieve local termination). Since the nature of the final stage will depend on the application, we will only describe the set of rules implementing the first two stages of \textit{Full Saturation}.
+
+\imageCouple{bpp11.png}{bpp12.png}{1.5}{1.5}{Full saturation protocol and procedures.}
+
+\imageTriple{bpp13.png}{bpp14.png}{bpp15.png}{1.5}{1.5}{1.5}{Example - part 1.}
+
+\imageTriple{bpp16.png}{bpp17.png}{bpp18.png}{1.5}{1.5}{1.5}{Example - part 2.}
+
+\imageCouple{bpp19.png}{bpp20.png}{1.5}{1.5}{Example - part 3.}
+
+\lemmaVoid{Exactly \textbf{two processing nodes will become saturated}; furthermore, these two nodes are neighbors and are each other’s parent.}
+
+\textit{Proof.} From the algorithm, it follows that an entity sends a message $M$ only to its parent and becomes saturated only upon receiving an $M$ message from its parent. Choose an arbitrary node $x$, and traverse the “up” edge of $x$ (i.e., the edge along which the $M$ message was sent from $x$ to its parent). By moving along “up” edges, we must meet a saturated node $s_1$ since there are no cycles in the graph. This node has become saturated when receiving an $M$ message from its parent $s_2$. Since $s_2$ has sent an $M$ message to $s_1$, this implies that $s_2$ must have been processing and must have considered $s_1$ its parent; thus, when the $M$ message from $s_1$ will arrive at $s_2$, $s_2$ will become saturated also. Thus, there exist at least two nodes that become saturated; furthermore, these two nodes are each other’s parent. Assume that there are more than two saturated nodes; then there exist two saturated nodes, $x$ and $y$, such that $d(x, y) \geq 2$. Consider a node $z$ on the path from $x$ to $y$; $z$ could not send an $M$ message toward both $x$ and $y$; therefore, one of the nodes cannot be saturated. Therefore, the lemma holds.
+
+It is important to notice that it depends on the communication delays which entities will become saturated and it is therefore totally \textbf{unpredictable}. Subsequent executions with the same initiators might generate different results. In fact, any pair of neighbors could become saturated.
+
+The only guarantee is that a pair of neighbors will be selected; since a pair of neighbors uniquely identifies an edge, the one connecting them; this result is also called edge election. 
+
+\paragraph{Message complexity}
+To determine the number of message exchanges, observe that the \textbf{activation} stage is a wake-up in a tree and hence it will use $2(n-1)$ messages if there are $n$ initiators. During the \textbf{saturation} stage, exactly one message is transmitted on each edge, except the edge connecting the two saturated nodes on which two $M$ messages are transmitted, for a total of $n - 1 + 1 = n$ messages. Finally, in the \textbf{notification} stage, $n-2$ messages are sent. Thus,
+$$\mess[\text{Full Saturation}] = 2n - 2 + n + n = 4n - 4 = O(n)$$
+
+In general, for $i<n$ initiators, we have the number of messages in the wake up phase is:
+
+$$\sum_{x \in S} |N(x)| + \sum_{x \notin S} (|N(x)| - 1) = \sum_x |N(x)| - \sum_{x \notin S} 1 = 2(n-1) - (n-i) = n+i-2 $$
+
+There are other $n$ messages in the saturation phase, and $n-2$ in the notification phase, thus the total number of messages is:
+$$
+\mess[\text{Full Saturation}] = n+i-2+n+n-2 = 3n+i-4
+$$
+
+\subsubsection{Minimum finding}
+Let us see how the saturation technique can be used to compute the \textbf{smallest} among a set of values distributed among the nodes of the network. Every entity $x$ has an input value $v(x)$ and is initially in the \textbf{same status}; the task is to determine the \textbf{minimum} among those input values. That is, in the end, each entity must know whether or not its value is the smallest and enter the appropriate status, minimum or large, respectively.
+
+It is important to notice that these values are \textbf{not necessarily distinct}. So, more than one entity can have the minimum value; all of them must become minimum. This problem is called Minimum Finding (\textit{MinFind}). 
+
+\textbf{Full Saturation} allows to achieve the same goals without a root or any additional information. This is achieved simply by \textbf{including} in the $M$ message the \textbf{smallest value known to the sender}. Namely, in the saturation stage the leaves will send their value with the $M$ message, and each internal node sends the smallest among its own value and all the received ones. In other words, \textit{MinF-Tree} is just protocol \textit{Full Saturation} where the procedures \textit{Initialize}, \textit{Prepare Message}, and \textit{Process Message} are as shown below and where the \textbf{resolution} stage is just a \textbf{notification} started by the two saturated nodes, of the minimum value they have computed. This is obtained by simply modifying procedure \textit{Resolve} accordingly and adding the rule for handling the reception of the notification.
+
+\image{bpp22.png}{2.0}{New rule and procedures used for Minimum Finding.}
+
+\example{An example of the Minimum Finding protocol follows. \imageTriple{bpp23.png}{bpp24.png}{bpp25.png}{1.5}{1.5}{1.5}{Example of execution.}}
+
+The \textbf{correctness} follows from the fact that both saturated nodes know the minimum value.
+
+\paragraph{Message complexity}
+The number of message transmission for the minimum-finding algorithm \textit{MinF-Tree} will be exactly the same as the one experienced by \textit{Full Saturation} plus the ones performed during the notification. Since a notification message is sent on every link except the one connecting the two saturated nodes, there will be exactly $n - 2$ such messages. Hence
+$$\mess[\text{MinF-Tree}] = \mess[\text{Full Saturation}] = 4n-4 = O(n)$$
+
+\paragraph{Time complexity}
+The time costs will be the one experienced by \textit{Full Saturation} plus the ones required by the notification. Let \textit{Sat} denote the set of the two saturated nodes; then
+$$\tim[\text{MinF-Tree}] = \tim[\text{Full Saturation}] + \max{d(s, x): s \in Sat, x \in V}$$
+
+\subsubsection{Ranking problem}
+Given a node $x$ whose value is $v(x)$, the \textbf{rank} is defined as:
+$$
+rank(x) = 1 + |y \in V: v(y) < v(x)|
+$$
+, i.e. the number of nodes whose values are smaller than the one of $x$.
+
+\image{bpp26.png}{1.5}{Ranking problem.}
+
+Given an arbitrary network, the operations are the following:
+\begin{enumerate}
+    \item Find a \textbf{spanning tree};
+    \item Use \textbf{Saturation} and \textbf{Minimum Finding} to find a starting node;
+    \item Do \textbf{Ranking} (centralized or decentralized).
+\end{enumerate}
+
+\paragraph{Centralized ranking}
+\begin{enumerate}
+    \item We \textbf{elect a leader} (one of the saturated nodes): the leader knows the \textbf{minimum} (he might not be the minimum), it sends in that direction a ranking message;
+    \item Every node knows the minimum in its \textbf{subtrees}, it can then forward the ranking message (ranking,minimum) in the right direction;
+    \item When the node to be ranked receives the message it \textbf{sends back} a \textbf{notification\&update message} (new-minumum) that will travel up to the leader.
+\end{enumerate}
+
+\imageCouple{bpp27.png}{bpp28.png}{0.3}{0.3}{Example of execution of the Ranking protocol.}
+
+The \textbf{worst case} for this protocol is given by the following situation.
+
+\image{bpp29.png}{1.0}{Worst case scenario for centralized ranking.}
+
+In this case:
+$$
+\mess[\text{Centralized Ranking}] = 2(n-1) + 2(n-2) + .. = \frac{2(n-1)n}{2} = (n-1)n = O(n^2)
+$$
+
+\paragraph{Decentralized ranking}
+In this case, the starter node sends a ranking message of the form (first, second,rank) in the direction of first:
+
+\begin{itemize}
+    \item \textbf{First}: smallest value;
+    \item \textbf{Second}: second smallest known so far (this is a guess on the value that has to be ranked after first).
+\end{itemize}
+
+\image{bpp30.png}{0.5}{Decentralized ranking.}
+
+In this case, the \textbf{value} on a link indicates the \textbf{smallest value in the corresponding subtree}. If no value is indicated (or the value is $\infty$) it means that the smallest value in the corresponding subtree is \textbf{unknown} (for the moment).
+
+\example{In this case, the ranked node attempts to send a ranking message to the next node to be ranked. Since the second node might now be unknown, in this case the value $\infty$ is used.\imageB{bpp31.png}{0.8}The second variable of the rank message is updated during its travel, and the minimum values on the links of the tree are also updated.\imageCouple{bpp32.png}{bpp33.png}{0.8}{0.8}{Example.}}
+
+In this case, the \textbf{worst case} is the one in which we have to go back and forth. 
+
+\image{bpp34.png}{1.0}{Worst case scenario for decentralized ranking.}
+
+The number of messages is:
+$$
+\mess[\text{Decentralized Ranking}] = 2(n-1) + (n-2) + (n-3) = \frac{n(n-1)}{2} + (n-1) = \frac{n-1}{n/2 - 1}
+$$
+
+\newpage
+\subsection{Exercises}
+\begin{enumerate}
+    \item Draw a hypercube of dimension 3. What is a simple and efficient algorithm to do broadcasting in the hypercube? Describe it (with code, pseudocode, words, as long a it is complete, precise and clear). Provide an execution example on the hypercube of point 1;
+    \item Run the Shout algorithm on this graph;
+    \imageB{bpp39.png}{1.0}
+    \item Show an execution of the Shout algorithm (for the Spanning Tree construction) on this graph. Solution on slide 6-10 of L18;
+    \imageB{bpp35.png}{0.5}
+    \item Run the Shout+ algorithm on the graph on the left, and the Saturation algorithm on the graph on the right;
+    \imageB{bpp21.png}{1.0}
+    \item Given an arbitrary graph of $n$ nodes, where each node contains an integer value: describe a complete and precise distributed algorithm (in code, or pseudocode or words), that multiplies all the n values stored in the nodes, show how the algorithm works on a small example and state the complexity of the algorithm;
+    \item Show an execution of the Saturation algorithm on this graph. Solution on slide 14-20 of L18;
+    \imageB{bpp36.png}{0.5}
+    \item Run the Minimum Finding algorithm on this graph. Solution on slide 1 of L17;
+    \imageB{bpp40.png}{1.5}
+    \item Rank the nodes of the following graph using the centralized and decentralized ranking algorithm;
+    \imageB{bpp37}{1.2}
+    \item Rank the nodes of the following graph using the centralized and decentralized ranking algorithm. Solution on slide 2 of L17;
+    \imageB{bpp41.png}{1.5}
+    \item Rank the nodes of the following graph using the decentralized ranking algorithm
+    \imageB{bpp42.png}{0.8}
+\end{enumerate}

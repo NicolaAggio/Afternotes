@@ -1,0 +1,187 @@
+\section{Election}
+\subsection{Introduction}
+In a distributed environment, most applications often require a single entity to act temporarily as a central controller to coordinate the execution of a particular task by the entities. In some cases, the need for a \textbf{single coordinator} arises from the desire to simplify the design of the solution protocol for a rather complex problem; in other cases, the presence of a single coordinator is required by the nature of the problem itself. 
+
+The problem of \textbf{choosing} such a \textbf{coordinator} from a population of autonomous symmetric entities is known as Leader Election (\textbf{Elect}). Formally, the task consists in moving the system from an initial configuration where all entities are in the \textbf{same state} (usually called \textit{available}) into a final configuration where all entities are in the same state (traditionally called \textit{follower}), \textbf{except one}, which is in a different state (traditionally called \textit{leader}). There is no restriction on the number of entities that can start the computation, nor on which entity should become leader.
+
+As election provides a mechanism for \textbf{breaking the symmetry} among the entities in a distributed environment, it is at the base of most control and coordination processes (e.g., mutual exclusion, synchronization, concurrency control, etc.) employed in distributed systems, and it is closely related to other basic computations (e.g., minimum finding, spanning-tree construction, traversal).
+
+\subsubsection{Impossibility result}
+We will start considering this problem under the standard restrictions \textit{R}: Bidirectional Links, Connectivity, and Total Reliability. There is unfortunately a very strong impossibility result about election.
+
+\theorem{Problem Elect is \textbf{deterministically unsolvable} under R.}
+
+In other words, there is \textbf{no deterministic protocol} that will always correctly terminate within finite time if the only restrictions are those in R. 
+
+To see why this is the case, consider a simple system composed of two entities, $x$ and $y$, both initially available and with no different initial values; in other words, they are initially in identical states. If a solution protocol $P$ exists, it must work under any conditions of message delays. Consider a synchronous schedule (i.e., an execution where communication delays are unitary) and let the two entities start the execution of $P$ simultaneously. As they are in identical states, they will execute the same rule, obtain the same result, and compose and send (if any) the same message; thus, they will still be in identical states. If one of them receives a message, the other will receive the same message at the same time and they will perform the same computation, and so on. Their state will always be the same; hence if one becomes leader, so will the other. But this is against the requirement that there should be only one leader; in other words, $P$ is not a solution protocol.
+
+Another technique that can be used to build a ST of a graph is based on the DFS (Depth First Search) algorithm: this technique is easy, but has the worst time complexity.
+
+\subsubsection{Solution strategies}
+To each node $x$ is associated a value $v(x)$, thus a simple algorithm could be:
+\begin{enumerate}
+    \item Execute the \textbf{saturation} technique;
+    \item \textbf{Choose} the saturated node holding the \textbf{minimum value}.
+\end{enumerate}
+
+\subsection{Election in rings}
+We will now consider a network topology that plays a very important role in distributed computing: the \textbf{ring}, sometimes called \textbf{loop network}. 
+
+A ring consists of a single cycle of length $n$. In a ring, each entity has exactly two neighbors, (whose associated ports are) traditionally called left and right.
+
+\image{el1.png}{1.8}{A ring network.}
+
+After trees, rings are the networks with the \textbf{sparsest} topology: $m = n$; however, unlike trees, rings have a complete \textbf{structural symmetry} (i.e., all nodes look the same). 
+
+We will denote the ring by $R = (x_0,x_1, .., x_{n-1})$. Let us consider the problem of electing a leader in a ring $R$, under the standard set of restrictions for election, \textbf{IR} = {Bidirectional Links, Connectivity, Total Reliability, Initial Distinct Values}, as well as the knowledge that the network is a ring (\textbf{Ring}). Denote by $id(x)$ the unique value associated to $x$. 
+
+Because of its structure, in a ring we will use almost exclusively the approach of minimum finding as a tool for leader election. In fact we will consider both the \textit{Elect Minimum} (find smallest value and elect as a leader the node with such a value) and the \textit{Elect Minimum Initiator} (find smallest value among the initiators and elect as a leader the node with such a value) approaches. Clearly the first solves both Min and Elect, while the latter solves only Elect.
+
+Every protocol that elects a leader in a ring can be made to find the minimum value (if it has not already been determined) with an additional $n$ message and time. Furthermore, in the worst case, the two approaches coincide: All entities might be initiators.
+
+\subsubsection{All the Way}
+The first solution we will use is rather straightforward: When an entity starts, it will \textbf{choose} one of its two neighbors and \textbf{send} to it an “Election” \textbf{message} containing its $id$; an entity receiving the $id$ of somebody else will send its $id$ (if it has not already done so) and \textbf{forward} the received message along the ring (i.e., send it to its other neighbor) keeping track of the smallest $id$ seen so far (including its own).
+
+This process can be visualized as follows: Each entity originates a message (containing its $id$), and this \textbf{message travels “all the way” along the ring} (forwarded by the other entities). 
+
+\image{el2.png}{1.5}{All the Way. Every $id$ travels along the ring.}
+
+Each entity will eventually see the $id$ of everybody else $id$ (finite communication delays and total reliability ensure that) including the minimum value; it will, thus, be able to determine whether or not it is the (unique) \textbf{minimum} and, thus, the leader. 
+
+When will this happen? In other words, \textit{When will an entity terminate its execution?} 
+
+Entities only forward messages carrying values other than their own: Once the message with $id(x)$ arrives at $x$, it is no longer forwarded. Thus, each \textbf{value} will \textbf{travel} “All the Way” along the ring \textbf{only once}. So, the communication activities will \textbf{eventually terminate}. But how does an entity know that the communication activities have terminated, that no more messages will be arriving, and, thus, the smallest value seen so far is really the minimum $id$? 
+
+Consider a “reasonable” but unfortunately incorrect answer:
+
+\textit{An entity knows that it has seen all values once it receives its value back.}
+
+The “reason” is that the message with its own $id$ has to travel longer along the ring to reach $x$ than those originated by other entities; thus, these other messages will be received first. In other words, \textbf{reception} of its own message can be \textbf{used} to \textbf{detect termination}. 
+
+This reasoning is \textbf{incorrect} because it uses the (hidden) additional assumption that the system has first in first out (\textbf{FIFO}) communication channels, that is, the messages are delivered in the order in which they arrive. This restriction, called \textbf{Message Ordering}, is not a part of election’s standard set; few systems actually have it built in, and the costs of offering it can be formidable. 
+
+So, whatever the answer, it must not assume FIFO channels. With this proviso, a “reasonable” but unfortunately still incorrect answer is the following: 
+
+\textit{An entity counts how many different values it receives; when the counter is equal to n, it knows it can terminate}.
+
+The problem is that this answer assumes that the entity knows $n$, but a priori \textbf{knowledge} of the \textbf{ring size} is \textbf{not} a \textbf{part} of the \textbf{standard restrictions} for election. So it cannot be used. 
+
+It is indeed strange that the termination should be difficult for such a simple protocol in such a clear setting. Fortunately, the last answer, although incorrect, provides us with the way out. In fact, although $n$ is not known a priori, it can be \textbf{computed}. This is easily accomplished by having a \textbf{counter} in the Election message, initialized to 1 and \textbf{incremented by each entity forwarding it}; when an entity receives its id back, the value of the counter will be $n$. 
+
+Summarizing, we will use a \textbf{counter} at each \textbf{entity}, to keep track of how many different $ids$ are received and a \textbf{counter} in each \textbf{message}, so that each entity can determine $n$.
+
+\paragraph{Protocol}
+\imageCouple{el3.png}{el4.png}{1.8}{1.8}{Protocol and procedures of All the Way.}
+
+\paragraph{Complexity}
+The message originated by each entity will travel along the ring exactly \textbf{once}. Thus, there will be exactly $n^2$ messages in total, each carrying a counter and a value, for a total of $n^2 \log(id + n)$ bits. The time costs will be at most $2n$. 
+
+Summarizing,
+$$\mess[\text{AllTheWay}] = n^2$$ $$\tim[\text{AllTheWay}] \leq 2n - 1$$
+
+In particular, the \textbf{bound} of the time is given by the fact that we have just \textbf{one initiator} that wakes up one node at a time, thus $n-1$ nodes to wake up, and $n$ to get an answer, giving $\leq 2n-1$.
+
+The solution protocol we have just designed is \textbf{very expensive} in terms of \textbf{communication costs} (in a network with 100 nodes it would cause 10, 000 message transmissions). Notice that \textit{All the Way} (in its original or modified version) can be used also in \textbf{unidirectional rings} with the same costs. In other words, it does not require the Bidirectional Links restriction. We will return to this point later.
+
+\subsubsection{As Far As It Can}
+To design an improved protocol, let us determine the drawback of the one we already have: \textit{All the Way}. In this protocol, each message travels all along the ring. 
+
+Consider the situation of a message containing a large $id$, say 22, arriving at an entity $x$ with a smaller $id$, say 4. In the existing protocol, $x$ will forward this message, even though $x$ knows that 22 is not the smallest value. 
+
+But our overall strategy is to determine the smallest $id$ among all entities; if an entity determines that an $id$ is not the minimum, there is \textbf{no need} whatsoever for the message containing such an $id$ to \textbf{continue traveling} along the ring. 
+
+\image{el5.png}{1.5}{As Far As It Can. Message with a larger id does not need to be forwarded.}
+
+We will thus \textbf{modify} the original protocol \textit{All the Way} so that an \textbf{entity} will only \textbf{forward} Election messages carrying an $id$ \textbf{smaller} than the \textbf{smallest seen so far} by that entity. In other words, an entity will become an insurmountable obstacle for all messages with a larger $id$ “terminating” them. 
+
+\imageB{el8.png}{0.8}
+
+Let us examine what happens with this simple modification. Each entity will originate a message (containing its $id$) that travels along the ring \textbf{“as far as it can”}: until it returns to its originator or arrives at a node with a smaller $id$. 
+
+\textit{When will an entity terminate its execution?} The message with the smallest $id$ will always be forwarded by the other entities; thus, it will travel all along the ring returning to its originator. The message containing another $id$ will instead be unable to return to its originator because it will find an entity with a smaller $id$ (and thus be terminated) along the way. In other words, only the \textbf{message} with the \textbf{smallest} $id$ will \textbf{return} to its \textbf{originator}. This fact provides us with a \textbf{termination detection mechanism}. 
+
+If an entity receives a message with its own $id$, it knows that its $id$ is the \textbf{minimum}, that is, it is the \textbf{leader}; the other entities have all seen that message pass by (they forwarded it) but they still do not know that there will be no smaller ids to come by. Thus, to ensure their termination, the newly elected leader must \textbf{notify} them by sending an additional message along the ring.
+
+\example{This is how value 2 travels. \imageB{el7.png}{1.5}}
+
+\image{el6.png}{2.0}{Protocol and procedures of AsFar.}
+
+\paragraph{Correctness and termination}
+The leader knows it is the leader when it receives its message back. \textit{When do the other nodes know?} \textbf{Notification} is necessary (since I do not receive my message back if I am not the leader, I am also not using counters).
+
+\textbf{Correctness}: the message with smaller identity starts and comes back to the sender which can then send the notification (bidirectional version).
+
+\paragraph{Space Complexity}
+This protocol will definitely have \textbf{fewer messages} than the previous one. The \textbf{exact number} depends on several factors. Consider the cost caused by the Election message originated by $x$. This message will travel along the ring until it finds a smaller $id$ (or complete the tour). Thus, the \textbf{cost} of its travel \textbf{depends} on how the $ids$ are \textbf{allocated} on the ring. Also notice that what matters is whether an $id$ is smaller or not than another and not their actual value. 
+
+In other words, what is important is the \textbf{rank} of the $ids$ and how those are \textbf{situated} on the ring. Denote by $\#i$ the $id$ whose rank is $i$. 
+
+\textit{\textbf{Worst Case}}  Let us first consider the \textbf{worst possible case}. Id $\#1$ will always travel all along the ring costing $n$ messages. Id $\#2$ will be stopped only by id $\#1$; so its cost in the worst case is $n - 1$, achievable if id $\#2$ is located immediately after id $\#1$ in the direction it travels. 
+
+In general, id $\#(i + 1)$ will be \textbf{stopped} by any of those with \textbf{smaller rank}, and, thus, it will cost at most $n - i$ messages; this will happen if all those \textbf{entities} are \textbf{next to each other}, and id $\#(i + 1)$ is located \textbf{immediately after} them in the direction it will travel. In fact, all the worst cases for each of the $ids$ are simultaneously achieved when the $ids$ are arranged in an \textbf{(circular) order according to their rank} and all \textbf{messages} are \textbf{sent} in the \textbf{“increasing” direction}. 
+
+\image{el9.png}{1.5}{Worst-case complexity (unidirectional version).}
+
+In this case, including also the $n$ messages required for the final notification, the total cost will be:
+
+$$
+\mess[\text{AsFar}] = n + \sum_{i = 1}^n i = \frac{n(n+3)}{2} = O(n^2)
+$$
+
+That is, we will \textbf{cut} the \textbf{number of messages} at least to \textbf{half}. From a theoretical point of view, the improvement is not significant; from a practical point of view, this is already a reasonable achievement. However we have so far analyzed only the worst case. In general, the improvement will be much more significant. To see precisely how, we need to perform a more detailed analysis of the protocol’s performance.
+
+Notice that \textit{AsFar} can be used in \textbf{unidirectional rings}. In other words, it does not require the Bidirectional Links restriction.We will return to this point later.
+
+\textit{\textbf{Average Case}} We will first consider the case when the ring is \textbf{oriented}, that is, “right” means the same to all entities. In this case, all messages will travel in only one direction, say clockwise. Because of the unique nature of the ring network, this case coincides with the \textbf{execution} of the \textbf{protocol} in a \textbf{unidirectional ring}. Thus, the results we will obtain will hold for those rings.
+
+To determine the average case behavior, we consider \textbf{all possible arrangements} of the ranks $1,...,n$ in the ring as \textbf{equally likely}. Given a set of size $a$, we denote by $C(a, b)$ the number of subsets of size $b$ that can be formed from it. 
+
+Consider the id $\#i$ with rank $i$; it will travel clockwise exactly $k$ steps if and only if the ids of its $k - 1$ clockwise neighbors are larger than it (and thus will forward it), while the id of its $k$-th clockwise neighbor is smaller (and thus will terminate it). 
+
+There are $i - 1$ ids smaller than id $\#i$ from which to choose those $k - 1$ smaller clockwise neighbors, and there are $n - i$ ids larger than id $\#i$ from which to choose the $k$-th clockwise neighbor. In other words, the number of situations where id $\#i$ will travel clockwise exactly $k$ \textbf{steps} is $C(i - 1,k - 1)C(n - i, 1)$, out of the total number of $C(n - 1,k - 1)C(n - k, 1)$ possible situations. 
+
+Thus, the \textbf{probability} $P(i, k)$ that id $\#i$ will travel clockwise exactly $k$ steps is:
+$$P(i, k) = \frac{C(i - 1,k - 1)C(n - i, 1)}{C(n - 1,k - 1)C(n - k, 1)}$$
+
+The smallest id, $\#1$, will travel the full length $n$ of the ring. The id $\#i$, $i> 1$, will travel less; the \textbf{expected distance} will be: 
+
+$$
+E_i = \sum_{k = 1}^{n-1} k P(i,k)
+$$
+
+Therefore, the overall \textbf{expected number of message} transmissions is:
+
+$$
+E_i = n + \sum_{i = 1}^{n-1}  \sum_{k = 1}^{n-1} k P(i,k) = n + \sum_{k = 1}^{n-1} \frac{n}{k+1} = n H_n
+$$ 
+
+where $H_n = 1 + \frac{1}{2} + \frac{1}{3} + .. + \frac{1}{m}$ is the $n$-th Harmonic number. 
+
+More precisely, $H_n = \ln n + O(1) \approx 0.69 \log n$, thus:
+
+\theorem{In oriented and in unidirectional rings, protocol \textit{AsFar} will cost $nH_n \approx 0.69 n \log n + O(n)$ \textbf{messages} on an \textbf{average}.}
+
+This is indeed great news: On an average, the message cost is an order of magnitude less than that in the worst case. For $n = 1024$, this means that on an average we have 7066 messages instead of 525, 824, which is a considerable difference.
+
+Let us now consider what will happen on an average in the general case, when the ring is \textbf{unoriented}. As before, we consider all possible arrangements of the ranks $1,...,n$ of the values in the ring as equally likely. The fact that the ring is not oriented means that when two entities send a message to their “right” neighbors, they might send it in different directions.
+
+\theorem{In unoriented rings, Protocol \textit{AsFar} will cost $\approx 0.49 n \log n$ \textbf{messages} on an \textbf{average}.}
+
+\paragraph{Time Complexity} The time costs are the same as the ones of \textit{All the Way} plus an additional $n$ for the notification phase.
+
+$$
+\tim[\text{As Far}] \leq 2n - 1 + n = 3n-1
+$$
+
+This can, however, be halved by exploiting the fact that the links are \textbf{bidirectional} and by \textbf{broadcasting} the notification; this will require an extra message but halve the time.
+
+\paragraph{Summary} The main \textbf{drawback} of protocol \textit{AsFar} is that there still exists the possibility that a \textbf{very large number of messages} ($O(n^2)$) will be exchanged. As we have seen, on an average, the use of the protocol will cost only $O(n \log n)$ messages. There is, however, \textbf{no guarantee} that this will happen the next time the protocol will be used. To give such a guarantee, a protocol must have a $O(n \log n)$ \textbf{worst case complexity}.
+
+\newpage
+\subsection{Exercises}
+\begin{enumerate}
+    \item Apply the \textit{All The Way} and \textit{As Far} algorithms on this graph.
+    \imageB{el11.png}{0.8}
+    \item Try to simulate the algorithm \textit{As Far} with node 4 as initiator on this graph. Repeat it with \textit{All The Way}.
+    \imageB{el10.png}{1.5}
+\end{enumerate}
